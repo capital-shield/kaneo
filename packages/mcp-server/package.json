@@ -1,0 +1,29 @@
+{
+  "name": "@kaneo/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Kaneo project management",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "kaneo-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --outdir=dist --format=esm",
+    "start": "node dist/index.js",
+    "lint": "biome check --write ."
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "0.27.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
