@@ -49,14 +49,17 @@ export type ToolResult = {
 };
 
 export async function toResult(res: Response): Promise<ToolResult> {
-  const data: unknown = await res.json();
+  const contentType = res.headers.get("content-type") ?? "";
+  const isJson = contentType.includes("application/json");
+
   if (!res.ok) {
+    const body = isJson ? JSON.stringify(await res.json()) : await res.text();
     return {
-      content: [
-        { type: "text", text: `Error ${res.status}: ${JSON.stringify(data)}` },
-      ],
+      content: [{ type: "text", text: `Error ${res.status}: ${body}` }],
       isError: true,
     };
   }
+
+  const data: unknown = await res.json();
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
