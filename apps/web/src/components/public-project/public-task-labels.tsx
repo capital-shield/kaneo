@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import labelColors from "@/constants/label-colors";
+import { labelColors } from "@/constants/label-colors";
 
 type PublicTaskLabelsProps = {
   labels: Array<{ id: string; name: string; color: string }>;

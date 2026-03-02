@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { type LabelColor, labelColors } from "@/constants/label-colors";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useDeleteLabel from "@/hooks/mutations/label/use-delete-label";
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
@@ -14,29 +15,6 @@ import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-wor
 import { cn } from "@/lib/cn";
 import { toast } from "@/lib/toast";
 import type Task from "@/types/task";
-
-const labelColors = [
-  { value: "gray", label: "Stone", color: "var(--color-stone-500)" },
-  { value: "dark-gray", label: "Slate", color: "var(--color-slate-500)" },
-  { value: "purple", label: "Lavender", color: "var(--color-violet-500)" },
-  { value: "teal", label: "Sage", color: "var(--color-emerald-600)" },
-  { value: "green", label: "Forest", color: "var(--color-green-600)" },
-  { value: "yellow", label: "Amber", color: "var(--color-amber-600)" },
-  { value: "orange", label: "Terracotta", color: "var(--color-orange-600)" },
-  { value: "pink", label: "Rose", color: "var(--color-rose-600)" },
-  { value: "red", label: "Crimson", color: "var(--color-red-600)" },
-];
-
-type LabelColor =
-  | "gray"
-  | "dark-gray"
-  | "purple"
-  | "teal"
-  | "green"
-  | "yellow"
-  | "orange"
-  | "pink"
-  | "red";
 
 type TaskLabelsPopoverProps = {
   task: Task;

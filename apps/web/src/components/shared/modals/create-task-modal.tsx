@@ -35,6 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { type LabelColor, labelColors } from "@/constants/label-colors";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useCreateTask from "@/hooks/mutations/task/use-create-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
@@ -52,17 +53,6 @@ type CreateTaskModalProps = {
 
 type Priority = "no-priority" | "low" | "medium" | "high" | "urgent";
 
-type LabelColor =
-  | "gray"
-  | "dark-gray"
-  | "purple"
-  | "teal"
-  | "green"
-  | "yellow"
-  | "orange"
-  | "pink"
-  | "red";
-
 type Label = {
   id: string;
   name: string;
@@ -73,54 +63,6 @@ type Label = {
 };
 
 type PopoverStep = "select" | "color";
-
-const labelColors = [
-  {
-    value: "gray" as LabelColor,
-    label: "Stone",
-    color: "var(--color-stone-500)",
-  },
-  {
-    value: "dark-gray" as LabelColor,
-    label: "Slate",
-    color: "var(--color-slate-500)",
-  },
-  {
-    value: "purple" as LabelColor,
-    label: "Lavender",
-    color: "var(--color-violet-500)",
-  },
-  {
-    value: "teal" as LabelColor,
-    label: "Sage",
-    color: "var(--color-emerald-600)",
-  },
-  {
-    value: "green" as LabelColor,
-    label: "Forest",
-    color: "var(--color-green-600)",
-  },
-  {
-    value: "yellow" as LabelColor,
-    label: "Amber",
-    color: "var(--color-amber-600)",
-  },
-  {
-    value: "orange" as LabelColor,
-    label: "Terracotta",
-    color: "var(--color-orange-600)",
-  },
-  {
-    value: "pink" as LabelColor,
-    label: "Rose",
-    color: "var(--color-rose-600)",
-  },
-  {
-    value: "red" as LabelColor,
-    label: "Crimson",
-    color: "var(--color-red-600)",
-  },
-];
 
 function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
   const { project, setProject } = useProjectStore();

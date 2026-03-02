@@ -13,7 +13,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
-import labelColors from "@/constants/label-colors";
+import { labelColors } from "@/constants/label-colors";
 import type { BoardFilters } from "@/hooks/use-task-filters";
 import { getColumnIcon } from "@/lib/column";
 import { getPriorityIcon } from "@/lib/priority";

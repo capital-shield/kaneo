@@ -1,4 +1,21 @@
-const labelColors = [
+export type LabelColor =
+  | "gray"
+  | "dark-gray"
+  | "purple"
+  | "teal"
+  | "green"
+  | "yellow"
+  | "orange"
+  | "pink"
+  | "red";
+
+export type LabelColorOption = {
+  value: LabelColor;
+  label: string;
+  color: string;
+};
+
+export const labelColors: LabelColorOption[] = [
   { value: "gray", label: "Stone", color: "var(--color-stone-500)" },
   { value: "dark-gray", label: "Slate", color: "var(--color-slate-500)" },
   { value: "purple", label: "Lavender", color: "var(--color-violet-500)" },
@@ -9,5 +26,3 @@ const labelColors = [
   { value: "pink", label: "Rose", color: "var(--color-rose-600)" },
   { value: "red", label: "Crimson", color: "var(--color-red-600)" },
 ];
-
-export default labelColors;
