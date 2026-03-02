@@ -8,8 +8,11 @@ type UserPreferencesStore = {
     coordinates?: { x: number; y: number },
   ) => void;
 
-  viewMode: "board" | "list";
-  setViewMode: (mode: "board" | "list") => void;
+  viewMode: "board" | "list" | "table";
+  setViewMode: (mode: "board" | "list" | "table") => void;
+
+  backlogViewMode: "list" | "table";
+  setBacklogViewMode: (mode: "list" | "table") => void;
 
   compactMode: boolean;
   setCompactMode: (compact: boolean) => void;
@@ -68,6 +71,9 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
 
       viewMode: "board",
       setViewMode: (mode) => set({ viewMode: mode }),
+
+      backlogViewMode: "list",
+      setBacklogViewMode: (mode) => set({ backlogViewMode: mode }),
 
       compactMode: false,
       setCompactMode: (compact) => set({ compactMode: compact }),

@@ -35,6 +35,7 @@ export const shortcuts = {
     board: "b",
     list: "l",
     backlog: "k",
+    table: "t",
   },
   taskDetails: {
     status: "s",

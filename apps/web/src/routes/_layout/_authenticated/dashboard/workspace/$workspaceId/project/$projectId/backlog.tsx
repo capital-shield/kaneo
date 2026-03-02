@@ -1,9 +1,19 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
-import { ArrowRight, Calendar, Filter, Plus, User, X } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  Filter,
+  Plus,
+  Rows3,
+  Table2,
+  User,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BacklogListView from "@/components/backlog-list-view";
+import BacklogTableView from "@/components/backlog-list-view/backlog-table-view";
 import ProjectLayout from "@/components/common/project-layout";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
@@ -67,7 +77,8 @@ function RouteComponent() {
     });
   }, [navigate]);
 
-  const { setViewMode } = useUserPreferencesStore();
+  const { setViewMode, backlogViewMode, setBacklogViewMode } =
+    useUserPreferencesStore();
 
   useRegisterShortcuts({
     sequentialShortcuts: {
@@ -87,6 +98,7 @@ function RouteComponent() {
           });
         },
         [shortcuts.view.backlog]: () => {},
+        [shortcuts.view.table]: () => setBacklogViewMode("table"),
       },
     },
   });
@@ -327,8 +339,8 @@ function RouteComponent() {
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
         <div className="border-border/80 border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/70">
           <div className="flex min-h-12 items-center px-3 py-2 md:px-4">
-            <div className="flex w-full items-center gap-2">
-              <div className="flex w-full flex-wrap items-center gap-1.5">
+            <div className="flex w-full items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   variant="ghost"
                   size="xs"
@@ -610,13 +622,44 @@ function RouteComponent() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              <div className="inline-flex items-center gap-1 flex-shrink-0">
+                <button
+                  type="button"
+                  className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
+                    backlogViewMode === "list"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  }`}
+                  onClick={() => setBacklogViewMode("list")}
+                >
+                  <Rows3 className="h-3 w-3" />
+                  List
+                </button>
+                <button
+                  type="button"
+                  className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
+                    backlogViewMode === "table"
+                      ? "bg-accent text-foreground"
+                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  }`}
+                  onClick={() => setBacklogViewMode("table")}
+                >
+                  <Table2 className="h-3 w-3" />
+                  Table
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden bg-card h-full">
           {filteredProject ? (
-            <BacklogListView project={filteredProject} />
+            backlogViewMode === "table" ? (
+              <BacklogTableView project={filteredProject} />
+            ) : (
+              <BacklogListView project={filteredProject} />
+            )
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center space-y-4">

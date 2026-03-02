@@ -1,4 +1,4 @@
-import { Filter, PanelsTopLeft, Rows3, X } from "lucide-react";
+import { Filter, PanelsTopLeft, Rows3, Table2, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -47,8 +47,8 @@ type BoardToolbarProps = {
   hasActiveFilters: boolean;
   users?: ActiveUsers;
   workspaceLabels: WorkspaceLabel[];
-  viewMode: "board" | "list";
-  setViewMode: (mode: "board" | "list") => void;
+  viewMode: "board" | "list" | "table";
+  setViewMode: (mode: "board" | "list" | "table") => void;
 };
 
 function CheckSlot({ checked }: { checked: boolean }) {
@@ -177,6 +177,10 @@ export default function BoardToolbar({
       return acc;
     },
     [],
+  );
+
+  const selectedUniqueLabels = filters.labels?.filter((labelId) =>
+    uniqueLabels.some((l) => l.id === labelId),
   );
 
   const isLabelGroupSelected = (label: { name: string; color: string }) => {
@@ -586,11 +590,11 @@ export default function BoardToolbar({
               />
             )}
 
-            {filters.labels && filters.labels.length > 0 && (
+            {selectedUniqueLabels && selectedUniqueLabels.length > 0 && (
               <ActiveFilterChip
                 subject="Labels"
                 operator="include any of"
-                value={`${filters.labels.length} selected`}
+                value={`${selectedUniqueLabels.length} selected`}
                 onClear={clearLabelFilters}
               />
             )}
@@ -620,6 +624,18 @@ export default function BoardToolbar({
             >
               <Rows3 className="h-3 w-3" />
               List
+            </button>
+            <button
+              type="button"
+              className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
+                viewMode === "table"
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+              onClick={() => setViewMode("table")}
+            >
+              <Table2 className="h-3 w-3" />
+              Table
             </button>
           </div>
         </div>

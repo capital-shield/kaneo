@@ -7,6 +7,7 @@ import KanbanBoard from "@/components/kanban-board";
 import ListView from "@/components/list-view";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
+import TableView from "@/components/table-view";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Input } from "@/components/ui/input";
 import { shortcuts } from "@/constants/shortcuts";
@@ -61,6 +62,7 @@ function RouteComponent() {
       [shortcuts.view.prefix]: {
         [shortcuts.view.board]: () => setViewMode("board"),
         [shortcuts.view.list]: () => setViewMode("list"),
+        [shortcuts.view.table]: () => setViewMode("table"),
         [shortcuts.view.backlog]: () =>
           navigate({
             to: "/dashboard/workspace/$workspaceId/project/$projectId/backlog",
@@ -152,7 +154,7 @@ function RouteComponent() {
       headerActions={boardHeaderSearch}
     >
       <PageTitle
-        title={`${project?.name} — ${viewMode === "board" ? "Board" : "List"}`}
+        title={`${project?.name} — ${viewMode === "board" ? "Board" : viewMode === "table" ? "Table" : "List"}`}
         hideAppName
       />
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
@@ -173,6 +175,8 @@ function RouteComponent() {
           {filteredProject ? (
             viewMode === "board" ? (
               <KanbanBoard project={filteredProject} />
+            ) : viewMode === "table" ? (
+              <TableView project={filteredProject} />
             ) : (
               <ListView project={filteredProject} />
             )
