@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { labelColors } from "@/constants/label-colors";
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
 
 function TaskCardLabels({ taskId }: { taskId: string }) {
@@ -14,6 +15,11 @@ function TaskCardLabels({ taskId }: { taskId: string }) {
           color={label.color}
           variant="outline"
           className="px-2 py-0.5 text-[10px] flex items-center"
+          style={{
+            borderColor:
+              labelColors.find((c) => c.value === label.color)?.color ||
+              "var(--color-neutral-400)",
+          }}
         >
           <span
             className="inline-block w-1.5 h-1.5 mr-1 rounded-full"
