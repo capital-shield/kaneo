@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to tag the images (e.g., 1.0.0-beta.1, test-branch)'
+        description: "Version to tag the images (e.g., 1.0.0-beta.1, test-branch)"
         required: true
         type: string
       latest:
-        description: 'Also tag as latest (use with caution)'
+        description: "Also tag as latest (use with caution)"
         required: false
         type: boolean
         default: false
@@ -47,7 +47,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_PACKAGE_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
