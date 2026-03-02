@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,9 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
+import { labelColors } from "@/constants/label-colors";
+import useCreateLabel from "@/hooks/mutations/label/use-create-label";
+import useDeleteLabel from "@/hooks/mutations/label/use-delete-label";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useUpdateTaskAssignee } from "@/hooks/mutations/task/use-update-task-assignee";
 import { useUpdateTaskDescription } from "@/hooks/mutations/task/use-update-task-description";
@@ -18,6 +22,8 @@ import { useUpdateTaskDueDate } from "@/hooks/mutations/task/use-update-task-due
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
+import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
+import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { getColumnIcon } from "@/lib/column";
 import { generateLink } from "@/lib/generate-link";
@@ -43,6 +49,7 @@ export default function TaskCardContextMenuContent({
   onDeleteClick,
 }: TaskCardContextMenuContentProps) {
   const { project } = useProjectStore();
+  const queryClient = useQueryClient();
   const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
     taskCardContext.worskpaceId,
   );
@@ -53,6 +60,64 @@ export default function TaskCardContextMenuContent({
   const { mutateAsync: updateTaskTitle } = useUpdateTaskTitle();
   const { mutateAsync: updateTaskDescription } = useUpdateTaskDescription();
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
+  const { mutateAsync: createLabel } = useCreateLabel();
+  const { mutateAsync: deleteLabel } = useDeleteLabel();
+
+  const { data: taskLabels = [] } = useGetLabelsByTask(task.id);
+  const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
+    taskCardContext.worskpaceId,
+  );
+
+  const uniqueWorkspaceLabels = useMemo(() => {
+    const labelMap = new Map<string, (typeof workspaceLabels)[0]>();
+    for (const label of workspaceLabels) {
+      const existing = labelMap.get(label.name);
+      if (!existing || (label.taskId === null && existing.taskId !== null)) {
+        labelMap.set(label.name, label);
+      }
+    }
+    return Array.from(labelMap.values());
+  }, [workspaceLabels]);
+
+  const taskLabelNames = useMemo(
+    () => taskLabels.map((l) => l.name),
+    [taskLabels],
+  );
+
+  const handleToggleLabel = async (labelId: string) => {
+    const workspaceLabel = uniqueWorkspaceLabels.find((l) => l.id === labelId);
+    if (!workspaceLabel) return;
+
+    const isAssigned = taskLabelNames.includes(workspaceLabel.name);
+
+    try {
+      if (isAssigned) {
+        const taskLabel = taskLabels.find(
+          (l) => l.name === workspaceLabel.name,
+        );
+        if (taskLabel?.id) {
+          await deleteLabel({ id: taskLabel.id });
+          toast.success("Label removed");
+        }
+      } else {
+        await createLabel({
+          name: workspaceLabel.name,
+          color: workspaceLabel.color,
+          taskId: task.id,
+          workspaceId: taskCardContext.worskpaceId,
+        });
+        toast.success("Label added");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["labels", task.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["labels", taskCardContext.worskpaceId],
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update label",
+      );
+    }
+  };
 
   const usersOptions = useMemo(() => {
     return workspaceUsers?.members?.map((member) => ({
@@ -252,6 +317,34 @@ export default function TaskCardContextMenuContent({
                 </Avatar>
 
                 {user.label}
+              </ContextMenuCheckboxItem>
+            ))}
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+      )}
+
+      {uniqueWorkspaceLabels.length > 0 && (
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <span>Label</span>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-48">
+            {uniqueWorkspaceLabels.map((label) => (
+              <ContextMenuCheckboxItem
+                key={label.id}
+                checked={taskLabelNames.includes(label.name)}
+                onSelect={(e) => e.preventDefault()}
+                onCheckedChange={() => handleToggleLabel(label.id)}
+              >
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-1 flex-shrink-0"
+                  style={{
+                    backgroundColor:
+                      labelColors.find((c) => c.value === label.color)?.color ||
+                      "var(--color-neutral-400)",
+                  }}
+                />
+                <span className="truncate">{label.name}</span>
               </ContextMenuCheckboxItem>
             ))}
           </ContextMenuSubContent>
