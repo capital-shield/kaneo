@@ -27,7 +27,6 @@ import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
-import toKebabCase from "@/lib/to-kebab-case";
 import { toast } from "@/lib/toast";
 import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
@@ -230,17 +229,19 @@ function ListView({ project }: ListViewProps) {
     }
 
     const updatedProject = produce(project, (draft) => {
-      const finalColumn = draft?.columns?.find((col) => col.isFinal);
-      if (!finalColumn) return;
+      const archivedColumn = draft?.columns?.find(
+        (col) => col.id === column.id,
+      );
+      if (!archivedColumn) return;
 
-      for (const task of finalColumn.tasks) {
+      for (const task of archivedColumn.tasks) {
         updateTask({
           ...task,
           status: "archived",
         });
       }
 
-      finalColumn.tasks = [];
+      archivedColumn.tasks = [];
     });
 
     setProject(updatedProject);
@@ -404,7 +405,7 @@ function ListView({ project }: ListViewProps) {
       <CreateTaskModal
         open={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
-        status={toKebabCase(activeColumn ?? "done")}
+        status={activeColumn ?? "done"}
       />
 
       <BulkToolbar />

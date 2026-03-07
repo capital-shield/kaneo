@@ -1,3 +1,45 @@
+## [2.3.4](https://github.com/usekaneo/kaneo/compare/v2.3.3...v2.3.4) (2026-03-05)
+
+
+### Bug Fixes
+
+* update API server URL to use HTTPS ([88e869f](https://github.com/usekaneo/kaneo/commit/88e869f66fd50fd15f9087549d74d0858abbe675))
+* update organization paths to include auth prefix ([e7b2a42](https://github.com/usekaneo/kaneo/commit/e7b2a424afd860ebce473566ef6f69d7a9c7d07b))
+* update task assignee retrieval to use user table ([f8fed51](https://github.com/usekaneo/kaneo/commit/f8fed517b8beb578e8fab6e8a200342d7358865b))
+
+
+### Features
+
+* add operation summary generation for OpenAPI specs ([14939d2](https://github.com/usekaneo/kaneo/commit/14939d291968d4e65c5b44a74037366609aabcc5))
+* openapi spec + migrations ([50b0ae5](https://github.com/usekaneo/kaneo/commit/50b0ae54a047d915cd15dc06c97e28aa7ac3ca9f))
+## [2.3.3](https://github.com/usekaneo/kaneo/compare/v2.3.2...v2.3.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* api keys couldn't be created ([04c8f8f](https://github.com/usekaneo/kaneo/commit/04c8f8f7ab65c78bbd6c2ab15a608b481eef223a))
+## [2.3.2](https://github.com/usekaneo/kaneo/compare/v2.3.1...v2.3.2) (2026-03-03)
+
+
+### Bug Fixes
+
+* consolidate imports from better-auth/api ([3e7e2c6](https://github.com/usekaneo/kaneo/commit/3e7e2c6f1d4be274a044b8c0594fdfa27df463c7))
+* update auth logic and add apiKey dependency ([22c9c2a](https://github.com/usekaneo/kaneo/commit/22c9c2af760a7097e35960c6bd4c8c4e48963abc))
+## [2.3.1](https://github.com/usekaneo/kaneo/compare/v2.3.0...v2.3.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* favicon ([3dbe1b9](https://github.com/usekaneo/kaneo/commit/3dbe1b9171a198070edf643757c5cb992b99d5a3))
+* **types:** align client models and add reliable web typecheck command ([e9ea473](https://github.com/usekaneo/kaneo/commit/e9ea4731984bcbe7e94634aa1b48fbbc83bebe6a))
+
+
+### Features
+
+* add Plausible analytics scripts for tracking ([736791a](https://github.com/usekaneo/kaneo/commit/736791a04cee3aa43f0c0dbcccce58db7e0bafe5))
+* implement FadeIn component for smooth animations in landing pages ([9fcaaac](https://github.com/usekaneo/kaneo/commit/9fcaaac58c5d0424a30ef87fbf057e4a548e3d6b))
+* **settings:** refresh settings sidebars and project/workspace UX ([3424436](https://github.com/usekaneo/kaneo/commit/3424436ad3d1137df90c2895ff5d9e628be6c192))
+* **tasks:** improve bulk selection, column actions, and task detail popovers ([6723296](https://github.com/usekaneo/kaneo/commit/6723296ab59c1be365fbbb51326ad3e44c97e4b3))
 # [2.3.0](https://github.com/usekaneo/kaneo/compare/v2.2.1...v2.3.0) (2026-02-25)
 
 

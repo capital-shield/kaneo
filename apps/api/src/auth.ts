@@ -1,3 +1,4 @@
+import { apiKey } from "@better-auth/api-key";
 import {
   sendMagicLinkEmail,
   sendOtpEmail,
@@ -6,15 +7,14 @@ import {
 import bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import {
   anonymous,
-  apiKey,
-  createAuthMiddleware,
   emailOTP,
   genericOAuth,
   lastLoginMethod,
   magicLink,
+  openAPI,
   organization,
 } from "better-auth/plugins";
 import { config } from "dotenv-mono";
@@ -184,9 +184,9 @@ export const auth = betterAuth({
           },
         },
       },
-      organizationCreation: {
-        disabled: false,
-        afterCreate: async ({ organization, user }) => {
+      allowUserToCreateOrganization: true,
+      organizationHooks: {
+        afterCreateOrganization: async ({ organization, user }) => {
           publishEvent("workspace.created", {
             workspaceId: organization.id,
             workspaceName: organization.name,
@@ -239,7 +239,16 @@ export const auth = betterAuth({
         },
       ],
     }),
-    apiKey(),
+    apiKey({
+      enableSessionForAPIKeys: true,
+      apiKeyHeaders: "x-api-key",
+      rateLimit: {
+        enabled: true,
+        maxRequests: 100,
+        timeWindow: 60 * 1000,
+      },
+    }),
+    openAPI(),
   ],
   session: {
     cookieCache: {

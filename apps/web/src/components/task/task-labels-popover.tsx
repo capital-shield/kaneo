@@ -20,6 +20,7 @@ type TaskLabelsPopoverProps = {
   task: Task;
   workspaceId: string;
   children: React.ReactNode;
+  triggerNativeButton?: boolean;
 };
 
 type PopoverStep = "select" | "color";
@@ -28,6 +29,7 @@ export default function TaskLabelsPopover({
   task,
   workspaceId,
   children,
+  triggerNativeButton = true,
 }: TaskLabelsPopoverProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<PopoverStep>("select");
@@ -287,7 +289,9 @@ export default function TaskLabelsPopover({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverTrigger asChild nativeButton={triggerNativeButton}>
+        {children}
+      </PopoverTrigger>
       <PopoverContent className="p-0" align="start">
         {step === "select" && renderSelectStep()}
         {step === "color" && renderColorStep()}

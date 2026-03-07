@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import type { Session, User } from "better-auth/types";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
@@ -26,8 +26,18 @@ import search from "./search";
 import task from "./task";
 import timeEntry from "./time-entry";
 import { getInvitationDetails } from "./utils/check-registration-allowed";
+import { migrateApiKeyReferenceId } from "./utils/migrate-apikey-reference-id";
 import { migrateSessionColumn } from "./utils/migrate-session-column";
 import { migrateWorkspaceUserEmail } from "./utils/migrate-workspace-user-email";
+import {
+  dedupeOperationIds,
+  ensureOperationSummaries,
+  mergeOpenApiSpecs,
+  normalizeApiServerUrl,
+  normalizeEmptyRequiredArrays,
+  normalizeNullableSchemasForOpenApi30,
+  normalizeOrganizationAuthOperations,
+} from "./utils/openapi-spec";
 import { verifyApiKey } from "./utils/verify-api-key";
 import workflowRule from "./workflow-rule";
 
@@ -82,7 +92,7 @@ api.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
-api.get("/public-project/:id", async (c) => {
+const publicProjectApi = api.get("/public-project/:id", async (c) => {
   const { id } = c.req.param();
   const project = await getPublicProject(id);
 
@@ -99,45 +109,91 @@ const invitationPublicApi = api.get("/invitation/public/:id", async (c) => {
 
 const configApi = api.route("/config", config);
 
-api.get(
-  "/openapi",
-  openAPIRouteHandler(api, {
-    documentation: {
-      openapi: "3.0.0",
-      info: {
-        title: "Kaneo API",
-        version: "1.0.0",
-        description:
-          "Kaneo Project Management API - Manage projects, tasks, labels, and more",
-      },
-      servers: [
-        {
-          url: process.env.KANEO_API_URL || "http://localhost:1337",
-          description: "Kaneo API Server",
-        },
-      ],
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer",
-            description: "API Key authentication",
-          },
-        },
-      },
-      security: [{ bearerAuth: [] }],
+const honoOpenApiHandler = openAPIRouteHandler(api, {
+  documentation: {
+    openapi: "3.0.3",
+    info: {
+      title: "Kaneo API",
+      version: "1.0.0",
+      description:
+        "Kaneo Project Management API - Manage projects, tasks, labels, and more",
     },
-  }),
-);
+    servers: [
+      {
+        url: normalizeApiServerUrl(
+          process.env.KANEO_API_URL || "https://cloud.kaneo.app",
+        ),
+        description: "Kaneo API Server",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          description: "API Key authentication",
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+  },
+});
 
-api.on(["POST", "GET", "PUT", "DELETE"], "/auth/*", (c) =>
-  auth.handler(c.req.raw),
-);
+api.get("/openapi", async (c) => {
+  const maybeResponse = await honoOpenApiHandler(c, async () => {});
+  const honoSpecResponse = maybeResponse ?? c.res;
+  const honoSpec = (await honoSpecResponse.json()) as Record<string, unknown>;
+
+  let authSpec: Record<string, unknown> = {};
+  try {
+    authSpec = (await auth.api.generateOpenAPISchema()) as Record<
+      string,
+      unknown
+    >;
+  } catch (error) {
+    console.error("Failed to generate Better Auth OpenAPI schema:", error);
+  }
+
+  const normalizedAuthSpec = normalizeOrganizationAuthOperations(authSpec);
+  return c.json(
+    ensureOperationSummaries(
+      dedupeOperationIds(
+        normalizeNullableSchemasForOpenApi30(
+          normalizeEmptyRequiredArrays(
+            mergeOpenApiSpecs(honoSpec, normalizedAuthSpec),
+          ),
+        ),
+      ),
+    ),
+  );
+});
+
+api.on(["POST", "GET", "PUT", "DELETE"], "/auth/*", (c) => {
+  const authHeader = c.req.header("Authorization");
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const apiKey = authHeader.substring(7).replace(/\s+/g, "").trim();
+    const headers = new Headers(c.req.raw.headers);
+
+    // Better Auth API key plugin validates from x-api-key by default.
+    if (!headers.get("x-api-key")) {
+      headers.set("x-api-key", apiKey);
+    }
+
+    return auth.handler(
+      new Request(c.req.raw, {
+        headers,
+      }),
+    );
+  }
+
+  return auth.handler(c.req.raw);
+});
 
 api.use("*", async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (authHeader?.startsWith("Bearer ")) {
-    const apiKey = authHeader.substring(7);
+    const apiKey = authHeader.substring(7).replace(/\s+/g, "").trim();
 
     try {
       const result = await verifyApiKey(apiKey);
@@ -199,6 +255,7 @@ app.route("/api", api);
   try {
     await migrateWorkspaceUserEmail();
     await migrateSessionColumn();
+    await migrateApiKeyReferenceId();
 
     console.log("🔄 Migrating database...");
     await migrate(db, {
@@ -242,6 +299,7 @@ export type AppType =
   | typeof externalLinkApi
   | typeof workflowRuleApi
   | typeof invitationApi
+  | typeof publicProjectApi
   | typeof invitationPublicApi;
 
 export default app;
