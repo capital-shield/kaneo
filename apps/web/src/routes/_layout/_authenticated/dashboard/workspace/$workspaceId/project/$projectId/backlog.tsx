@@ -345,7 +345,7 @@ function RouteComponent() {
                   variant="ghost"
                   size="xs"
                   onClick={() => setIsTaskModalOpen(true)}
-                  className="h-6 px-2 text-xs text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  className="h-6 px-2 text-xs text-foreground hover:bg-accent hover:text-accent-foreground"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Plan
@@ -355,7 +355,7 @@ function RouteComponent() {
                   variant="ghost"
                   size="xs"
                   onClick={handleMoveAllPlannedToTodo}
-                  className="h-6 px-2 text-xs text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  className="h-6 px-2 text-xs text-foreground hover:bg-accent hover:text-accent-foreground"
                   title="Move All Planned to To Do"
                 >
                   <ArrowRight className="h-3 w-3 mr-1" />
@@ -520,7 +520,7 @@ function RouteComponent() {
                         onCheckedChange={(checked) =>
                           updateFilter("priority", checked ? priority : null)
                         }
-                        className="h-8 rounded-md text-sm [&_svg]:text-sidebar-foreground"
+                        className="h-8 rounded-md text-sm [&_svg]:text-foreground"
                       >
                         {getPriorityIcon(priority)}
                         <span className="capitalize">{priority}</span>

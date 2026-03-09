@@ -9,7 +9,7 @@ export function VersionDisplay() {
         href={changelogUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        className="text-xs text-sidebar-foreground hover:text-sidebar-accent-foreground transition-colors duration-200"
       >
         v{version}
       </a>

@@ -25,7 +25,7 @@ export function ThemeToggleDropdown() {
         <span className="pointer-events-none relative ms-0.5 flex min-w-7 items-center justify-center text-center peer-data-[state=checked]:text-muted-foreground/70">
           <MoonIcon aria-hidden="true" size={13} />
         </span>
-        <span className="pointer-events-none relative me-0.5 flex min-w-7 items-center justify-center text-center peer-data-[state=unchecked]:text-muted-foreground/70">
+        <span className="pointer-events-none relative me-0.5 flex min-w-7 items-center justify-center text-center text-secondary-foreground peer-data-[state=unchecked]:text-muted-foreground/70">
           <SunIcon aria-hidden="true" size={13} />
         </span>
       </div>

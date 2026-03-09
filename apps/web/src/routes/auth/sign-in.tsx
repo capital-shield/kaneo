@@ -232,7 +232,7 @@ function SignIn() {
                         : "Continue with Google"}
                     </Button>
                     {lastLoginMethod === "google" && (
-                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-sidebar border border-primary/50">
+                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-background border border-primary/50">
                         Last used
                       </span>
                     )}
@@ -256,7 +256,7 @@ function SignIn() {
                         : "Continue with GitHub"}
                     </Button>
                     {lastLoginMethod === "github" && (
-                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-sidebar border border-primary/50">
+                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-background border border-primary/50">
                         Last used
                       </span>
                     )}
@@ -289,7 +289,7 @@ function SignIn() {
                         : "Continue with Discord"}
                     </Button>
                     {lastLoginMethod === "discord" && (
-                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-sidebar border border-primary/50">
+                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-background border border-primary/50">
                         Last used
                       </span>
                     )}
@@ -313,7 +313,7 @@ function SignIn() {
                         : "Continue with OIDC"}
                     </Button>
                     {lastLoginMethod === "custom" && (
-                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-sidebar border border-primary/50">
+                      <span className="absolute rounded-md -top-3 right-1 px-1.5 text-xs text-primary font-medium bg-background border border-primary/50">
                         Last used
                       </span>
                     )}

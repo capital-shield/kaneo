@@ -150,9 +150,9 @@ function InvitationsPage() {
               orientation="vertical"
               className="mx-1.5 data-[orientation=vertical]:h-2.5"
             />
-            <h1 className="text-xs text-card-foreground">
+            <span className="text-xs font-normal text-card-foreground">
               Pending Invitations
-            </h1>
+            </span>
           </div>
         </Layout.Header>
         <Layout.Content>
