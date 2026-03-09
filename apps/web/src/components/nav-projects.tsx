@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   ChevronRight,
+  Columns2,
   Folder,
   Forward,
   MoreHorizontal,
@@ -108,9 +109,10 @@ export function NavProjects() {
                       <SidebarMenuButton
                         isActive={isCurrentProject(project.id)}
                         size="default"
-                        className="h-8 gap-0 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
+                        className="h-8 gap-2 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
                         onClick={() => handleProjectClick(project)}
                       >
+                        <Columns2 className="h-4 w-4" />
                         <span>{project.name}</span>
                       </SidebarMenuButton>
 

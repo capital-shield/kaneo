@@ -1,5 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import {
+  ChevronRight,
+  LayoutDashboardIcon,
+  MailIcon,
+  UsersIcon,
+} from "lucide-react";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -28,6 +33,7 @@ export function NavMain() {
   const navItems = [
     {
       title: "Projects",
+      icon: <LayoutDashboardIcon className="h-4 w-4" />,
       url: `/dashboard/workspace/${workspace.id}`,
       isActive:
         window.location.pathname === `/dashboard/workspace/${workspace.id}`,
@@ -35,6 +41,7 @@ export function NavMain() {
     },
     {
       title: "Members",
+      icon: <UsersIcon className="h-4 w-4" />,
       url: `/dashboard/workspace/${workspace.id}/members`,
       isActive:
         window.location.pathname ===
@@ -43,6 +50,7 @@ export function NavMain() {
     },
     {
       title: "Invitations",
+      icon: <MailIcon className="h-4 w-4" />,
       url: "/dashboard/invitations",
       isActive: window.location.pathname === "/dashboard/invitations",
       badge: pendingCount > 0 ? pendingCount : null,
@@ -73,6 +81,7 @@ export function NavMain() {
                     className="h-8 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
                     onClick={() => navigate({ to: item.url })}
                   >
+                    {item.icon}
                     <span>{item.title}</span>
                     {item.badge !== null && (
                       <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-sm border border-sidebar-border/60 px-1 text-[11px] font-medium text-sidebar-foreground/80">
