@@ -16,7 +16,7 @@ export function registerSearchTools(server: McpServer, client: KaneoApiClient) {
           .describe("Limit results to a workspace"),
         projectId: z.string().optional().describe("Limit results to a project"),
         type: z
-          .enum(["task", "project", "workspace", "comment", "activity"])
+          .enum(["tasks", "projects", "workspaces", "comments", "activities"])
           .optional()
           .describe("Limit to a specific entity type"),
         limit: z
