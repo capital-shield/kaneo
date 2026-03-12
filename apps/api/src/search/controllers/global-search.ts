@@ -93,6 +93,10 @@ async function globalSearch(params: SearchParams): Promise<{
   const results: SearchResult[] = [];
   const searchPattern = `%${query.toLowerCase()}%`;
 
+  const taskIdMatch = query.match(/^([a-zA-Z]+)-(\d+)$/);
+  const idSlug = taskIdMatch ? taskIdMatch[1] : null;
+  const idNumber = taskIdMatch ? Number.parseInt(taskIdMatch[2], 10) : null;
+
   const workspaceFilter = workspaceId
     ? eq(projectTable.workspaceId, workspaceId)
     : sql`${projectTable.workspaceId} IN ${accessibleWorkspaceIds}`;
@@ -100,6 +104,7 @@ async function globalSearch(params: SearchParams): Promise<{
   if (type === "all" || type === "tasks") {
     const taskRelevanceScore = sql<number>`
       CASE
+        WHEN ${taskIdMatch ? sql`LOWER(${projectTable.slug}) = LOWER(${idSlug}) AND ${taskTable.number} = ${idNumber}` : sql`FALSE`} THEN 4
         WHEN LOWER(${taskTable.title}) LIKE ${searchPattern} THEN 3
         WHEN LOWER(${taskTable.description}) LIKE ${searchPattern} THEN 2
         ELSE 1
@@ -135,6 +140,14 @@ async function globalSearch(params: SearchParams): Promise<{
           or(
             ilike(taskTable.title, searchPattern),
             ilike(taskTable.description, searchPattern),
+            ...(taskIdMatch && idSlug !== null && idNumber !== null
+              ? [
+                  and(
+                    ilike(projectTable.slug, idSlug),
+                    eq(taskTable.number, idNumber),
+                  ),
+                ]
+              : []),
           ),
         ),
       )
