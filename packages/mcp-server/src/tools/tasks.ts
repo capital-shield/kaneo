@@ -6,7 +6,7 @@ export function registerTaskTools(server: McpServer, client: KaneoApiClient) {
   server.registerTool(
     "list_tasks",
     {
-      title: "Get all tasks for a project, organized by columns",
+      title: "List all tasks for a project, organized by columns",
       inputSchema: z.object({
         projectId: z.string().describe("The project ID"),
       }),
