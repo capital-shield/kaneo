@@ -7,6 +7,8 @@ export function registerTaskTools(server: McpServer, client: KaneoApiClient) {
     "list_tasks",
     {
       title: "List all tasks for a project, organized by columns",
+      description:
+        "List all tasks for a project, organized by columns. Use this to get an overview of all tasks in a project.",
       inputSchema: z.object({
         projectId: z.string().describe("The project ID"),
       }),
@@ -40,7 +42,11 @@ export function registerTaskTools(server: McpServer, client: KaneoApiClient) {
         priority: z
           .enum(["low", "medium", "high", "urgent"])
           .describe("Task priority"),
-        status: z.string().describe("Initial status (column name or slug)"),
+        status: z
+          .string()
+          .describe(
+            "Initial status — must be an exact column slug from the project (e.g. 'to-do', 'in-progress'). Use list_tasks to discover the available column slugs for the project. If omitted or invalid, the task will be placed in the first column.",
+          ),
         dueDate: z.string().optional().describe("Due date as ISO 8601 string"),
         userId: z.string().optional().describe("User ID to assign the task to"),
       }),

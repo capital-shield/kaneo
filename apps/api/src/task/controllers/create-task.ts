@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable, userTable } from "../../database/schema";
@@ -29,12 +29,22 @@ async function createTask({
 
   const nextTaskNumber = await getNextTaskNumber(projectId);
 
-  const column = await db.query.columnTable.findFirst({
-    where: and(
-      eq(columnTable.projectId, projectId),
-      eq(columnTable.slug, status || "to-do"),
-    ),
-  });
+  const column =
+    (await db.query.columnTable.findFirst({
+      where: and(
+        eq(columnTable.projectId, projectId),
+        eq(columnTable.slug, status || "to-do"),
+      ),
+    })) ??
+    (await db
+      .select()
+      .from(columnTable)
+      .where(eq(columnTable.projectId, projectId))
+      .orderBy(asc(columnTable.position))
+      .limit(1)
+      .then((rows) => rows[0]));
+
+  const resolvedStatus = column?.slug ?? status ?? "";
 
   const [createdTask] = await db
     .insert(taskTable)
@@ -42,7 +52,7 @@ async function createTask({
       projectId,
       userId: userId || null,
       title: title || "",
-      status: status || "",
+      status: resolvedStatus,
       columnId: column?.id ?? null,
       dueDate: dueDate || null,
       description: description || "",
