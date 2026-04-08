@@ -1,10 +1,20 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
-import { ArrowRight, Calendar, Filter, Plus, User, X } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  Filter,
+  Plus,
+  Rows3,
+  Table2,
+  User,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BacklogListView from "@/components/backlog-list-view";
+import BacklogTableView from "@/components/backlog-list-view/backlog-table-view";
 import ProjectLayout from "@/components/common/project-layout";
 import SortControl from "@/components/common/sort-control";
 import PageTitle from "@/components/page-title";
@@ -78,7 +88,8 @@ function RouteComponent() {
     });
   }, [navigate]);
 
-  const { setViewMode } = useUserPreferencesStore();
+  const { setViewMode, backlogViewMode, setBacklogViewMode } =
+    useUserPreferencesStore();
 
   useRegisterShortcuts({
     sequentialShortcuts: {
@@ -103,6 +114,7 @@ function RouteComponent() {
             params: { workspaceId, projectId },
           });
         },
+        [shortcuts.view.table]: () => setBacklogViewMode("table"),
         [shortcuts.view.backlog]: () => {},
       },
     },
@@ -679,6 +691,33 @@ function RouteComponent() {
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <div className="inline-flex items-center gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
+                      backlogViewMode === "list"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    }`}
+                    onClick={() => setBacklogViewMode("list")}
+                  >
+                    <Rows3 className="h-3 w-3" />
+                    {t("tasks:view.list")}
+                  </button>
+                  <button
+                    type="button"
+                    className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
+                      backlogViewMode === "table"
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                    }`}
+                    onClick={() => setBacklogViewMode("table")}
+                  >
+                    <Table2 className="h-3 w-3" />
+                    {t("tasks:view.table")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -686,10 +725,14 @@ function RouteComponent() {
 
         <div className="flex-1 overflow-hidden bg-card h-full">
           {sortedProject ? (
-            <BacklogListView
-              project={sortedProject}
-              disableDragDrop={sort.field !== "position"}
-            />
+            backlogViewMode === "table" ? (
+              <BacklogTableView project={sortedProject} />
+            ) : (
+              <BacklogListView
+                project={sortedProject}
+                disableDragDrop={sort.field !== "position"}
+              />
+            )
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center space-y-4">

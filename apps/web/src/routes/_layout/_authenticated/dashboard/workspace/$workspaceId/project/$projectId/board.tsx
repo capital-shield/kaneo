@@ -8,6 +8,7 @@ import KanbanBoard from "@/components/kanban-board";
 import ListView from "@/components/list-view";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
+import TableView from "@/components/table-view";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Input } from "@/components/ui/input";
 import { shortcuts } from "@/constants/shortcuts";
@@ -109,6 +110,7 @@ function RouteComponent() {
       [shortcuts.view.prefix]: {
         [shortcuts.view.board]: () => setViewMode("board"),
         [shortcuts.view.list]: () => setViewMode("list"),
+        [shortcuts.view.table]: () => setViewMode("table"),
         [shortcuts.view.gantt]: () =>
           navigate({
             to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
@@ -216,7 +218,7 @@ function RouteComponent() {
       headerActions={boardHeaderSearch}
     >
       <PageTitle
-        title={`${project?.name} — ${viewMode === "board" ? t("tasks:view.board") : t("tasks:view.list")}`}
+        title={`${project?.name} — ${viewMode === "board" ? t("tasks:view.board") : viewMode === "table" ? t("tasks:view.table") : t("tasks:view.list")}`}
         hideAppName
       />
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
@@ -242,6 +244,8 @@ function RouteComponent() {
                 project={sortedProject}
                 disableDragDrop={sort.field !== "position"}
               />
+            ) : viewMode === "table" ? (
+              <TableView project={sortedProject} />
             ) : (
               <ListView
                 project={sortedProject}
