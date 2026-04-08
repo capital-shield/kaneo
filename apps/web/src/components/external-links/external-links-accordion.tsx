@@ -1,11 +1,13 @@
 import {
   ChevronDown,
   ChevronRight,
+  FolderGit,
   Github,
   GitMerge,
   GitPullRequest,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -19,10 +21,19 @@ interface ExternalLinksAccordionProps {
   isLoading?: boolean;
 }
 
+function isGiteaResourceLink(link: ExternalLink) {
+  if (link.integration?.type === "gitea") {
+    return true;
+  }
+  const from = link.metadata?.createdFrom;
+  return from === "gitea" || from === "gitea-import";
+}
+
 export function ExternalLinksAccordion({
   externalLinks,
   isLoading,
 }: ExternalLinksAccordionProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
 
   const linksWithoutRedundantBranches = useMemo(() => {
@@ -48,14 +59,16 @@ export function ExternalLinksAccordion({
 
     if (isIssue) {
       return (
-        <span className="text-xs font-medium text-muted-foreground">Issue</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {t("settings:externalLinks.issue")}
+        </span>
       );
     }
 
     if (isBranch) {
       return (
         <span className="text-xs font-medium text-muted-foreground">
-          Branch
+          {t("settings:externalLinks.branch")}
         </span>
       );
     }
@@ -66,7 +79,7 @@ export function ExternalLinksAccordion({
       return (
         <span className="flex items-center gap-1 font-medium text-info-foreground text-xs">
           <GitMerge className="size-3" />
-          Merged
+          {t("settings:externalLinks.merged")}
         </span>
       );
     }
@@ -75,7 +88,7 @@ export function ExternalLinksAccordion({
       return (
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
           <GitPullRequest className="size-3" />
-          Draft
+          {t("settings:externalLinks.draft")}
         </span>
       );
     }
@@ -83,7 +96,7 @@ export function ExternalLinksAccordion({
     return (
       <span className="flex items-center gap-1 font-medium text-success-foreground text-xs">
         <GitPullRequest className="size-3" />
-        Open
+        {t("settings:externalLinks.open")}
       </span>
     );
   };
@@ -101,7 +114,9 @@ export function ExternalLinksAccordion({
           ) : (
             <ChevronRight className="size-4 text-muted-foreground" />
           )}
-          <span className="text-sm text-muted-foreground">Resources</span>
+          <span className="text-sm text-muted-foreground">
+            {t("settings:externalLinks.resources")}
+          </span>
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -114,7 +129,11 @@ export function ExternalLinksAccordion({
               rel="noopener noreferrer"
               className="group flex items-center gap-3 py-2 px-3 rounded-md hover:bg-accent/50 transition-colors"
             >
-              <Github className="size-4 flex-shrink-0 text-muted-foreground" />
+              {isGiteaResourceLink(link) ? (
+                <FolderGit className="size-4 flex-shrink-0 text-muted-foreground" />
+              ) : (
+                <Github className="size-4 flex-shrink-0 text-muted-foreground" />
+              )}
               <span className="text-sm truncate flex-1 text-foreground/90 group-hover:text-foreground">
                 {link.title || link.externalId}
                 {link.resourceType !== "branch" && (

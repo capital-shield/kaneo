@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,11 +23,13 @@ import { useUpdateTaskDueDate } from "@/hooks/mutations/task/use-update-task-due
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
+import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { getColumnIcon } from "@/lib/column";
 import { generateLink } from "@/lib/generate-link";
+import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
@@ -48,8 +51,22 @@ export default function TaskCardContextMenuContent({
   taskCardContext,
   onDeleteClick,
 }: TaskCardContextMenuContentProps) {
+  const { t } = useTranslation();
   const { project } = useProjectStore();
   const queryClient = useQueryClient();
+  const { data: columnsData = [] } = useGetColumns(taskCardContext.projectId);
+  const columns =
+    project?.columns && project.columns.length > 0
+      ? project.columns.map((col) => ({
+          slug: col.id,
+          name: col.name,
+          isFinal: col.isFinal,
+        }))
+      : columnsData.map((col) => ({
+          slug: col.slug,
+          name: col.name,
+          isFinal: col.isFinal,
+        }));
   const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
     taskCardContext.worskpaceId,
   );
@@ -133,7 +150,7 @@ export default function TaskCardContextMenuContent({
     const taskLink = generateLink(path);
 
     navigator.clipboard.writeText(taskLink);
-    toast.success("Task link copied!");
+    toast.success(t("tasks:contextMenu.copyLinkSuccess"));
   };
 
   const handleChange = async (field: keyof Task, value: string | Date) => {
@@ -165,44 +182,46 @@ export default function TaskCardContextMenuContent({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update task",
+        error instanceof Error ? error.message : t("tasks:update.error"),
       );
     } finally {
-      toast.success("Task updated successfully");
+      toast.success(t("tasks:update.success"));
     }
   };
 
   return (
     <ContextMenuContent className="w-46">
       <ContextMenuItem onClick={handleCopyTaskLink}>
-        <span>Copy link</span>
+        <span>{t("tasks:contextMenu.copyLink")}</span>
       </ContextMenuItem>
 
       <ContextMenuSeparator />
 
       <ContextMenuSub>
         <ContextMenuSubTrigger className="gap-2">
-          <span>Priority</span>
+          <span>{t("tasks:priority.label")}</span>
         </ContextMenuSubTrigger>
         <ContextMenuSubContent className="w-48">
           <ContextMenuCheckboxItem
             key="no-priority"
             checked={task.priority === "no-priority"}
             onCheckedChange={() => handleChange("priority", "no-priority")}
+            closeOnClick
             className="[&_svg]:text-muted-foreground"
           >
             {getPriorityIcon("no-priority")}
-            <span>No Priority</span>
+            <span>{getPriorityLabel("no-priority")}</span>
           </ContextMenuCheckboxItem>
           {["low", "medium", "high", "urgent"].map((priority) => (
             <ContextMenuCheckboxItem
               key={priority}
               checked={task.priority === priority}
               onCheckedChange={() => handleChange("priority", priority)}
+              closeOnClick
               className="[&_svg]:text-muted-foreground"
             >
               {getPriorityIcon(priority)}
-              <span className="capitalize">{priority}</span>
+              <span className="capitalize">{getPriorityLabel(priority)}</span>
             </ContextMenuCheckboxItem>
           ))}
         </ContextMenuSubContent>
@@ -210,17 +229,18 @@ export default function TaskCardContextMenuContent({
 
       <ContextMenuSub>
         <ContextMenuSubTrigger>
-          <span>Status</span>
+          <span>{t("tasks:status.label")}</span>
         </ContextMenuSubTrigger>
         <ContextMenuSubContent className="w-48">
-          {(project?.columns ?? []).map((col) => (
+          {columns.map((col) => (
             <ContextMenuCheckboxItem
-              key={col.id}
-              checked={task.status === col.id}
-              onCheckedChange={() => handleChange("status", col.id)}
+              key={col.slug}
+              checked={task.status === col.slug}
+              onCheckedChange={() => handleChange("status", col.slug)}
+              closeOnClick
               className="[&_svg]:text-muted-foreground"
             >
-              {getColumnIcon(col.id, col.isFinal)}
+              {getColumnIcon(col.slug, col.isFinal)}
               <span>{col.name}</span>
             </ContextMenuCheckboxItem>
           ))}
@@ -229,9 +249,9 @@ export default function TaskCardContextMenuContent({
 
       <ContextMenuSub>
         <ContextMenuSubTrigger>
-          <span>Due date</span>
+          <span>{t("tasks:dueDate.label")}</span>
         </ContextMenuSubTrigger>
-        <ContextMenuSubContent className="w-64 p-0">
+        <ContextMenuSubContent className="w-fit min-w-0 p-0">
           <div className="p-2">
             <Calendar
               mode="single"
@@ -242,12 +262,12 @@ export default function TaskCardContextMenuContent({
                     ...task,
                     dueDate: date?.toISOString() || null,
                   });
-                  toast.success("Task due date updated successfully");
+                  toast.success(t("tasks:dueDate.updateSuccess"));
                 } catch (error) {
                   toast.error(
                     error instanceof Error
                       ? error.message
-                      : "Failed to update task due date",
+                      : t("tasks:dueDate.updateError"),
                   );
                 }
               }}
@@ -265,18 +285,18 @@ export default function TaskCardContextMenuContent({
                       ...task,
                       dueDate: null,
                     });
-                    toast.success("Task due date cleared");
+                    toast.success(t("tasks:dueDate.clearSuccess"));
                   } catch (error) {
                     toast.error(
                       error instanceof Error
                         ? error.message
-                        : "Failed to clear due date",
+                        : t("tasks:dueDate.clearError"),
                     );
                   }
                 }}
               >
                 <X className="h-4 w-4" />
-                <span>Clear date</span>
+                <span>{t("tasks:dueDate.clear")}</span>
               </ContextMenuItem>
             </>
           )}
@@ -286,28 +306,30 @@ export default function TaskCardContextMenuContent({
       {usersOptions && (
         <ContextMenuSub>
           <ContextMenuSubTrigger>
-            <span>Assignee</span>
+            <span>{t("tasks:assignee.label")}</span>
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuCheckboxItem
               checked={!task.userId}
               onCheckedChange={() => handleChange("userId", "")}
+              closeOnClick
             >
               <div
                 className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
-                title="Unassigned"
+                title={t("tasks:assignee.unassigned")}
               >
                 <span className="text-[10px] font-medium text-muted-foreground">
                   ?
                 </span>{" "}
               </div>
-              Unassigned
+              {t("tasks:assignee.unassigned")}
             </ContextMenuCheckboxItem>
             {usersOptions.map((user) => (
               <ContextMenuCheckboxItem
                 key={user.value}
                 checked={task.userId === user.value}
                 onCheckedChange={() => handleChange("userId", user.value ?? "")}
+                closeOnClick
               >
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={user.image ?? ""} alt={user.name || ""} />
@@ -354,11 +376,11 @@ export default function TaskCardContextMenuContent({
       <ContextMenuSeparator />
 
       <ContextMenuItem onClick={() => handleChange("status", "archived")}>
-        <span>Archive</span>
+        <span>{t("tasks:actions.archive")}</span>
       </ContextMenuItem>
 
       <ContextMenuItem onClick={() => handleChange("status", "planned")}>
-        <span>Mark as planned</span>
+        <span>{t("tasks:actions.markAsPlanned")}</span>
       </ContextMenuItem>
 
       <ContextMenuSeparator />
@@ -372,7 +394,7 @@ export default function TaskCardContextMenuContent({
           }, 0);
         }}
       >
-        <span>Delete...</span>
+        <span>{t("tasks:actions.delete")}</span>
       </ContextMenuItem>
     </ContextMenuContent>
   );

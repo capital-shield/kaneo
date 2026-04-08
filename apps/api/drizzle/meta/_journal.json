@@ -99,6 +99,104 @@
 			"when": 1772660160328,
 			"tag": "0013_quiet_gladiator",
 			"breakpoints": true
+		},
+		{
+			"idx": 14,
+			"version": "7",
+			"when": 1773259300000,
+			"tag": "0014_private_assets",
+			"breakpoints": true
+		},
+		{
+			"idx": 15,
+			"version": "7",
+			"when": 1773947411304,
+			"tag": "0015_add_comment_and_archival",
+			"breakpoints": true
+		},
+		{
+			"idx": 16,
+			"version": "7",
+			"when": 1773952461673,
+			"tag": "0016_add_task_relation",
+			"breakpoints": true
+		},
+		{
+			"idx": 17,
+			"version": "7",
+			"when": 1774269662424,
+			"tag": "0017_white_omega_flight",
+			"breakpoints": true
+		},
+		{
+			"idx": 18,
+			"version": "7",
+			"when": 1774726270729,
+			"tag": "0018_motionless_luckman",
+			"breakpoints": true
+		},
+		{
+			"idx": 19,
+			"version": "7",
+			"when": 1774823200346,
+			"tag": "0019_sloppy_meteorite",
+			"breakpoints": true
+		},
+		{
+			"idx": 20,
+			"version": "7",
+			"when": 1774908000000,
+			"tag": "0020_gitea_dedup_guards",
+			"breakpoints": true
+		},
+		{
+			"idx": 21,
+			"version": "7",
+			"when": 1774942282393,
+			"tag": "0021_pretty_smiling_tiger",
+			"breakpoints": true
+		},
+		{
+			"idx": 22,
+			"version": "7",
+			"when": 1774944216644,
+			"tag": "0022_material_electro",
+			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1775215568801,
+			"tag": "0023_cold_omega_red",
+			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "7",
+			"when": 1775215568802,
+			"tag": "0024_device_code_timestamps",
+			"breakpoints": true
+		},
+		{
+			"idx": 25,
+			"version": "7",
+			"when": 1775156843372,
+			"tag": "0025_early_owl",
+			"breakpoints": true
+		},
+		{
+			"idx": 26,
+			"version": "7",
+			"when": 1775102400000,
+			"tag": "0026_encrypt_notification_preference_secrets",
+			"breakpoints": true
+		},
+		{
+			"idx": 27,
+			"version": "7",
+			"when": 1775245262351,
+			"tag": "0027_chilly_namorita",
+			"breakpoints": true
 		}
 	]
 }

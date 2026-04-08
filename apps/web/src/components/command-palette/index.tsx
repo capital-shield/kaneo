@@ -1,6 +1,7 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { ArrowDownIcon, ArrowUpIcon, CornerDownLeftIcon } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SearchCommandMenu from "@/components/search-command-menu";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import CreateWorkspaceModal from "@/components/shared/modals/create-workspace-modal";
@@ -41,14 +42,18 @@ type PaletteGroup = {
 };
 
 function CommandPalette() {
+  const { t } = useTranslation();
   const { setTheme } = useUserPreferencesStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: workspace } = useActiveWorkspace();
   const [open, setOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
+  const projectIdFromRoute =
+    location.pathname.match(/\/project\/([^/]+)/)?.[1] ?? undefined;
 
   useRegisterShortcuts({
     shortcuts: {
@@ -94,11 +99,11 @@ function CommandPalette() {
     () => [
       {
         value: "suggestions",
-        label: "Suggestions",
+        label: t("navigation:commandPalette.suggestions"),
         items: [
           {
             value: "projects",
-            label: "Projects",
+            label: t("navigation:commandPalette.projects"),
             shortcut: `${shortcuts.project.prefix} ${shortcuts.project.list}`,
             onRun: () => {
               if (!workspace?.id) return;
@@ -110,13 +115,13 @@ function CommandPalette() {
           },
           {
             value: "search",
-            label: "Search",
+            label: t("navigation:commandPalette.search"),
             shortcut: shortcuts.search.prefix,
             onRun: () => setIsSearchOpen(true),
           },
           {
             value: "members",
-            label: "Members",
+            label: t("navigation:commandPalette.members"),
             onRun: () => {
               if (!workspace?.id) return;
               navigate({
@@ -127,13 +132,13 @@ function CommandPalette() {
           },
           {
             value: "create-task",
-            label: "Create task",
+            label: t("navigation:commandPalette.createTask"),
             shortcut: `${shortcuts.task.prefix} ${shortcuts.task.create}`,
             onRun: () => setIsCreateTaskOpen(true),
           },
           {
             value: "create-project",
-            label: "Create project",
+            label: t("navigation:commandPalette.createProject"),
             shortcut: `${shortcuts.project.prefix} ${shortcuts.project.create}`,
             onRun: () => setIsCreateProjectOpen(true),
           },
@@ -141,32 +146,32 @@ function CommandPalette() {
       },
       {
         value: "commands",
-        label: "Commands",
+        label: t("navigation:commandPalette.commands"),
         items: [
           {
             value: "create-workspace",
-            label: "Create workspace",
+            label: t("navigation:commandPalette.createWorkspace"),
             shortcut: `${shortcuts.workspace.prefix} ${shortcuts.workspace.create}`,
             onRun: () => setIsCreateWorkspaceOpen(true),
           },
           {
             value: "theme-light",
-            label: "Light theme",
+            label: t("navigation:commandPalette.lightTheme"),
             onRun: () => setTheme("light"),
           },
           {
             value: "theme-dark",
-            label: "Dark theme",
+            label: t("navigation:commandPalette.darkTheme"),
             onRun: () => setTheme("dark"),
           },
           {
             value: "theme-system",
-            label: "System theme",
+            label: t("navigation:commandPalette.systemTheme"),
             onRun: () => setTheme("system"),
           },
           {
             value: "keyboard-shortcuts",
-            label: "Keyboard shortcuts",
+            label: t("navigation:commandPalette.keyboardShortcuts"),
             shortcut: "?",
             onRun: () => {
               setTimeout(() => {
@@ -179,7 +184,7 @@ function CommandPalette() {
         ],
       },
     ],
-    [navigate, setTheme, workspace?.id],
+    [navigate, setTheme, t, workspace?.id],
   );
 
   const shortcutHandlers = useMemo(() => {
@@ -243,9 +248,13 @@ function CommandPalette() {
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandDialogPopup>
           <Command items={groupedItems}>
-            <CommandInput placeholder="Search for apps and commands..." />
+            <CommandInput
+              placeholder={t("navigation:commandPalette.inputPlaceholder")}
+            />
             <CommandPanel>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>
+                {t("navigation:commandPalette.empty")}
+              </CommandEmpty>
               <CommandList>
                 {(group: PaletteGroup, groupIndex: number) => (
                   <Fragment key={group.value}>
@@ -289,18 +298,18 @@ function CommandPalette() {
                       <ArrowDownIcon />
                     </Kbd>
                   </KbdGroup>
-                  <span>Navigate</span>
+                  <span>{t("navigation:commandPalette.footer.navigate")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Kbd>
                     <CornerDownLeftIcon />
                   </Kbd>
-                  <span>Open</span>
+                  <span>{t("navigation:commandPalette.footer.open")}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Kbd>Esc</Kbd>
-                <span>Close</span>
+                <span>{t("navigation:commandPalette.footer.close")}</span>
               </div>
             </CommandFooter>
           </Command>
@@ -310,6 +319,7 @@ function CommandPalette() {
       <SearchCommandMenu open={isSearchOpen} setOpen={setIsSearchOpen} />
       <CreateTaskModal
         open={isCreateTaskOpen}
+        projectId={projectIdFromRoute}
         onClose={() => setIsCreateTaskOpen(false)}
       />
       <CreateWorkspaceModal

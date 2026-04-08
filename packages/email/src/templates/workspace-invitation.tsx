@@ -1,16 +1,7 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import React from "react";
+import { resolveEmailLocale } from "./resolve-locale";
+import { EmailShell, styles } from "./shell";
 
 void React;
 
@@ -20,7 +11,39 @@ export type WorkspaceInvitationEmailProps = {
   inviterEmail: string;
   invitationLink: string;
   to: string;
+  locale?: string | null;
 };
+
+const messages = {
+  en: {
+    preview: "You're invited to {{workspaceName}} on Kaneo",
+    title: "Join {{workspaceName}}",
+    subtitle:
+      "{{inviterName}} ({{inviterEmail}}) invited you to collaborate in Kaneo.",
+    cta: "Accept invitation",
+    sameEmail: "You can accept with the same email that received this message.",
+    ignore: "If this wasn't expected, you can safely ignore this email.",
+    footer: "Kaneo workspace invitation",
+  },
+  de: {
+    preview: "Du wurdest zu {{workspaceName}} auf Kaneo eingeladen",
+    title: "{{workspaceName}} beitreten",
+    subtitle:
+      "{{inviterName}} ({{inviterEmail}}) hat dich eingeladen, in Kaneo zusammenzuarbeiten.",
+    cta: "Einladung annehmen",
+    sameEmail:
+      "Du kannst die Einladung mit derselben E-Mail-Adresse annehmen, die diese Nachricht erhalten hat.",
+    ignore:
+      "Falls du damit nicht gerechnet hast, kannst du diese E-Mail einfach ignorieren.",
+    footer: "Kaneo Workspace-Einladung",
+  },
+} as const;
+
+function interpolate(template: string, values: Record<string, string>) {
+  return template.replace(/\{\{(\w+)\}\}/g, (_match, key: string) => {
+    return values[key] ?? "";
+  });
+}
 
 const WorkspaceInvitationEmail = ({
   workspaceName,
@@ -28,34 +51,29 @@ const WorkspaceInvitationEmail = ({
   inviterEmail,
   invitationLink,
   to,
-}: WorkspaceInvitationEmailProps) => (
-  <Html>
-    <Head />
-    <Body style={main}>
-      <Preview>You've been invited to join {workspaceName} on Kaneo.</Preview>
-      <Container style={container}>
-        <Heading style={heading}>Join {workspaceName}</Heading>
-        <Section style={body}>
-          <Text style={paragraph}>
-            {inviterName} ({inviterEmail}) has invited you to join{" "}
-            {workspaceName} on Kaneo.
-          </Text>
-          <Text style={paragraph}>
-            Click the button below to accept the invitation:
-          </Text>
-          <Link style={buttonStyle} href={`${invitationLink}?email=${to}`}>
-            Accept Invitation
-          </Link>
-          <Text style={paragraph}>
-            If you didn't expect this invitation, you can ignore this email.
-          </Text>
-          <Hr />
-          <Text style={footerParagraph}>Kaneo</Text>
-        </Section>
-      </Container>
-    </Body>
-  </Html>
-);
+  locale,
+}: WorkspaceInvitationEmailProps) => {
+  const copy = messages[resolveEmailLocale(locale)];
+  const values = { workspaceName, inviterName, inviterEmail };
+
+  return (
+    <EmailShell
+      preview={interpolate(copy.preview, values)}
+      title={interpolate(copy.title, values)}
+      subtitle={interpolate(copy.subtitle, values)}
+    >
+      <Section>
+        <Link style={styles.button} href={`${invitationLink}?email=${to}`}>
+          {copy.cta}
+        </Link>
+        <Text style={styles.paragraph}>{copy.sameEmail}</Text>
+        <Text style={styles.muted}>{copy.ignore}</Text>
+        <Section style={styles.divider} />
+        <Text style={styles.footer}>{copy.footer}</Text>
+      </Section>
+    </EmailShell>
+  );
+};
 
 WorkspaceInvitationEmail.PreviewProps = {
   workspaceName: "Acme Inc",
@@ -66,46 +84,3 @@ WorkspaceInvitationEmail.PreviewProps = {
 } as WorkspaceInvitationEmailProps;
 
 export default WorkspaceInvitationEmail;
-
-const main = {
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
-};
-
-const container = {
-  margin: "0 auto",
-  padding: "20px 25px 0px",
-};
-
-const heading = {
-  fontSize: "28px",
-  fontWeight: "bold",
-};
-
-const body = {
-  margin: "24px 0",
-};
-
-const paragraph = {
-  fontSize: "16px",
-  lineHeight: "26px",
-};
-
-const buttonStyle = {
-  display: "inline-block",
-  fontSize: "16px",
-  fontWeight: "600",
-  textAlign: "center" as const,
-  textDecoration: "none",
-  padding: "12px 24px",
-  margin: "24px 0",
-  backgroundColor: "#18181b",
-  color: "#ffffff",
-  borderRadius: "8px",
-};
-
-const footerParagraph = {
-  fontSize: "14px",
-  lineHeight: "20px",
-  color: "#6B7280",
-};

@@ -1,4 +1,6 @@
 import type { Editor } from "@tiptap/core";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Table } from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
@@ -21,11 +23,14 @@ import {
   List,
   ListOrdered,
   ListTodo,
+  Paperclip,
   UnderlineIcon,
 } from "lucide-react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { bundledLanguages, type Highlighter } from "shiki";
+import { AttachmentCard } from "@/components/task/extensions/attachment-card";
 import { EmbedBlock } from "@/components/task/extensions/embed-block";
 import { KaneoIssueLink } from "@/components/task/extensions/kaneo-issue-link";
 import {
@@ -34,6 +39,7 @@ import {
 } from "@/components/task/extensions/shiki-code-block";
 import { TaskItemWithCheckbox } from "@/components/task/extensions/task-item-with-checkbox";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogPopup } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -52,12 +58,16 @@ import {
   normalizeUrl,
 } from "@/lib/editor-url-utils";
 import { getSharedShikiHighlighter } from "@/lib/shiki-highlighter";
+import { toast } from "@/lib/toast";
+import { uploadTaskImage } from "@/lib/upload-task-image";
 
 type CommentEditorProps = {
   value: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
+  contentClassName?: string;
+  proseClassName?: string;
   autoFocus?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
@@ -65,6 +75,11 @@ type CommentEditorProps = {
   slashMenuPosition?: "absolute" | "fixed";
   onSubmitShortcut?: () => void;
   onCancelShortcut?: () => void;
+  taskId?: string;
+  uploadSurface?: "description" | "comment";
+  ensureTaskId?: () => Promise<string | null>;
+  showQuickAttachButton?: boolean;
+  onAttachActionChange?: (attach: (() => void) | null) => void;
 };
 
 type SlashRange = { from: number; to: number };
@@ -94,26 +109,28 @@ type HoveredCodeBlock = {
   left: number;
 };
 
-const COMMENT_CODE_LANGUAGE_OPTIONS = [
-  { value: "bash", label: "Bash" },
-  { value: "csharp", label: "C#" },
-  { value: "cpp", label: "C++" },
-  { value: "css", label: "CSS" },
-  { value: "go", label: "Golang" },
-  { value: "graphql", label: "GraphQL" },
-  { value: "html", label: "HTML" },
-  { value: "json", label: "JSON" },
-  { value: "java", label: "Java" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "markdown", label: "Markdown" },
-  { value: "plaintext", label: "Plaintext" },
-  { value: "python", label: "Python" },
-  { value: "rust", label: "Rust" },
-  { value: "sql", label: "SQL" },
-  { value: "swift", label: "Swift" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "yaml", label: "YAML" },
-];
+const CODE_LANG_VALUES = [
+  "bash",
+  "csharp",
+  "cpp",
+  "css",
+  "go",
+  "graphql",
+  "html",
+  "json",
+  "java",
+  "javascript",
+  "markdown",
+  "plaintext",
+  "python",
+  "rust",
+  "sql",
+  "swift",
+  "typescript",
+  "yaml",
+] as const;
+
+type EmbedComposerErrorKey = "embedErrorInvalidUrl" | "embedErrorYoutubeOnly";
 
 const COMMENT_SHIKI_LANGUAGE_ALIASES: Record<string, string> = {
   plaintext: "text",
@@ -133,14 +150,17 @@ type EmbedComposerState = {
   url: string;
   top: number;
   left: number;
+  linkRange?: { from: number; to: number };
   range?: SlashRange;
 };
 
 export default function CommentEditor({
   value,
   onChange,
-  placeholder = "Leave a comment...",
+  placeholder,
   className,
+  contentClassName,
+  proseClassName,
   autoFocus = false,
   disabled = false,
   readOnly = false,
@@ -148,12 +168,33 @@ export default function CommentEditor({
   slashMenuPosition = "absolute",
   onSubmitShortcut,
   onCancelShortcut,
+  taskId,
+  uploadSurface = "comment",
+  ensureTaskId,
+  showQuickAttachButton = true,
+  onAttachActionChange,
 }: CommentEditorProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder =
+    placeholder ?? t("activity:comment.leavePlaceholder");
   const editorShellRef = useRef<HTMLDivElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const dragDepthRef = useRef(0);
   const isSyncingRef = useRef(false);
   const hasHydratedRef = useRef(false);
   const latestValueRef = useRef(normalizeMarkdown(value || ""));
   const lastEditorRef = useRef<Editor | null>(null);
+  const taskIdRef = useRef(taskId);
+  const ensureTaskIdRef = useRef(ensureTaskId);
+  const uploadSurfaceRef = useRef(uploadSurface);
+  const onSubmitShortcutRef = useRef(onSubmitShortcut);
+  const onCancelShortcutRef = useRef(onCancelShortcut);
+  onSubmitShortcutRef.current = onSubmitShortcut;
+  onCancelShortcutRef.current = onCancelShortcut;
+  const pendingImageInsertRef = useRef<{
+    editor: Editor;
+    range?: SlashRange;
+  } | null>(null);
   const [slashMenu, setSlashMenu] = useState<SlashMenuState | null>(null);
   const [shikiHighlighter, setShikiHighlighter] = useState<Highlighter | null>(
     null,
@@ -169,8 +210,21 @@ export default function CommentEditor({
   const [embedComposer, setEmbedComposer] = useState<EmbedComposerState | null>(
     null,
   );
-  const [embedComposerError, setEmbedComposerError] = useState("");
-  const codeLanguages = useMemo(() => COMMENT_CODE_LANGUAGE_OPTIONS, []);
+  const [embedComposerError, setEmbedComposerError] =
+    useState<EmbedComposerErrorKey | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
+  const codeLanguages = useMemo(
+    () =>
+      CODE_LANG_VALUES.map((value) => ({
+        value,
+        label: t(`activity:comment.editor.codeLang.${value}`),
+      })),
+    [t],
+  );
   const availableShikiLanguages = useMemo(
     () => new Set(Object.keys(bundledLanguages)),
     [],
@@ -202,23 +256,181 @@ export default function CommentEditor({
     [slashMenuPosition],
   );
 
+  useEffect(() => {
+    taskIdRef.current = taskId;
+    ensureTaskIdRef.current = ensureTaskId;
+    uploadSurfaceRef.current = uploadSurface;
+  }, [ensureTaskId, taskId, uploadSurface]);
+
+  const insertUploadedAsset = useCallback(
+    (
+      activeEditor: Editor,
+      asset: Awaited<ReturnType<typeof uploadTaskImage>>,
+      range?: SlashRange,
+    ) => {
+      const chain = activeEditor.chain().focus();
+
+      if (range) {
+        chain.deleteRange(range);
+      } else {
+        const { selection } = activeEditor.state;
+        if (!selection.empty) {
+          chain.setTextSelection(selection.to);
+        }
+      }
+
+      if (asset.kind === "image") {
+        chain
+          .setImage({
+            src: asset.url,
+            alt: asset.alt,
+          })
+          .run();
+        return;
+      }
+
+      chain
+        .insertContent({
+          type: "attachmentCard",
+          attrs: {
+            url: asset.url,
+            filename: asset.filename,
+            mimeType: asset.mimeType,
+            size: asset.size,
+          },
+        })
+        .run();
+    },
+    [],
+  );
+
+  const handleAssetFileUpload = useCallback(
+    async (file: File, targetEditor?: Editor | null, range?: SlashRange) => {
+      const activeEditor = targetEditor || lastEditorRef.current;
+      const resolvedTaskId =
+        taskIdRef.current ?? (await ensureTaskIdRef.current?.());
+
+      if (!activeEditor || !resolvedTaskId) {
+        toast.error(t("activity:comment.editor.uploadsOnlyOnSavedTasks"));
+        return;
+      }
+
+      const loadingToast = toast.loading(
+        t("activity:comment.editor.uploadingFile"),
+      );
+
+      try {
+        const uploadedAsset = await uploadTaskImage({
+          taskId: resolvedTaskId,
+          surface: uploadSurfaceRef.current,
+          file,
+        });
+        insertUploadedAsset(activeEditor, uploadedAsset, range);
+
+        toast.dismiss(loadingToast);
+        toast.success(
+          uploadedAsset.kind === "image"
+            ? t("activity:comment.editor.imageUploaded")
+            : t("activity:comment.editor.fileAttached"),
+        );
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : t("activity:comment.editor.failedToUploadFile"),
+        );
+      }
+    },
+    [insertUploadedAsset, t],
+  );
+
+  const canUploadFiles = Boolean(taskId || ensureTaskId);
+
+  const openImagePicker = useCallback(
+    (activeEditor?: Editor | null, range?: SlashRange) => {
+      pendingImageInsertRef.current = activeEditor
+        ? { editor: activeEditor, range }
+        : null;
+      imageInputRef.current?.click();
+    },
+    [],
+  );
+
+  const hasFileDrag = useCallback((event: React.DragEvent<HTMLElement>) => {
+    return Array.from(event.dataTransfer?.items || []).some(
+      (item) => item.kind === "file",
+    );
+  }, []);
+
+  const handleShellDragEnter = useCallback(
+    (event: React.DragEvent<HTMLElement>) => {
+      if (readOnly || disabled || !canUploadFiles || !hasFileDrag(event)) {
+        return;
+      }
+      event.preventDefault();
+      dragDepthRef.current += 1;
+      setIsDragActive(true);
+    },
+    [canUploadFiles, disabled, hasFileDrag, readOnly],
+  );
+
+  const handleShellDragOver = useCallback(
+    (event: React.DragEvent<HTMLElement>) => {
+      if (readOnly || disabled || !canUploadFiles || !hasFileDrag(event)) {
+        return;
+      }
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      if (!isDragActive) {
+        setIsDragActive(true);
+      }
+    },
+    [canUploadFiles, disabled, hasFileDrag, isDragActive, readOnly],
+  );
+
+  const handleShellDragLeave = useCallback(
+    (event: React.DragEvent<HTMLElement>) => {
+      if (readOnly || disabled || !canUploadFiles || !hasFileDrag(event)) {
+        return;
+      }
+      event.preventDefault();
+      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+      if (dragDepthRef.current === 0) {
+        setIsDragActive(false);
+      }
+    },
+    [canUploadFiles, disabled, hasFileDrag, readOnly],
+  );
+
+  const handleShellDrop = useCallback(
+    (event: React.DragEvent<HTMLElement>) => {
+      if (readOnly || disabled || !canUploadFiles || !hasFileDrag(event)) {
+        return;
+      }
+      dragDepthRef.current = 0;
+      setIsDragActive(false);
+    },
+    [canUploadFiles, disabled, hasFileDrag, readOnly],
+  );
+
   const slashCommands = useMemo<SlashCommand[]>(
     () => [
       {
         id: "paragraph",
-        label: "Text",
+        label: t("activity:comment.editor.slashParagraph"),
         group: "text",
-        search: "text paragraph normal",
+        search: t("activity:comment.editor.searchParagraph"),
         run: (activeEditor, range) => {
           activeEditor.chain().focus().deleteRange(range).setParagraph().run();
         },
       },
       {
         id: "heading-2",
-        label: "Heading",
+        label: t("activity:comment.editor.slashHeading"),
         group: "text",
         shortcut: "Ctrl Alt 2",
-        search: "heading title h2",
+        search: t("activity:comment.editor.searchHeading"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -230,10 +442,10 @@ export default function CommentEditor({
       },
       {
         id: "bullet-list",
-        label: "Bulleted list",
+        label: t("activity:comment.editor.slashBulletList"),
         group: "lists",
         shortcut: "Ctrl Alt 8",
-        search: "list bullet unordered",
+        search: t("activity:comment.editor.searchBulletList"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -245,9 +457,9 @@ export default function CommentEditor({
       },
       {
         id: "task-list",
-        label: "To-do list",
+        label: t("activity:comment.editor.slashTaskList"),
         group: "lists",
-        search: "todo to-do checklist checkbox task list",
+        search: t("activity:comment.editor.searchTaskList"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -259,10 +471,10 @@ export default function CommentEditor({
       },
       {
         id: "ordered-list",
-        label: "Numbered list",
+        label: t("activity:comment.editor.slashOrderedList"),
         group: "lists",
         shortcut: "Ctrl Alt 9",
-        search: "list ordered numbered",
+        search: t("activity:comment.editor.searchOrderedList"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -274,9 +486,9 @@ export default function CommentEditor({
       },
       {
         id: "blockquote",
-        label: "Quote",
+        label: t("activity:comment.editor.slashQuote"),
         group: "insert",
-        search: "quote blockquote",
+        search: t("activity:comment.editor.searchQuote"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -288,10 +500,10 @@ export default function CommentEditor({
       },
       {
         id: "code-block",
-        label: "Code block",
+        label: t("activity:comment.editor.slashCodeBlock"),
         group: "insert",
         shortcut: "Ctrl Alt \\",
-        search: "code snippet",
+        search: t("activity:comment.editor.searchCodeBlock"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -303,9 +515,9 @@ export default function CommentEditor({
       },
       {
         id: "table",
-        label: "Table",
+        label: t("activity:comment.editor.slashTable"),
         group: "insert",
-        search: "table grid",
+        search: t("activity:comment.editor.searchTable"),
         run: (activeEditor, range) => {
           activeEditor
             .chain()
@@ -315,8 +527,18 @@ export default function CommentEditor({
             .run();
         },
       },
+      {
+        id: "file",
+        label: t("activity:comment.editor.slashFile"),
+        group: "insert",
+        search: t("activity:comment.editor.searchFile"),
+        run: (activeEditor, range) => {
+          activeEditor.chain().focus().deleteRange(range).run();
+          openImagePicker(activeEditor);
+        },
+      },
     ],
-    [],
+    [openImagePicker, t],
   );
 
   useEffect(() => {
@@ -354,11 +576,12 @@ export default function CommentEditor({
           codeBlock: {
             HTMLAttributes: { class: "kaneo-tiptap-codeblock" },
           },
-          link: {
-            autolink: true,
-            defaultProtocol: "https",
-            openOnClick: readOnly,
-          },
+        }),
+        Link.configure({
+          autolink: true,
+          defaultProtocol: "https",
+          linkOnPaste: true,
+          openOnClick: readOnly,
         }),
         Markdown.configure({
           markedOptions: {
@@ -373,13 +596,20 @@ export default function CommentEditor({
           themeLight: "github-light",
         }),
         EmbedBlock,
+        AttachmentCard,
         KaneoIssueLink,
         TaskList,
+        Image.configure({
+          HTMLAttributes: {
+            class: "kaneo-editor-image",
+            loading: "lazy",
+          },
+        }),
         TaskItemWithCheckbox.configure({
           nested: true,
         }),
         Placeholder.configure({
-          placeholder,
+          placeholder: resolvedPlaceholder,
         }),
         Table.configure({
           resizable: true,
@@ -391,12 +621,21 @@ export default function CommentEditor({
       editorProps: {
         attributes: {
           class: cn(
-            "kaneo-comment-editor-prose",
+            proseClassName || "kaneo-comment-editor-prose",
             readOnly && "kaneo-comment-editor-prose-readonly",
           ),
         },
         handlePaste: (view, event) => {
           if (readOnly || disabled) return false;
+
+          const pastedFiles = Array.from(event.clipboardData?.files || []);
+          const pastedFile = pastedFiles[0];
+
+          if (pastedFile) {
+            event.preventDefault();
+            void handleAssetFileUpload(pastedFile, editor);
+            return true;
+          }
 
           const plainText = event.clipboardData?.getData("text/plain") || "";
           const taskListNodes = parseTaskListMarkdownToNodes(plainText);
@@ -439,14 +678,79 @@ export default function CommentEditor({
           if (!isYouTubeUrl(url)) return false;
 
           event.preventDefault();
+          const { from } = view.state.selection;
+          const linkMark = view.state.schema.marks.link?.create({ href: url });
+          const linkText = view.state.schema.text(
+            url,
+            linkMark ? [linkMark] : [],
+          );
+          view.dispatch(
+            view.state.tr
+              .replaceSelectionWith(linkText, false)
+              .scrollIntoView(),
+          );
           const coords = getOverlayPosition(view, view.state.selection.from);
           setEmbedComposer({
             mode: "choice",
             url,
             top: coords.top,
             left: coords.left,
+            linkRange: { from, to: from + url.length },
           });
-          setEmbedComposerError("");
+          setEmbedComposerError(null);
+          return true;
+        },
+        handleDrop: (view, event) => {
+          if (readOnly || disabled) return false;
+
+          const droppedFiles = Array.from(event.dataTransfer?.files || []);
+          const droppedFile = droppedFiles[0];
+
+          if (!droppedFile) return false;
+
+          event.preventDefault();
+          const coordinates = view.posAtCoords({
+            left: event.clientX,
+            top: event.clientY,
+          });
+
+          const dropRange = coordinates
+            ? { from: coordinates.pos, to: coordinates.pos }
+            : undefined;
+
+          void handleAssetFileUpload(droppedFile, editor, dropRange);
+          return true;
+        },
+        handleTextInput: (view, _from, _to, text) => {
+          if (readOnly || disabled || text !== "`") return false;
+
+          const { state } = view;
+          const { $from } = state.selection;
+          if ($from.parent.type.name !== "paragraph") return false;
+
+          const textBefore = $from.parent.textBetween(
+            0,
+            $from.parentOffset,
+            "\0",
+            "\0",
+          );
+
+          if (!/^\s*``$/.test(textBefore)) return false;
+
+          const paragraphStart = $from.before();
+          const codeBlock = state.schema.nodes.codeBlock?.create();
+          if (!codeBlock) return false;
+
+          const tr = state.tr.replaceWith(
+            paragraphStart,
+            paragraphStart + $from.parent.nodeSize,
+            codeBlock,
+          );
+
+          tr.setSelection(
+            TextSelection.near(tr.doc.resolve(paragraphStart + 1)),
+          );
+          view.dispatch(tr.scrollIntoView());
           return true;
         },
         handleKeyDown: (_view, event) => {
@@ -509,9 +813,10 @@ export default function CommentEditor({
           }
 
           if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-            if (!readOnly && !disabled && onSubmitShortcut) {
+            const submit = onSubmitShortcutRef.current;
+            if (!readOnly && !disabled && submit) {
               event.preventDefault();
-              onSubmitShortcut();
+              submit();
               return true;
             }
           }
@@ -520,10 +825,10 @@ export default function CommentEditor({
             event.key === "Escape" &&
             !readOnly &&
             !disabled &&
-            onCancelShortcut
+            onCancelShortcutRef.current
           ) {
             event.preventDefault();
-            onCancelShortcut();
+            onCancelShortcutRef.current();
             return true;
           }
 
@@ -555,8 +860,18 @@ export default function CommentEditor({
         onChange(markdown);
       },
     },
-    [toShikiLanguage],
+    [handleAssetFileUpload, resolvedPlaceholder, toShikiLanguage],
   );
+
+  useEffect(() => {
+    if (!onAttachActionChange) return;
+
+    onAttachActionChange(editor ? () => openImagePicker(editor) : null);
+
+    return () => {
+      onAttachActionChange(null);
+    };
+  }, [editor, onAttachActionChange, openImagePicker]);
 
   useEffect(() => {
     if (!editor || !shikiHighlighter) return;
@@ -589,6 +904,29 @@ export default function CommentEditor({
       observer.disconnect();
     };
   }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleImagePreviewClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!(target instanceof HTMLImageElement)) return;
+      if (!target.classList.contains("kaneo-editor-image")) return;
+
+      event.preventDefault();
+      setPreviewImage({
+        src: target.currentSrc || target.src,
+        alt: target.alt || t("activity:comment.editor.previewImageAlt"),
+      });
+    };
+
+    const dom = editor.view.dom;
+    dom.addEventListener("click", handleImagePreviewClick);
+
+    return () => {
+      dom.removeEventListener("click", handleImagePreviewClick);
+    };
+  }, [editor, t]);
 
   const updateSlashMenu = useCallback(
     (activeEditor: Editor) => {
@@ -697,14 +1035,17 @@ export default function CommentEditor({
   const setLink = useCallback(() => {
     if (readOnly || disabled || !editor) return;
     const previousUrl = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Enter URL", previousUrl || "");
+    const url = window.prompt(
+      t("activity:comment.editor.enterUrl"),
+      previousUrl || "",
+    );
     if (url === null) return;
     if (!url.trim()) {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [disabled, editor, readOnly]);
+  }, [disabled, editor, readOnly, t]);
 
   const resolveCodeBlockNodeData = useCallback(
     (pos: number) => {
@@ -802,14 +1143,15 @@ export default function CommentEditor({
   );
 
   const activeCodeLanguageLabel = useMemo(() => {
-    if (!hoveredCodeBlock) return "Plaintext";
-    if (hoveredCodeBlock.language === "auto") return "Auto detect";
+    if (!hoveredCodeBlock) return t("activity:comment.editor.plaintext");
+    if (hoveredCodeBlock.language === "auto")
+      return t("activity:comment.editor.autoDetect");
 
     const match = codeLanguages.find(
       (option) => option.value === hoveredCodeBlock.language,
     );
     return match?.label || hoveredCodeBlock.language;
-  }, [codeLanguages, hoveredCodeBlock]);
+  }, [codeLanguages, hoveredCodeBlock, t]);
 
   useEffect(() => {
     if (!hoveredCodeBlock || isCodeLanguageMenuOpen) return;
@@ -835,25 +1177,25 @@ export default function CommentEditor({
   const groupedSlashCommands = useMemo(
     () => [
       {
-        title: "Text",
+        title: t("activity:comment.editor.slashGroupText"),
         items: filteredSlashCommands.filter(
           (command) => command.group === "text",
         ),
       },
       {
-        title: "Lists",
+        title: t("activity:comment.editor.slashGroupLists"),
         items: filteredSlashCommands.filter(
           (command) => command.group === "lists",
         ),
       },
       {
-        title: "Insert",
+        title: t("activity:comment.editor.slashGroupInsert"),
         items: filteredSlashCommands.filter(
           (command) => command.group === "insert",
         ),
       },
     ],
-    [filteredSlashCommands],
+    [filteredSlashCommands, t],
   );
 
   const submitEmbedComposer = useCallback(
@@ -861,20 +1203,41 @@ export default function CommentEditor({
       if (!editor || !embedComposer) return;
       const url = normalizeUrl(embedComposer.url);
       if (!url) {
-        setEmbedComposerError("Enter a valid URL");
+        setEmbedComposerError("embedErrorInvalidUrl");
         return;
       }
 
       const chain = editor.chain().focus();
-      if (embedComposer.range) {
+      if (embedComposer.mode === "choice" && mode === "link") {
+        setEmbedComposer(null);
+        setEmbedComposerError(null);
+        return;
+      }
+
+      if (embedComposer.linkRange) {
+        chain.deleteRange(embedComposer.linkRange);
+      } else if (embedComposer.range) {
         chain.deleteRange(embedComposer.range);
       }
 
       if (mode === "link") {
-        chain.insertContent(url).run();
+        chain
+          .insertContent({
+            type: "text",
+            text: url,
+            marks: [
+              {
+                type: "link",
+                attrs: {
+                  href: url,
+                },
+              },
+            ],
+          })
+          .run();
       } else {
         if (!isYouTubeUrl(url)) {
-          setEmbedComposerError("Only YouTube links can be embedded.");
+          setEmbedComposerError("embedErrorYoutubeOnly");
           return;
         }
         chain
@@ -889,7 +1252,7 @@ export default function CommentEditor({
       }
 
       setEmbedComposer(null);
-      setEmbedComposerError("");
+      setEmbedComposerError(null);
     },
     [editor, embedComposer],
   );
@@ -899,8 +1262,15 @@ export default function CommentEditor({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!embedComposer) return;
+      event.stopPropagation();
+      event.stopImmediatePropagation();
 
       if (embedComposer.mode === "choice") {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          return;
+        }
+
         if (event.key === "Tab") {
           event.preventDefault();
           submitEmbedComposer("embed");
@@ -909,7 +1279,8 @@ export default function CommentEditor({
 
         if (event.key === "Escape") {
           event.preventDefault();
-          submitEmbedComposer("link");
+          setEmbedComposer(null);
+          setEmbedComposerError(null);
           return;
         }
 
@@ -923,7 +1294,7 @@ export default function CommentEditor({
       if (event.key === "Escape") {
         event.preventDefault();
         setEmbedComposer(null);
-        setEmbedComposerError("");
+        setEmbedComposerError(null);
       }
     };
 
@@ -1018,14 +1389,45 @@ export default function CommentEditor({
   }, [editor, hoveredCodeBlock]);
 
   return (
-    <div
+    <section
       ref={editorShellRef}
+      aria-label={
+        readOnly
+          ? t("activity:comment.editor.ariaCommentContent")
+          : t("activity:comment.editor.ariaCommentEditor")
+      }
       className={cn(
         "kaneo-comment-editor-shell",
+        isDragActive && "is-drag-active",
         readOnly && "kaneo-comment-editor-shell-readonly",
         className,
       )}
+      onDragEnter={handleShellDragEnter}
+      onDragOver={handleShellDragOver}
+      onDragLeave={handleShellDragLeave}
+      onDrop={handleShellDrop}
     >
+      {!readOnly && !disabled && (
+        <input
+          ref={imageInputRef}
+          type="file"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const pendingInsert = pendingImageInsertRef.current;
+            pendingImageInsertRef.current = null;
+            void handleAssetFileUpload(
+              file,
+              pendingInsert?.editor,
+              pendingInsert?.range,
+            );
+
+            event.target.value = "";
+          }}
+        />
+      )}
       {editor && hoveredCodeBlock && !disabled && (
         <div
           className="kaneo-codeblock-language"
@@ -1038,7 +1440,11 @@ export default function CommentEditor({
           <button
             type="button"
             className="kaneo-codeblock-language-trigger kaneo-codeblock-copy-trigger"
-            aria-label={isCodeCopied ? "Copied" : "Copy code"}
+            aria-label={
+              isCodeCopied
+                ? t("activity:comment.editor.ariaCopied")
+                : t("activity:comment.editor.ariaCopyCode")
+            }
             onMouseDown={(event) => {
               event.preventDefault();
             }}
@@ -1051,7 +1457,11 @@ export default function CommentEditor({
             ) : (
               <Copy className="size-3.5" />
             )}
-            <span>{isCodeCopied ? "Copied" : "Copy"}</span>
+            <span>
+              {isCodeCopied
+                ? t("activity:comment.editor.copied")
+                : t("activity:comment.editor.copy")}
+            </span>
           </button>
           {!readOnly && (
             <DropdownMenu
@@ -1078,7 +1488,7 @@ export default function CommentEditor({
                   onValueChange={setCodeLanguage}
                 >
                   <DropdownMenuRadioItem value="auto">
-                    Auto detect
+                    {t("activity:comment.editor.autoDetect")}
                   </DropdownMenuRadioItem>
                   <DropdownMenuSeparator />
                   {codeLanguages.map(({ value, label }) => (
@@ -1098,6 +1508,7 @@ export default function CommentEditor({
           className="kaneo-comment-editor-bubble"
           shouldShow={({ editor: activeEditor, from, to }) => {
             if (activeEditor.isActive("embedBlock")) return false;
+            if (activeEditor.isActive("image")) return false;
             if (activeEditor.isEmpty) return false;
             return from !== to;
           }}
@@ -1189,6 +1600,15 @@ export default function CommentEditor({
           >
             <Link2 className="size-3.5" />
           </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            className="kaneo-comment-editor-bubble-btn"
+            onClick={() => openImagePicker(editor)}
+          >
+            <Paperclip className="size-3.5" />
+          </Button>
         </BubbleMenu>
       )}
       {slashMenu && !readOnly && !disabled && (
@@ -1252,7 +1672,9 @@ export default function CommentEditor({
               );
             })
           ) : (
-            <div className="kaneo-tiptap-slash-empty">No commands</div>
+            <div className="kaneo-tiptap-slash-empty">
+              {t("activity:comment.editor.noCommands")}
+            </div>
           )}
         </div>
       )}
@@ -1275,19 +1697,24 @@ export default function CommentEditor({
                   submitEmbedComposer("embed");
                 }}
               >
-                <span>Embed video</span>
-                <span className="kaneo-embed-choice-hint">Tab</span>
+                <span>{t("activity:comment.editor.embedVideo")}</span>
+                <span className="kaneo-embed-choice-hint">
+                  {t("activity:comment.editor.hintTab")}
+                </span>
               </button>
               <button
                 type="button"
                 className="kaneo-embed-choice-item"
                 onMouseDown={(event) => {
                   event.preventDefault();
-                  submitEmbedComposer("link");
+                  setEmbedComposer(null);
+                  setEmbedComposerError(null);
                 }}
               >
-                <span>Keep as link</span>
-                <span className="kaneo-embed-choice-hint">Esc</span>
+                <span>{t("activity:comment.editor.keepAsLink")}</span>
+                <span className="kaneo-embed-choice-hint">
+                  {t("activity:comment.editor.hintEsc")}
+                </span>
               </button>
             </div>
           ) : (
@@ -1305,9 +1732,9 @@ export default function CommentEditor({
                   setEmbedComposer((current) =>
                     current ? { ...current, url: event.target.value } : current,
                   );
-                  if (embedComposerError) setEmbedComposerError("");
+                  if (embedComposerError) setEmbedComposerError(null);
                 }}
-                placeholder="Paste URL"
+                placeholder={t("activity:comment.editor.pasteUrl")}
                 autoFocus
               />
               <div className="kaneo-embed-composer-actions">
@@ -1317,10 +1744,10 @@ export default function CommentEditor({
                   variant="ghost"
                   onClick={() => submitEmbedComposer("link")}
                 >
-                  As link
+                  {t("activity:comment.editor.asLink")}
                 </Button>
                 <Button type="submit" size="xs">
-                  Embed
+                  {t("activity:comment.editor.embed")}
                 </Button>
                 <Button
                   type="button"
@@ -1328,15 +1755,15 @@ export default function CommentEditor({
                   variant="ghost"
                   onClick={() => {
                     setEmbedComposer(null);
-                    setEmbedComposerError("");
+                    setEmbedComposerError(null);
                   }}
                 >
-                  Cancel
+                  {t("common:actions.cancel")}
                 </Button>
               </div>
               {embedComposerError && (
                 <p className="kaneo-embed-composer-error">
-                  {embedComposerError}
+                  {t(`activity:comment.editor.${embedComposerError}`)}
                 </p>
               )}
             </form>
@@ -1345,10 +1772,50 @@ export default function CommentEditor({
       )}
       <EditorContent
         editor={editor}
-        className="kaneo-comment-editor-content"
+        className={cn("kaneo-comment-editor-content", contentClassName)}
         onMouseMove={handleEditorMouseMove}
         onMouseLeave={handleEditorMouseLeave}
       />
-    </div>
+      {!readOnly && !disabled && showQuickAttachButton && (
+        <button
+          type="button"
+          className="kaneo-editor-quick-attach"
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+          onClick={() => openImagePicker(editor)}
+          aria-label={t("activity:comment.attachFile")}
+        >
+          <Paperclip className="size-3.5" />
+        </button>
+      )}
+      {isDragActive && (
+        <div className="kaneo-editor-drop-indicator">
+          <span>{t("activity:comment.editor.dropImageToUpload")}</span>
+        </div>
+      )}
+      <Dialog
+        open={Boolean(previewImage)}
+        onOpenChange={(open) => {
+          if (!open) setPreviewImage(null);
+        }}
+      >
+        <DialogPopup
+          className="max-w-6xl border-0 bg-transparent p-0 shadow-none before:hidden"
+          showCloseButton={false}
+          bottomStickOnMobile={false}
+        >
+          {previewImage && (
+            <div className="flex max-h-[90vh] items-center justify-center p-4">
+              <img
+                src={previewImage.src}
+                alt={previewImage.alt}
+                className="max-h-[85vh] max-w-[92vw] rounded-xl border border-white/12 bg-black/30 object-contain shadow-2xl"
+              />
+            </div>
+          )}
+        </DialogPopup>
+      </Dialog>
+    </section>
   );
 }

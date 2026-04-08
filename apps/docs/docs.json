@@ -56,6 +56,7 @@
 							"core/functional/backlog-planning",
 							"core/functional/collaborate-with-team",
 							"core/functional/configure-workflows",
+							"core/functional/account-notifications",
 							"core/functional/personalize-your-workspace"
 						]
 					},
@@ -65,6 +66,8 @@
 							"core/installation/index",
 							"core/installation/drim",
 							"core/installation/docker-compose",
+							"core/installation/object-storage-and-image-uploads",
+							"core/installation/storage-backends",
 							"core/installation/environment-variables",
 							"core/installation/start-services"
 						]
@@ -75,6 +78,20 @@
 							"core/integrations/github/setup",
 							"core/integrations/github/configuration",
 							"core/integrations/github/troubleshooting"
+						]
+					},
+					{
+						"group": "Gitea Integration",
+						"pages": ["core/integrations/gitea/setup"]
+					},
+					{
+						"group": "Integrations",
+						"pages": [
+							"core/integrations/mcp",
+							"core/integrations/discord",
+							"core/integrations/slack",
+							"core/integrations/telegram",
+							"core/integrations/outgoing-webhooks"
 						]
 					},
 					{
@@ -98,7 +115,7 @@
 			},
 			{
 				"tab": "API Reference",
-				"openapi": "./openapi.json"
+				"openapi": "https://cloud.kaneo.app/api/openapi"
 			}
 		],
 		"global": {

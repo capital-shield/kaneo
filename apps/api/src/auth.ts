@@ -10,6 +10,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import {
   anonymous,
+  bearer,
+  deviceAuthorization,
   emailOTP,
   genericOAuth,
   lastLoginMethod,
@@ -23,8 +25,15 @@ import db, { schema } from "./database";
 import { publishEvent } from "./events";
 import { checkRegistrationAllowed } from "./utils/check-registration-allowed";
 import { generateDemoName } from "./utils/generate-demo-name";
+import { getGithubSsoOAuthCredentials } from "./utils/github-sso-env";
 
 config();
+
+const githubSso = getGithubSsoOAuthCredentials();
+
+const isRegistrationDisabled = process.env.DISABLE_REGISTRATION === "true";
+const isPasswordRegistrationDisabled =
+  process.env.DISABLE_PASSWORD_REGISTRATION === "true";
 
 const apiUrl = process.env.KANEO_API_URL || "http://localhost:1337";
 const clientUrl = process.env.KANEO_CLIENT_URL || "http://localhost:5173";
@@ -68,6 +77,60 @@ if (process.env.AUTH_SECRET && process.env.AUTH_SECRET.length < 32) {
   process.exit(1);
 }
 
+async function getUserLocale(email: string) {
+  const [user] = await db
+    .select({ locale: schema.userTable.locale })
+    .from(schema.userTable)
+    .where(eq(schema.userTable.email, email))
+    .limit(1);
+
+  return user?.locale ?? null;
+}
+
+function getLocaleKey(locale?: string | null) {
+  return locale?.toLowerCase().startsWith("de") ? "de" : "en";
+}
+
+function getAuthEmailCopy(locale?: string | null) {
+  return getLocaleKey(locale) === "de"
+    ? {
+        magicLinkSubject: "Anmeldelink fuer Kaneo",
+        otpSubject: "Bestaetigungscode fuer Kaneo",
+      }
+    : {
+        magicLinkSubject: "Login for Kaneo",
+        otpSubject: "Authentication code for Kaneo",
+      };
+}
+
+function getDeviceAuthClientIds(): Set<string> {
+  const raw = process.env.DEVICE_AUTH_CLIENT_IDS?.trim();
+  if (raw) {
+    return new Set(
+      raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+  }
+  return new Set(["kaneo-cli", "kaneo-mcp"]);
+}
+
+function getDeviceAuthVerificationUri(): string {
+  const base = clientUrl.replace(/\/$/, "");
+  return `${base}/device`;
+}
+
+function getInvitationEmailSubject(
+  locale: string | null,
+  inviterName: string,
+  workspaceName: string,
+) {
+  return getLocaleKey(locale) === "de"
+    ? `${inviterName} hat dich eingeladen, ${workspaceName} auf Kaneo beizutreten`
+    : `${inviterName} invited you to join ${workspaceName} on Kaneo`;
+}
+
 export const auth = betterAuth({
   baseURL: baseURLWithoutPath,
   trustedOrigins,
@@ -87,8 +150,18 @@ export const auth = betterAuth({
       team: schema.teamTable,
       teamMember: schema.teamMemberTable,
       apikey: schema.apikeyTable,
+      deviceCode: schema.deviceCodeTable,
     },
   }),
+  user: {
+    additionalFields: {
+      locale: {
+        type: "string",
+        input: true,
+        required: false,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -103,8 +176,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      clientId: githubSso.clientId,
+      clientSecret: githubSso.clientSecret,
       scope: ["user:email"],
     },
     google: {
@@ -129,8 +202,11 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         try {
-          await sendMagicLinkEmail(email, "Login for Kaneo", {
+          const locale = await getUserLocale(email);
+          const copy = getAuthEmailCopy(locale);
+          await sendMagicLinkEmail(email, copy.magicLinkSubject, {
             magicLink: url,
+            locale,
           });
         } catch (error) {
           console.error(error);
@@ -140,7 +216,12 @@ export const auth = betterAuth({
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
         if (type === "sign-in") {
-          await sendOtpEmail(email, "Authentication code for Kaneo", { otp });
+          const locale = await getUserLocale(email);
+          const copy = getAuthEmailCopy(locale);
+          await sendOtpEmail(email, copy.otpSubject, {
+            otp,
+            locale,
+          });
         }
       },
     }),
@@ -197,13 +278,19 @@ export const auth = betterAuth({
       },
       async sendInvitationEmail(data) {
         const inviteLink = `${process.env.KANEO_CLIENT_URL}/invitation/accept/${data.id}`;
+        const locale = await getUserLocale(data.email);
 
         const result = await sendWorkspaceInvitationEmail(
           data.email,
-          `${data.inviter.user.name} invited you to join ${data.organization.name} on Kaneo`,
+          getInvitationEmailSubject(
+            locale,
+            data.inviter.user.name,
+            data.organization.name,
+          ),
           {
             inviterEmail: data.inviter.user.email,
             inviterName: data.inviter.user.name,
+            locale,
             workspaceName: data.organization.name,
             invitationLink: inviteLink,
             to: data.email,
@@ -239,6 +326,7 @@ export const auth = betterAuth({
         },
       ],
     }),
+    bearer(),
     apiKey({
       enableSessionForAPIKeys: true,
       apiKeyHeaders: "x-api-key",
@@ -247,6 +335,11 @@ export const auth = betterAuth({
         maxRequests: 100,
         timeWindow: 60 * 1000,
       },
+    }),
+    deviceAuthorization({
+      verificationUri: getDeviceAuthVerificationUri(),
+      validateClient: async (clientId) =>
+        getDeviceAuthClientIds().has(clientId),
     }),
     openAPI(),
   ],
@@ -281,8 +374,15 @@ export const auth = betterAuth({
         return;
       }
 
-      const isRegistrationDisabled =
-        process.env.DISABLE_REGISTRATION === "true";
+      if (ctx.path === "/sign-up/email") {
+        if (isPasswordRegistrationDisabled) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "Password registration is currently disabled. Please use a configured social or OIDC sign-in method.",
+          });
+        }
+      }
+
       if (!isRegistrationDisabled) {
         return;
       }

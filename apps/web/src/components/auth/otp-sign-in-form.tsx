@@ -2,6 +2,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,7 @@ import { toast } from "@/lib/toast";
 type OtpSignInFormProps = {
   invitationId?: string;
   defaultEmail?: string;
+  redirect?: string;
   onSuccess?: () => void;
 };
 
@@ -31,7 +33,9 @@ type EmailFormValues = z.infer<typeof emailSchema>;
 export function OtpSignInForm({
   invitationId,
   defaultEmail,
+  redirect,
 }: OtpSignInFormProps) {
+  const { t } = useTranslation();
   const [isPending, setIsPending] = useState(false);
   const { history } = useRouter();
 
@@ -49,15 +53,16 @@ export function OtpSignInForm({
       });
 
       if (result.error) {
-        toast.error(result.error.message || "Failed to send verification code");
+        toast.error(result.error.message || t("auth:otpSignIn.sendFailed"));
         return;
       }
 
-      toast.success("Verification code sent! Check your email.");
+      toast.success(t("auth:otpSignIn.codeSent"));
 
       const searchParams = new URLSearchParams({
         email: data.email,
         ...(invitationId && { invitationId }),
+        ...(redirect && { redirect }),
       });
       history.push(`/auth/verify-otp?${searchParams.toString()}`);
     } finally {
@@ -73,10 +78,12 @@ export function OtpSignInForm({
           name="email"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium">Email</FormLabel>
+              <FormLabel className="text-sm font-medium">
+                {t("auth:forms.email")}
+              </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="me@example.com"
+                  placeholder={t("auth:forms.emailPlaceholder")}
                   type="email"
                   autoComplete="email"
                   {...field}
@@ -88,7 +95,9 @@ export function OtpSignInForm({
         />
 
         <Button type="submit" disabled={isPending} className="w-full mt-4">
-          {isPending ? "Sending..." : "Send Verification Code"}
+          {isPending
+            ? t("auth:otpSignIn.sending")
+            : t("auth:otpSignIn.sendVerificationCode")}
         </Button>
       </form>
     </Form>

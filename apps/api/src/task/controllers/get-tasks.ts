@@ -1,4 +1,14 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  lte,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -10,7 +20,55 @@ import {
   userTable,
 } from "../../database/schema";
 
-async function getTasks(projectId: string) {
+type GetTasksOptions = {
+  assigneeId?: string;
+  dueAfter?: string;
+  dueBefore?: string;
+  limit?: number;
+  page?: number;
+  priority?: string;
+  sortBy?:
+    | "createdAt"
+    | "priority"
+    | "dueDate"
+    | "position"
+    | "title"
+    | "number";
+  sortOrder?: "asc" | "desc";
+  status?: string;
+};
+
+const priorityCaseExpr = sql<number>`CASE
+  WHEN ${taskTable.priority} = 'urgent' THEN 4
+  WHEN ${taskTable.priority} = 'high' THEN 3
+  WHEN ${taskTable.priority} = 'medium' THEN 2
+  WHEN ${taskTable.priority} = 'low' THEN 1
+  ELSE 0
+END`;
+
+function buildOrderBy(
+  sortBy: GetTasksOptions["sortBy"],
+  sortOrder: GetTasksOptions["sortOrder"],
+): SQL {
+  const direction = sortOrder === "desc" ? desc : asc;
+
+  switch (sortBy) {
+    case "createdAt":
+      return direction(taskTable.createdAt);
+    case "priority":
+      return direction(priorityCaseExpr);
+    case "dueDate":
+      return direction(taskTable.dueDate);
+    case "title":
+      return direction(taskTable.title);
+    case "number":
+      return direction(taskTable.number);
+    default:
+      return direction(taskTable.position);
+  }
+}
+
+async function getTasks(projectId: string, options: GetTasksOptions = {}) {
   const project = await db.query.projectTable.findFirst({
     where: eq(projectTable.id, projectId),
   });
@@ -21,30 +79,78 @@ async function getTasks(projectId: string) {
     });
   }
 
-  const tasks = await db
-    .select({
-      id: taskTable.id,
-      title: taskTable.title,
-      number: taskTable.number,
-      description: taskTable.description,
-      status: taskTable.status,
-      priority: taskTable.priority,
-      dueDate: taskTable.dueDate,
-      position: taskTable.position,
-      createdAt: taskTable.createdAt,
-      userId: taskTable.userId,
-      assigneeName: userTable.name,
-      assigneeId: userTable.id,
-      assigneeImage: userTable.image,
-      projectId: taskTable.projectId,
-    })
+  const conditions = [eq(taskTable.projectId, projectId)];
+
+  if (options.status) {
+    conditions.push(eq(taskTable.status, options.status));
+  }
+
+  if (options.priority) {
+    conditions.push(eq(taskTable.priority, options.priority));
+  }
+
+  if (options.assigneeId) {
+    conditions.push(eq(taskTable.userId, options.assigneeId));
+  }
+
+  if (options.dueBefore) {
+    conditions.push(lte(taskTable.dueDate, new Date(options.dueBefore)));
+  }
+
+  if (options.dueAfter) {
+    conditions.push(gte(taskTable.dueDate, new Date(options.dueAfter)));
+  }
+
+  const whereClause = and(...conditions);
+  const usePagination = options.page != null || options.limit != null;
+  const page = options.page && options.page > 0 ? options.page : 1;
+  const pageSize =
+    options.limit && options.limit > 0 ? Math.min(options.limit, 100) : 50;
+  const offset = (page - 1) * pageSize;
+
+  const orderByClause = buildOrderBy(
+    options.sortBy ?? "position",
+    options.sortOrder ?? "asc",
+  );
+
+  const [taskCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(taskTable)
+    .where(whereClause);
+
+  const total = Number(taskCount?.count ?? 0);
+
+  const taskSelection = {
+    id: taskTable.id,
+    title: taskTable.title,
+    number: taskTable.number,
+    description: taskTable.description,
+    status: taskTable.status,
+    priority: taskTable.priority,
+    startDate: taskTable.startDate,
+    dueDate: taskTable.dueDate,
+    position: taskTable.position,
+    createdAt: taskTable.createdAt,
+    userId: taskTable.userId,
+    assigneeName: userTable.name,
+    assigneeId: userTable.id,
+    assigneeImage: userTable.image,
+    projectId: taskTable.projectId,
+  };
+
+  const query = db
+    .select(taskSelection)
     .from(taskTable)
     .leftJoin(userTable, eq(taskTable.userId, userTable.id))
     .leftJoin(projectTable, eq(taskTable.projectId, projectTable.id))
-    .where(eq(taskTable.projectId, projectId))
-    .orderBy(taskTable.position);
+    .where(whereClause)
+    .orderBy(orderByClause);
 
-  const taskIds = tasks.map((task) => task.id);
+  const paginatedTasks = usePagination
+    ? await query.limit(pageSize).offset(offset)
+    : await query;
+
+  const taskIds = paginatedTasks.map((task) => task.id);
 
   const labelsData =
     taskIds.length > 0
@@ -119,7 +225,7 @@ async function getTasks(projectId: string) {
     id: column.slug,
     name: column.name,
     isFinal: column.isFinal,
-    tasks: tasks
+    tasks: paginatedTasks
       .filter((task) => task.status === column.slug)
       .map((task) => ({
         ...task,
@@ -128,7 +234,7 @@ async function getTasks(projectId: string) {
       })),
   }));
 
-  const archivedTasks = tasks
+  const archivedTasks = paginatedTasks
     .filter((task) => task.status === "archived")
     .map((task) => ({
       ...task,
@@ -136,7 +242,7 @@ async function getTasks(projectId: string) {
       externalLinks: taskExternalLinksMap.get(task.id) || [],
     }));
 
-  const plannedTasks = tasks
+  const plannedTasks = paginatedTasks
     .filter((task) => task.status === "planned")
     .map((task) => ({
       ...task,
@@ -145,16 +251,31 @@ async function getTasks(projectId: string) {
     }));
 
   return {
-    id: project.id,
-    name: project.name,
-    slug: project.slug,
-    icon: project.icon,
-    description: project.description,
-    isPublic: project.isPublic,
-    workspaceId: project.workspaceId,
-    columns,
-    archivedTasks,
-    plannedTasks,
+    data: {
+      id: project.id,
+      name: project.name,
+      slug: project.slug,
+      icon: project.icon,
+      description: project.description,
+      isPublic: project.isPublic,
+      workspaceId: project.workspaceId,
+      columns,
+      archivedTasks,
+      plannedTasks,
+    },
+    pagination: usePagination
+      ? {
+          total,
+          page,
+          pageSize,
+          totalPages: Math.max(1, Math.ceil(total / pageSize)),
+        }
+      : {
+          total,
+          page: 1,
+          pageSize: total,
+          totalPages: 1,
+        },
   };
 }
 

@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { useLocation } from "@tanstack/react-router";
 import { produce } from "immer";
 import {
   CalendarIcon,
@@ -9,7 +9,8 @@ import {
   UserIcon,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import TaskDescriptionEditor from "@/components/task/task-description-editor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -35,20 +36,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type LabelColor, labelColors } from "@/constants/label-colors";
+import type { LabelColor } from "@/constants/label-colors";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useCreateTask from "@/hooks/mutations/task/use-create-task";
+import { useDeleteTask } from "@/hooks/mutations/task/use-delete-task";
+import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
+import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { cn } from "@/lib/cn";
+import { formatDateMedium } from "@/lib/format";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
+import type Task from "@/types/task";
 
 type CreateTaskModalProps = {
   open: boolean;
   onClose: () => void;
   status?: string;
+  projectId?: string;
 };
 
 type Priority = "no-priority" | "low" | "medium" | "high" | "urgent";
@@ -64,9 +71,95 @@ type Label = {
 
 type PopoverStep = "select" | "color";
 
-function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
+function normalizeTask(
+  task: Partial<Task> &
+    Pick<Task, "id" | "title" | "status" | "projectId" | "createdAt">,
+): Task {
+  return {
+    ...task,
+    number: task.number ?? null,
+    description: task.description ?? null,
+    priority: task.priority ?? null,
+    startDate: task.startDate ?? null,
+    dueDate: task.dueDate ?? null,
+    position: task.position ?? 0,
+    userId: task.userId ?? null,
+    assigneeId: task.assigneeId ?? task.userId ?? null,
+    assigneeName: task.assigneeName ?? null,
+    assigneeImage: task.assigneeImage ?? null,
+    labels: task.labels ?? [],
+    externalLinks: task.externalLinks ?? [],
+  };
+}
+
+function CreateTaskModal({
+  open,
+  onClose,
+  status,
+  projectId,
+}: CreateTaskModalProps) {
+  const { t } = useTranslation();
   const { project, setProject } = useProjectStore();
+
+  const labelColors = useMemo(
+    () =>
+      [
+        {
+          value: "gray" as LabelColor,
+          labelKey: "stone" as const,
+          color: "var(--color-stone-500)",
+        },
+        {
+          value: "dark-gray" as LabelColor,
+          labelKey: "slate" as const,
+          color: "var(--color-slate-500)",
+        },
+        {
+          value: "purple" as LabelColor,
+          labelKey: "lavender" as const,
+          color: "var(--color-violet-500)",
+        },
+        {
+          value: "teal" as LabelColor,
+          labelKey: "sage" as const,
+          color: "var(--color-emerald-600)",
+        },
+        {
+          value: "green" as LabelColor,
+          labelKey: "forest" as const,
+          color: "var(--color-green-600)",
+        },
+        {
+          value: "yellow" as LabelColor,
+          labelKey: "amber" as const,
+          color: "var(--color-amber-600)",
+        },
+        {
+          value: "orange" as LabelColor,
+          labelKey: "terracotta" as const,
+          color: "var(--color-orange-600)",
+        },
+        {
+          value: "pink" as LabelColor,
+          labelKey: "rose" as const,
+          color: "var(--color-rose-600)",
+        },
+        {
+          value: "red" as LabelColor,
+          labelKey: "crimson" as const,
+          color: "var(--color-red-600)",
+        },
+      ].map(({ labelKey, ...rest }) => ({
+        ...rest,
+        label: t(`common:modals.createTask.labelColors.${labelKey}`),
+      })),
+    [t],
+  );
+  const location = useLocation();
   const { data: workspace } = useActiveWorkspace();
+  const { data: workspaceUsers } = useGetActiveWorkspaceUsers(
+    workspace?.id || "",
+  );
   const { mutateAsync: createLabel } = useCreateLabel();
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id || "",
@@ -76,9 +169,11 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("no-priority");
   const [assigneeId, setAssigneeId] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [createMore, setCreateMore] = useState(false);
   const [labels, setLabels] = useState<Label[]>([]);
+  const [draftTask, setDraftTask] = useState<Task | null>(null);
 
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [labelsStep, setLabelsStep] = useState<PopoverStep>("select");
@@ -86,9 +181,17 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
   const [selectedColor, setSelectedColor] = useState<LabelColor>("gray");
   const [newLabelName, setNewLabelName] = useState("");
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const routeProjectId =
+    location.pathname.match(/\/project\/([^/]+)/)?.[1] ?? null;
+  const resolvedProjectId = projectId || project?.id || routeProjectId || "";
 
-  const { mutateAsync } = useCreateTask();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const draftCreationPromiseRef = useRef<Promise<Task> | null>(null);
+  const didSubmitRef = useRef(false);
+
+  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: updateTask } = useUpdateTask();
+  const { mutateAsync: deleteTask } = useDeleteTask();
 
   const filteredLabels = (() => {
     const searchFiltered = workspaceLabels.filter((label) =>
@@ -113,10 +216,13 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
     );
 
   const handleClose = () => {
+    const shouldDeleteDraft = draftTask && !didSubmitRef.current;
+
     setTitle("");
     setDescription("");
     setPriority("no-priority");
     setAssigneeId("");
+    setStartDate(undefined);
     setDueDate(undefined);
     setCreateMore(false);
     setLabels([]);
@@ -124,89 +230,235 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
     setSearchValue("");
     setSelectedColor("gray");
     setNewLabelName("");
+    draftCreationPromiseRef.current = null;
+    didSubmitRef.current = false;
+    setDraftTask(null);
     onClose();
+
+    if (shouldDeleteDraft) {
+      void deleteTask(draftTask.id).catch(() => {
+        // ignore cleanup failures for abandoned empty drafts
+      });
+    }
   };
+
+  const syncTaskIntoProject = useCallback(
+    (task: Task) => {
+      if (!project) return;
+
+      const updatedProject = produce(project, (draft) => {
+        let existingTask:
+          | (typeof draft.columns)[number]["tasks"][number]
+          | undefined;
+
+        for (const column of draft.columns ?? []) {
+          const taskIndex = column.tasks.findIndex(
+            (columnTask) => columnTask.id === task.id,
+          );
+
+          if (taskIndex !== -1) {
+            existingTask = column.tasks[taskIndex];
+            column.tasks.splice(taskIndex, 1);
+            break;
+          }
+        }
+
+        if (task.status === "planned" || task.status === "archived") {
+          return;
+        }
+
+        const targetColumn = draft.columns?.find(
+          (column) => column.id === task.status,
+        );
+        if (!targetColumn) return;
+
+        targetColumn.tasks.push({
+          ...existingTask,
+          ...task,
+          assigneeId: task.userId,
+          assigneeName:
+            workspaceUsers?.members?.find(
+              (member) => member.userId === task.userId,
+            )?.user?.name ??
+            existingTask?.assigneeName ??
+            null,
+          assigneeImage:
+            workspaceUsers?.members?.find(
+              (member) => member.userId === task.userId,
+            )?.user?.image ??
+            existingTask?.assigneeImage ??
+            null,
+          position: task.position ?? 0,
+        });
+      });
+
+      setProject(updatedProject);
+    },
+    [project, setProject, workspaceUsers?.members],
+  );
+
+  const ensureDraftTask = useCallback(async () => {
+    if (draftTask) {
+      return draftTask.id;
+    }
+
+    if (draftCreationPromiseRef.current) {
+      const pendingTask = await draftCreationPromiseRef.current;
+      return pendingTask.id;
+    }
+
+    if (!resolvedProjectId) {
+      toast.error(t("common:modals.createTask.chooseProjectForImages"));
+      return null;
+    }
+
+    const draftStatus = "planned";
+    const draftPromise = createTask({
+      title: title.trim() || t("common:modals.createTask.untitledTask"),
+      description: description.trim() || "",
+      userId: assigneeId,
+      priority,
+      projectId: resolvedProjectId,
+      startDate: startDate ? startDate.toISOString() : undefined,
+      dueDate: dueDate ? dueDate.toISOString() : undefined,
+      status: draftStatus,
+    }).then((task) => normalizeTask(task));
+
+    draftCreationPromiseRef.current = draftPromise;
+
+    try {
+      const createdTask = await draftPromise;
+      setDraftTask(createdTask);
+      return createdTask.id;
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("common:modals.createTask.prepareTaskError"),
+      );
+      return null;
+    } finally {
+      draftCreationPromiseRef.current = null;
+    }
+  }, [
+    assigneeId,
+    createTask,
+    description,
+    draftTask,
+    startDate,
+    dueDate,
+    priority,
+    resolvedProjectId,
+    title,
+    t,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !project?.id || !workspace?.id) return;
+    if (!title.trim() || !resolvedProjectId || !workspace?.id) return;
 
     try {
       const taskStatus = status ?? "to-do";
+      didSubmitRef.current = true;
 
-      const newTask = await mutateAsync({
-        title: title.trim(),
-        description: description.trim() || "",
-        userId: assigneeId,
-        priority,
-        projectId: project?.id,
-        dueDate: dueDate ? dueDate.toISOString() : undefined,
-        status: taskStatus,
-      });
+      const savedTask = draftTask
+        ? normalizeTask(
+            await updateTask({
+              ...draftTask,
+              title: title.trim(),
+              description: description.trim() || "",
+              userId: assigneeId || null,
+              status: taskStatus,
+              priority,
+              startDate: startDate ? startDate.toISOString() : null,
+              dueDate: dueDate ? dueDate.toISOString() : null,
+              projectId: resolvedProjectId,
+            }),
+          )
+        : normalizeTask(
+            await createTask({
+              title: title.trim(),
+              description: description.trim() || "",
+              userId: assigneeId,
+              priority,
+              projectId: resolvedProjectId,
+              startDate: startDate ? startDate.toISOString() : undefined,
+              dueDate: dueDate ? dueDate.toISOString() : undefined,
+              status: taskStatus,
+            }),
+          );
 
       for (const label of labels) {
         try {
           await createLabel({
             name: label.name,
             color: label.color,
-            taskId: newTask.id,
-            workspaceId: workspace?.id,
+            taskId: savedTask.id,
+            workspaceId: workspace.id,
           });
         } catch (error) {
           console.error("Failed to create label:", error);
         }
       }
 
-      const updatedProject = produce(project, (draft) => {
-        if (newTask.status !== "planned" && newTask.status !== "archived") {
-          const targetColumn = draft.columns?.find(
-            (col) => col.id === newTask.status,
-          );
-          if (targetColumn) {
-            targetColumn.tasks.push({
-              ...newTask,
-              assigneeId: assigneeId,
-              assigneeName: assigneeId,
-              position: 0,
-            });
-          }
-        }
-      });
-
-      setProject(updatedProject);
-      toast.success("Task created successfully");
+      setDraftTask(savedTask);
+      syncTaskIntoProject(savedTask);
+      toast.success(
+        draftTask
+          ? t("common:modals.createTask.successUpdated")
+          : t("common:modals.createTask.successCreated"),
+      );
 
       if (createMore) {
         setTitle("");
         setDescription("");
         setPriority("no-priority");
         setAssigneeId("");
+        setStartDate(undefined);
         setDueDate(undefined);
         setLabels([]);
         setLabelsStep("select");
         setSearchValue("");
         setSelectedColor("gray");
         setNewLabelName("");
+        draftCreationPromiseRef.current = null;
+        didSubmitRef.current = false;
+        setDraftTask(null);
       } else {
         handleClose();
       }
     } catch (error) {
+      didSubmitRef.current = false;
       toast.error(
-        error instanceof Error ? error.message : "Failed to create task",
+        error instanceof Error
+          ? error.message
+          : t("common:modals.createTask.createError"),
       );
     }
   };
 
-  const priorityOptions = [
-    { value: "no-priority", label: "No Priority" },
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "urgent", label: "Urgent" },
-  ];
+  const priorityOptions = useMemo(
+    () =>
+      (["no-priority", "low", "medium", "high", "urgent"] as const).map(
+        (value) => ({
+          value,
+          label: t(`tasks:priority.${value}`),
+        }),
+      ),
+    [t],
+  );
 
   const selectedPriority = priorityOptions.find((p) => p.value === priority);
-  const selectedUser = workspace?.members?.find((u) => u.userId === assigneeId);
+
+  const statusLabel = useMemo(() => {
+    if (status) {
+      return t(`tasks:status.${status}`);
+    }
+    return t("tasks:status.in-progress");
+  }, [status, t]);
+  const selectedUser = workspaceUsers?.members?.find(
+    (u) => u.userId === assigneeId,
+  );
 
   useEffect(() => {
     if (labelsOpen && labelsStep === "select" && searchInputRef.current) {
@@ -299,11 +551,13 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
       };
 
       setLabels([...labels, newLabel]);
-      toast.success("Label created");
+      toast.success(t("common:modals.createTask.labelCreated"));
       handleLabelsClose();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create label",
+        error instanceof Error
+          ? error.message
+          : t("common:modals.createTask.labelCreateError"),
       );
     }
   };
@@ -315,7 +569,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] flex flex-col"
+        className="kaneo-create-task-modal max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         showCloseButton={false}
       >
         <DialogHeader className="flex-shrink-0">
@@ -323,18 +577,18 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="text-muted-foreground font-semibold tracking-wider text-sm">
-                  {project?.slug?.toUpperCase() || "TASK"}
+                  {project?.slug?.toUpperCase() ||
+                    t("common:modals.createTask.breadcrumbTask")}
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem className="text-foreground font-medium text-sm">
-                  New Task
+                  {t("common:modals.createTask.title")}
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Create a new task by providing a title, description, and other
-            details.
+            {t("common:modals.createTask.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -342,13 +596,13 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
           onSubmit={handleSubmit}
           className="flex flex-col flex-1 min-h-0 space-y-6"
         >
-          <div className="space-y-6 px-6">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-6 px-6">
             <Input
               unstyled
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
-              placeholder="Task title"
+              placeholder={t("common:modals.createTask.taskTitlePlaceholder")}
               className="w-full [&_[data-slot=input]]:h-auto [&_[data-slot=input]]:px-0 [&_[data-slot=input]]:py-3 [&_[data-slot=input]]:text-2xl [&_[data-slot=input]]:leading-tight [&_[data-slot=input]]:font-semibold [&_[data-slot=input]]:tracking-tight [&_[data-slot=input]]:text-foreground [&_[data-slot=input]]:placeholder:text-muted-foreground [&_[data-slot=input]]:outline-none"
               required
             />
@@ -357,7 +611,11 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
               <TaskDescriptionEditor
                 value={description}
                 onChange={setDescription}
-                placeholder="Add a description for your task..."
+                placeholder={t(
+                  "common:modals.createTask.descriptionPlaceholder",
+                )}
+                taskId={draftTask?.id}
+                ensureTaskId={ensureDraftTask}
               />
             </div>
 
@@ -379,7 +637,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                             ?.color || "var(--color-neutral-400)",
                       }}
                     />
-                    {label.name}
+                    <span className="relative max-w-20 -top-0.5 truncate">
+                      {label.name}
+                    </span>
                   </Badge>
                 ))}
               </div>
@@ -388,11 +648,50 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
             <div className="flex flex-wrap items-center gap-2 py-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-accent/50 text-foreground rounded-md text-xs font-medium border border-border">
                 <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
-                {status
-                  ? status.charAt(0).toUpperCase() +
-                    status.slice(1).replace("-", " ")
-                  : "In Progress"}
+                {statusLabel}
               </div>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border border-border hover:bg-accent/50",
+                      startDate
+                        ? "bg-accent/30 text-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="w-3.5 h-3.5" />
+                    <span>
+                      {startDate
+                        ? formatDateMedium(startDate)
+                        : t("common:modals.createTask.startDate")}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    className="w-full bg-popover"
+                  />
+                  {startDate && (
+                    <div className="p-2 border-t border-border">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs"
+                        onClick={() => setStartDate(undefined)}
+                      >
+                        {t("common:modals.createTask.clearStartDate")}
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
 
               <Popover>
                 <PopoverTrigger asChild>
@@ -407,7 +706,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                   >
                     {getPriorityIcon(priority)}
                     <span>
-                      {selectedPriority ? selectedPriority.label : "Priority"}
+                      {selectedPriority
+                        ? selectedPriority.label
+                        : t("common:modals.createTask.priority")}
                     </span>
                   </button>
                 </PopoverTrigger>
@@ -460,7 +761,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                     ) : (
                       <>
                         <UserIcon className="w-3.5 h-3.5" />
-                        <span>Assign</span>
+                        <span>{t("common:modals.createTask.assign")}</span>
                       </>
                     )}
                   </button>
@@ -474,16 +775,20 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                     >
                       <div
                         className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center"
-                        title="Unassigned"
+                        title={t(
+                          "common:modals.createTask.assignUnassignedTitle",
+                        )}
                       >
                         <span className="text-[10px] font-medium text-muted-foreground">
                           ?
                         </span>
                       </div>
-                      <span className="text-sm">Unassigned</span>
+                      <span className="text-sm">
+                        {t("common:modals.createTask.assignUnassigned")}
+                      </span>
                       {!assigneeId && <Check className="ml-auto h-4 w-4" />}
                     </button>
-                    {workspace?.members?.map((member) => (
+                    {workspaceUsers?.members?.map((member) => (
                       <button
                         key={member.userId}
                         type="button"
@@ -522,7 +827,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                   >
                     <CalendarIcon className="w-3.5 h-3.5" />
                     <span>
-                      {dueDate ? format(dueDate, "MMM d, yyyy") : "Due date"}
+                      {dueDate
+                        ? formatDateMedium(dueDate)
+                        : t("common:modals.createTask.dueDate")}
                     </span>
                   </button>
                 </PopoverTrigger>
@@ -542,7 +849,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                         className="w-full text-xs"
                         onClick={() => setDueDate(undefined)}
                       >
-                        Clear due date
+                        {t("common:modals.createTask.clearDueDate")}
                       </Button>
                     </div>
                   )}
@@ -561,7 +868,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                     )}
                   >
                     <Tag className="w-3.5 h-3.5" />
-                    <span>Labels</span>
+                    <span>{t("common:modals.createTask.labels")}</span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="p-0" align="start">
@@ -573,7 +880,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                           ref={searchInputRef}
                           value={searchValue}
                           onChange={(e) => setSearchValue(e.target.value)}
-                          placeholder="Search labels..."
+                          placeholder={t(
+                            "common:modals.createTask.searchLabels",
+                          )}
                           className="w-full bg-transparent border-none text-foreground text-xs focus:outline-none placeholder:text-muted-foreground"
                         />
                       </div>
@@ -582,7 +891,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                         {filteredLabels.length === 0 &&
                           searchValue.length === 0 && (
                             <span className="text-xs text-muted-foreground px-2">
-                              No labels found
+                              {t("common:modals.createTask.noLabelsFound")}
                             </span>
                           )}
                         {filteredLabels.map((label) => (
@@ -606,7 +915,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                                   )?.color || "var(--color-neutral-400)",
                               }}
                             />
-                            <span className="truncate">{label.name}</span>
+                            <span className="relative max-w-20 truncate -top-0.5">
+                              {label.name}
+                            </span>
                           </button>
                         ))}
 
@@ -632,7 +943,9 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                               }}
                             />
                             <span className="truncate">
-                              Create "{searchValue}"
+                              {t("common:modals.createTask.createLabel", {
+                                name: searchValue,
+                              })}
                             </span>
                           </button>
                         )}
@@ -643,7 +956,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                     <div className="w-auto">
                       <div className="flex items-center justify-between p-2 border-b border-border">
                         <span className="text-xs font-medium">
-                          Choose color
+                          {t("common:modals.createTask.chooseColor")}
                         </span>
                         <button
                           type="button"
@@ -685,7 +998,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t border-border bg-background px-6 py-4">
             <div className="flex items-center gap-3 mr-auto">
               <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
                 <input
@@ -694,7 +1007,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
                   onChange={(e) => setCreateMore(e.target.checked)}
                   className="rounded border-border bg-background text-primary focus:ring-ring focus:ring-offset-0 focus:ring-2 transition-all"
                 />
-                Create more
+                {t("common:modals.createTask.createMore")}
               </label>
             </div>
 
@@ -705,7 +1018,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
               size="sm"
               className="border-border text-foreground hover:bg-accent"
             >
-              Cancel
+              {t("common:actions.cancel")}
             </Button>
             <Button
               type="submit"
@@ -713,7 +1026,7 @@ function CreateTaskModal({ open, onClose, status }: CreateTaskModalProps) {
               size="sm"
               className="disabled:opacity-50"
             >
-              Create Task
+              {t("common:modals.createTask.createButton")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BoardToolbar from "@/components/board/board-toolbar";
 import ProjectLayout from "@/components/common/project-layout";
 import KanbanBoard from "@/components/kanban-board";
 import ListView from "@/components/list-view";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
-import TableView from "@/components/table-view";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
 import { Input } from "@/components/ui/input";
 import { shortcuts } from "@/constants/shortcuts";
@@ -16,6 +16,8 @@ import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useTaskFiltersWithLabelsSupport } from "@/hooks/use-task-filters-with-labels-support";
+import type { SortConfig } from "@/lib/sort-tasks";
+import { sortTasks } from "@/lib/sort-tasks";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 
@@ -32,7 +34,48 @@ export const Route = createFileRoute(
   }),
 });
 
+const skeletonColumns = [
+  { key: "col-todo", cards: 3 },
+  { key: "col-progress", cards: 4 },
+  { key: "col-review", cards: 2 },
+  { key: "col-done", cards: 1 },
+];
+
+function BoardSkeleton() {
+  return (
+    <div className="flex h-full w-full gap-4 p-4 overflow-hidden">
+      {skeletonColumns.map((col) => (
+        <div key={col.key} className="flex w-72 shrink-0 flex-col gap-3">
+          <div className="flex items-center gap-2 px-1">
+            <div className="h-3 w-3 rounded-full bg-muted animate-pulse" />
+            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-5 rounded bg-muted animate-pulse" />
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {Array.from({ length: col.cards }, (_, i) => `${col.key}-${i}`).map(
+              (cardKey) => (
+                <div
+                  key={cardKey}
+                  className="rounded-lg border border-border bg-card p-3 space-y-2.5"
+                >
+                  <div className="h-3.5 w-4/5 rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-3/5 rounded bg-muted animate-pulse" />
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="h-5 w-5 rounded-full bg-muted animate-pulse" />
+                    <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RouteComponent() {
+  const { t } = useTranslation();
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
@@ -45,6 +88,10 @@ function RouteComponent() {
   const [isBoardSearchVisible, setIsBoardSearchVisible] = useState(false);
   const [boardSearchInput, setBoardSearchInput] =
     useState<HTMLInputElement | null>(null);
+  const [sort, setSort] = useState<SortConfig>({
+    field: "position",
+    direction: "asc",
+  });
 
   const { data: users } = useGetActiveWorkspaceUsers(workspaceId);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
@@ -62,7 +109,11 @@ function RouteComponent() {
       [shortcuts.view.prefix]: {
         [shortcuts.view.board]: () => setViewMode("board"),
         [shortcuts.view.list]: () => setViewMode("list"),
-        [shortcuts.view.table]: () => setViewMode("table"),
+        [shortcuts.view.gantt]: () =>
+          navigate({
+            to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
+            params: { workspaceId, projectId },
+          }),
         [shortcuts.view.backlog]: () =>
           navigate({
             to: "/dashboard/workspace/$workspaceId/project/$projectId/backlog",
@@ -117,6 +168,17 @@ function RouteComponent() {
     clearFilters,
   } = useTaskFiltersWithLabelsSupport(project, projectId, boardSearchQuery);
 
+  const sortedProject = useMemo(() => {
+    if (!filteredProject || sort.field === "position") return filteredProject;
+    return {
+      ...filteredProject,
+      columns: filteredProject.columns.map((column) => ({
+        ...column,
+        tasks: sortTasks(column.tasks, sort),
+      })),
+    };
+  }, [filteredProject, sort]);
+
   const boardHeaderSearch = isBoardSearchMounted ? (
     <div
       className={`relative w-[240px] origin-top transition-all duration-180 ease-out ${
@@ -140,7 +202,7 @@ function RouteComponent() {
             closeBoardSearch();
           }
         }}
-        placeholder="Search tickets..."
+        placeholder={t("tasks:boardSearchPlaceholder")}
         className="h-7.5 [&_[data-slot=input]]:h-7 [&_[data-slot=input]]:leading-7 [&_[data-slot=input]]:pl-8 [&_[data-slot=input]]:text-xs [&_[data-slot=input]]:placeholder:text-xs [&_[data-slot=input]]:placeholder:leading-7"
       />
     </div>
@@ -154,7 +216,7 @@ function RouteComponent() {
       headerActions={boardHeaderSearch}
     >
       <PageTitle
-        title={`${project?.name} — ${viewMode === "board" ? "Board" : viewMode === "table" ? "Table" : "List"}`}
+        title={`${project?.name} — ${viewMode === "board" ? t("tasks:view.board") : t("tasks:view.list")}`}
         hideAppName
       />
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
@@ -169,26 +231,31 @@ function RouteComponent() {
           workspaceLabels={workspaceLabels}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          sort={sort}
+          onSortChange={setSort}
         />
 
         <div className="flex h-full flex-1 overflow-hidden bg-background">
-          {filteredProject ? (
+          {sortedProject ? (
             viewMode === "board" ? (
-              <KanbanBoard project={filteredProject} />
-            ) : viewMode === "table" ? (
-              <TableView project={filteredProject} />
+              <KanbanBoard
+                project={sortedProject}
+                disableDragDrop={sort.field !== "position"}
+              />
             ) : (
-              <ListView project={filteredProject} />
+              <ListView
+                project={sortedProject}
+                disableDragDrop={sort.field !== "position"}
+              />
             )
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-foreground" />
-            </div>
+            <BoardSkeleton />
           )}
         </div>
 
         <CreateTaskModal
           open={isTaskModalOpen}
+          projectId={projectId}
           onClose={() => setIsTaskModalOpen(false)}
         />
 

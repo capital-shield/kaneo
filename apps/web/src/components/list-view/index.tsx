@@ -22,6 +22,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
 import { Archive, ChevronRight, Flag, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -32,14 +33,17 @@ import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
 import type { ProjectWithTasks } from "@/types/project";
 import BulkToolbar from "../bulk-selection/bulk-toolbar";
+import { ArchiveTasksModal } from "../shared/modals/archive-tasks-modal";
 import CreateTaskModal from "../shared/modals/create-task-modal";
 import TaskRow from "./task-row";
 
 type ListViewProps = {
   project: ProjectWithTasks;
+  disableDragDrop?: boolean;
 };
 
-function ListView({ project }: ListViewProps) {
+function ListView({ project, disableDragDrop = false }: ListViewProps) {
+  const { t } = useTranslation();
   const { setProject } = useProjectStore();
   const {
     setAvailableTasks,
@@ -65,6 +69,10 @@ function ListView({ project }: ListViewProps) {
   });
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [columnToArchive, setColumnToArchive] = useState<
+    ProjectWithTasks["columns"][number] | null
+  >(null);
 
   useEffect(() => {
     if (project?.columns) {
@@ -112,11 +120,11 @@ function ListView({ project }: ListViewProps) {
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: disableDragDrop ? 999999 : 8 },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200,
+        delay: disableDragDrop ? 999999 : 200,
         tolerance: 8,
       },
     }),
@@ -194,18 +202,30 @@ function ListView({ project }: ListViewProps) {
           updateTask({
             ...t,
             status: destinationColumn.id,
-            position: index + 1,
+            position: index,
           });
         });
       } else {
         task.status = destinationColumn.id;
-        destinationColumn.tasks.push(task);
+        const destinationIndex =
+          overId === destinationColumn.id
+            ? destinationColumn.tasks.length
+            : destinationColumn.tasks.findIndex((t) => t.id === overId) + 1;
+
+        destinationColumn.tasks.splice(destinationIndex, 0, task);
 
         destinationColumn.tasks.forEach((t, index) => {
           updateTask({
             ...t,
             status: destinationColumn.id,
-            position: index + 1,
+            position: index,
+          });
+        });
+
+        sourceColumn.tasks.forEach((t, index) => {
+          updateTask({
+            ...t,
+            position: index,
           });
         });
       }
@@ -221,16 +241,18 @@ function ListView({ project }: ListViewProps) {
     }));
   };
 
-  const handleArchiveTasks = (column: ProjectWithTasks["columns"][number]) => {
+  const handleArchiveClick = (column: ProjectWithTasks["columns"][number]) => {
     if (!column.isFinal || column.tasks.length === 0) return;
+    setColumnToArchive(column);
+    setIsArchiveModalOpen(true);
+  };
 
-    if (!confirm(`Archive all ${column.tasks.length} completed tasks?`)) {
-      return;
-    }
+  const handleConfirmArchive = () => {
+    if (!columnToArchive) return;
 
     const updatedProject = produce(project, (draft) => {
       const archivedColumn = draft?.columns?.find(
-        (col) => col.id === column.id,
+        (col) => col.id === columnToArchive.id,
       );
       if (!archivedColumn) return;
 
@@ -245,7 +267,12 @@ function ListView({ project }: ListViewProps) {
     });
 
     setProject(updatedProject);
-    toast.success(`Archived ${column.tasks.length} tasks`);
+    toast.success(
+      t("tasks:archive.success", { count: columnToArchive.tasks.length }),
+    );
+
+    setIsArchiveModalOpen(false);
+    setColumnToArchive(null);
   };
 
   function ColumnSection({
@@ -301,7 +328,7 @@ function ListView({ project }: ListViewProps) {
                 setActiveColumn(column.id);
               }}
               className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
-              title="Add task"
+              title={t("tasks:listView.addTask")}
             >
               <Plus className="w-3 h-3" />
             </button>
@@ -309,9 +336,9 @@ function ListView({ project }: ListViewProps) {
             {column.isFinal && column.tasks.length > 0 && (
               <button
                 type="button"
-                onClick={() => handleArchiveTasks(column)}
+                onClick={() => handleArchiveClick(column)}
                 className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
-                title="Archive all completed tasks"
+                title={t("tasks:listView.archiveAllTooltip")}
               >
                 <Archive className="w-3 h-3" />
               </button>
@@ -336,7 +363,7 @@ function ListView({ project }: ListViewProps) {
 
             {column.tasks.length === 0 && (
               <div className="py-6 px-4 text-center text-xs text-muted-foreground">
-                No tasks
+                {t("tasks:listView.noTasks")}
               </div>
             )}
           </div>
@@ -404,8 +431,18 @@ function ListView({ project }: ListViewProps) {
 
       <CreateTaskModal
         open={isTaskModalOpen}
+        projectId={project.id}
         onClose={() => setIsTaskModalOpen(false)}
         status={activeColumn ?? "done"}
+      />
+      <ArchiveTasksModal
+        open={isArchiveModalOpen}
+        onClose={() => {
+          setIsArchiveModalOpen(false);
+          setColumnToArchive(null);
+        }}
+        onConfirm={handleConfirmArchive}
+        taskCount={columnToArchive?.tasks.length ?? 0}
       />
 
       <BulkToolbar />

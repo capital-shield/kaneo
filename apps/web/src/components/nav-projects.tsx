@@ -6,9 +6,11 @@ import {
   Folder,
   Forward,
   MoreHorizontal,
+  Settings,
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -48,6 +50,7 @@ import {
 import { Button } from "./ui/button";
 
 export function NavProjects() {
+  const { t } = useTranslation();
   const { isMobile } = useSidebar();
   const { data: workspace } = useActiveWorkspace();
   const { data: projects } = useGetProjects({
@@ -97,7 +100,7 @@ export function NavProjects() {
               <SidebarGroupLabel className="h-7 cursor-pointer justify-between px-0 text-sidebar-accent-foreground" />
             }
           >
-            <span>Projects</span>
+            <span>{t("navigation:sidebar.projects")}</span>
             <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/60 transition-transform duration-200" />
           </CollapsibleTrigger>
           <CollapsiblePanel>
@@ -126,7 +129,9 @@ export function NavProjects() {
                           }
                         >
                           <MoreHorizontal />
-                          <span className="sr-only">More</span>
+                          <span className="sr-only">
+                            {t("navigation:sidebar.more")}
+                          </span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           className="w-44 rounded-lg"
@@ -138,7 +143,9 @@ export function NavProjects() {
                             onClick={() => handleProjectClick(project)}
                           >
                             <Folder className="text-muted-foreground" />
-                            <span>View Project</span>
+                            <span>
+                              {t("navigation:projectList.viewProject")}
+                            </span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="h-7 items-start cursor-pointer text-sm"
@@ -146,11 +153,29 @@ export function NavProjects() {
                               navigator.clipboard.writeText(
                                 `${window.location.origin}/dashboard/workspace/${workspace?.id}/project/${project.id}`,
                               );
-                              toast.success("Project link copied to clipboard");
+                              toast.success(
+                                t("navigation:projectList.linkCopied"),
+                              );
                             }}
                           >
                             <Forward className="text-muted-foreground" />
-                            <span>Share Project</span>
+                            <span>
+                              {t("navigation:projectList.shareProject")}
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="h-7 items-start cursor-pointer text-sm"
+                            onClick={() => {
+                              navigate({
+                                to: "/dashboard/settings/projects/$projectId/general",
+                                params: { projectId: project.id },
+                              });
+                            }}
+                          >
+                            <Settings className="text-muted-foreground" />
+                            <span>
+                              {t("navigation:projectList.projectSettings")}
+                            </span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -161,7 +186,9 @@ export function NavProjects() {
                             }}
                           >
                             <Trash2 className="text-destructive" />
-                            <span>Delete Project</span>
+                            <span>
+                              {t("navigation:projectList.deleteProject")}
+                            </span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -175,7 +202,7 @@ export function NavProjects() {
                     className="h-8 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
                     onClick={() => setIsCreateProjectModalOpen(true)}
                   >
-                    <span>Add project</span>
+                    <span>{t("navigation:projectList.addProject")}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -195,16 +222,17 @@ export function NavProjects() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("navigation:projectList.deleteConfirmTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the project and all its data. You
-              can't undo this action.
+              {t("navigation:projectList.deleteConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogClose>
               <Button variant="outline" size="sm">
-                Cancel
+                {t("common:actions.cancel")}
               </Button>
             </AlertDialogClose>
             <AlertDialogClose
@@ -212,7 +240,7 @@ export function NavProjects() {
                 await deleteProject({
                   id: projectToDeleteId || "",
                 });
-                toast.success("Project deleted");
+                toast.success(t("navigation:projectList.deletedToast"));
                 queryClient.invalidateQueries({
                   queryKey: ["projects"],
                 });
@@ -225,7 +253,7 @@ export function NavProjects() {
               }}
             >
               <Button variant="destructive" size="sm">
-                Delete Project
+                {t("navigation:projectList.deleteProject")}
               </Button>
             </AlertDialogClose>
           </AlertDialogFooter>

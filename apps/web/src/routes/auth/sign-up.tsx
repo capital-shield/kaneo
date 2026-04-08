@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { UserCheck } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import { AuthLayout } from "@/components/auth/layout";
 import { SignUpForm } from "@/components/auth/sign-up-form";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/auth/sign-up")({
 });
 
 function SignUp() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth/sign-up" });
   const [isGuestLoading, setIsGuestLoading] = useState(false);
@@ -42,11 +44,11 @@ function SignUp() {
       if (result.error) {
         throw new Error(result.error.message);
       }
-      toast.success("Signed in as guest");
+      toast.success(t("auth:signIn.guestSuccess"));
       navigate({ to: "/dashboard" });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to sign in as guest",
+        error instanceof Error ? error.message : t("auth:signIn.guestError"),
       );
     } finally {
       setIsGuestLoading(false);
@@ -55,59 +57,76 @@ function SignUp() {
 
   return (
     <>
-      <PageTitle title="Create Account" />
+      <PageTitle title={t("auth:signUp.pageTitle")} />
       <AuthLayout
-        title="Create account"
+        title={t("auth:signUp.title")}
         subtitle={
           invitationId
-            ? "Create an account to accept your invitation"
+            ? t("auth:signUp.subtitleInvitation")
             : config?.disableRegistration
-              ? "Registration requires an invitation"
-              : "Get started with your workspace"
+              ? t("auth:signUp.subtitleRegistrationDisabled")
+              : config?.disablePasswordRegistration
+                ? t("auth:signUp.subtitlePasswordDisabled")
+                : t("auth:signUp.subtitleDefault")
         }
       >
         <div className="space-y-4 mt-6">
           {invitationId && (
             <Alert>
               <AlertDescription>
-                After creating your account, you'll be able to accept your
-                workspace invitation.
+                {t("auth:signUp.invitationAlert")}
               </AlertDescription>
             </Alert>
           )}
           {config?.disableRegistration && !invitationId && (
             <Alert>
               <AlertDescription>
-                Registration is currently disabled. If you were invited, enter
-                the email address that received the invitation to create your
-                account.
+                {t("auth:signUp.registrationDisabledAlert")}
+              </AlertDescription>
+            </Alert>
+          )}
+          {config?.disablePasswordRegistration && (
+            <Alert>
+              <AlertDescription>
+                {t("auth:signUp.passwordDisabledAlert")}
               </AlertDescription>
             </Alert>
           )}
 
-          {config?.hasGuestAccess && !invitationId && (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleGuestAccess}
-                disabled={isGuestLoading}
-                className="w-full mb-0"
-                size="sm"
-              >
-                <UserCheck className="w-4 h-4 mr-2" />
-                {isGuestLoading ? "Signing in..." : "Continue as guest"}
-              </Button>
-              <div className="flex items-center gap-4 my-4">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-sm text-muted-foreground">or</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
-            </>
+          {config?.hasGuestAccess &&
+            !invitationId &&
+            !config?.disablePasswordRegistration && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleGuestAccess}
+                  disabled={isGuestLoading}
+                  className="w-full mb-0"
+                  size="sm"
+                >
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  {isGuestLoading
+                    ? t("auth:signUp.signingIn")
+                    : t("auth:signUp.continueAsGuest")}
+                </Button>
+                <div className="flex items-center gap-4 my-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-sm text-muted-foreground">
+                    {t("auth:forms.or")}
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              </>
+            )}
+          {!config?.disablePasswordRegistration && (
+            <SignUpForm
+              invitationId={invitationId}
+              defaultEmail={prefillEmail}
+            />
           )}
-          <SignUpForm invitationId={invitationId} defaultEmail={prefillEmail} />
           <AuthToggle
-            message="Already have an account?"
-            linkText="Sign in"
+            message={t("auth:signUp.toggleMessage")}
+            linkText={t("auth:signUp.toggleLink")}
             linkTo="/auth/sign-in"
           />
         </div>

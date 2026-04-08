@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -20,6 +21,7 @@ export default function TaskDueDatePopover({
   task,
   children,
 }: TaskDueDatePopoverProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
 
@@ -29,13 +31,13 @@ export default function TaskDueDatePopover({
         ...task,
         dueDate: date?.toISOString() || null,
       });
-      toast.success("Task due date updated successfully");
+      toast.success(t("tasks:popover.dueDate.updateSuccess"));
       setOpen(false);
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to update task due date",
+          : t("tasks:popover.dueDate.updateError"),
       );
     }
   };
@@ -48,18 +50,21 @@ export default function TaskDueDatePopover({
           mode="single"
           selected={task.dueDate ? new Date(task.dueDate) : undefined}
           onSelect={handleDateChange}
+          disabled={
+            task.startDate ? { before: new Date(task.startDate) } : undefined
+          }
           className="w-full bg-popover"
         />
         {task.dueDate && (
-          <div className="p-0 border-t border-border">
+          <div className="pt-2 border-t border-border">
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground rounded-none"
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
               onClick={() => handleDateChange(undefined)}
             >
               <X className="h-4 w-4" />
-              Clear date
+              {t("tasks:popover.dueDate.clear")}
             </Button>
           </div>
         )}

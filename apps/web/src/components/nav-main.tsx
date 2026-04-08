@@ -5,6 +5,7 @@ import {
   MailIcon,
   UsersIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -22,6 +23,7 @@ import { usePendingInvitations } from "@/hooks/queries/invitation/use-pending-in
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 
 export function NavMain() {
+  const { t } = useTranslation();
   const { data: workspace } = useActiveWorkspace();
   const navigate = useNavigate();
   const { data: invitations = [] } = usePendingInvitations();
@@ -32,7 +34,7 @@ export function NavMain() {
 
   const navItems = [
     {
-      title: "Projects",
+      title: t("navigation:sidebar.projects"),
       icon: <LayoutDashboardIcon className="h-4 w-4" />,
       url: `/dashboard/workspace/${workspace.id}`,
       isActive:
@@ -40,7 +42,7 @@ export function NavMain() {
       badge: null,
     },
     {
-      title: "Members",
+      title: t("navigation:sidebar.members"),
       icon: <UsersIcon className="h-4 w-4" />,
       url: `/dashboard/workspace/${workspace.id}/members`,
       isActive:
@@ -49,7 +51,7 @@ export function NavMain() {
       badge: null,
     },
     {
-      title: "Invitations",
+      title: t("navigation:sidebar.invitations"),
       icon: <MailIcon className="h-4 w-4" />,
       url: "/dashboard/invitations",
       isActive: window.location.pathname === "/dashboard/invitations",
@@ -66,14 +68,14 @@ export function NavMain() {
             <SidebarGroupLabel className="h-7 cursor-pointer justify-between px-0 text-sidebar-accent-foreground" />
           }
         >
-          <span>Overview</span>
+          <span>{t("navigation:sidebar.overview")}</span>
           <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/60 transition-transform duration-200" />
         </CollapsibleTrigger>
         <CollapsiblePanel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-0.5">
               {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={item.isActive}

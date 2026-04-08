@@ -1,90 +1,63 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import React from "react";
+import { resolveEmailLocale } from "./resolve-locale";
+import { EmailShell, styles } from "./shell";
 
 void React;
 
 export type MagicLinkEmailProps = {
   magicLink: string;
+  locale?: string | null;
 };
 
-const MagicLinkEmail = ({ magicLink }: MagicLinkEmailProps) => (
-  <Html>
-    <Head />
-    <Body style={main}>
-      <Preview>Log in with this magic link.</Preview>
-      <Container style={container}>
-        <Heading style={heading}>🪄 Your magic link for Kaneo</Heading>
-        <Section style={body}>
-          <Text style={paragraph}>
-            <Link style={link} href={magicLink}>
-              👉 Click here to sign in 👈
-            </Link>
-          </Text>
-          <Text style={paragraph}>
-            This link and code will only be valid for the next 5 minutes.
-          </Text>
-          <Text style={paragraph}>
-            If you didn't request this, please ignore this email.
-          </Text>
-          <Hr />
-          <Text style={footerParagraph}>Kaneo</Text>
-        </Section>
-      </Container>
-    </Body>
-  </Html>
-);
+const messages = {
+  en: {
+    preview: "Sign in to Kaneo",
+    title: "Your secure sign-in link",
+    subtitle: "Use this link to continue to your Kaneo workspace.",
+    cta: "Sign in to Kaneo",
+    expiry: "This link expires in 5 minutes for your security.",
+    ignore: "If you didn't request this, you can ignore this email.",
+    footer: "Kaneo security email",
+  },
+  de: {
+    preview: "Bei Kaneo anmelden",
+    title: "Dein sicherer Anmeldelink",
+    subtitle:
+      "Verwende diesen Link, um mit deinem Kaneo-Workspace fortzufahren.",
+    cta: "Bei Kaneo anmelden",
+    expiry: "Dieser Link laeuft aus Sicherheitsgruenden in 5 Minuten ab.",
+    ignore:
+      "Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren.",
+    footer: "Kaneo Sicherheits-E-Mail",
+  },
+} as const;
+
+const MagicLinkEmail = ({ magicLink, locale }: MagicLinkEmailProps) => {
+  const copy = messages[resolveEmailLocale(locale)];
+
+  return (
+    <EmailShell
+      preview={copy.preview}
+      title={copy.title}
+      subtitle={copy.subtitle}
+    >
+      <Section>
+        <Link style={styles.button} href={magicLink}>
+          {copy.cta}
+        </Link>
+        <Text style={styles.paragraph}>{copy.expiry}</Text>
+        <Text style={styles.muted}>{copy.ignore}</Text>
+        <Section style={styles.divider} />
+        <Text style={styles.footer}>{copy.footer}</Text>
+      </Section>
+    </EmailShell>
+  );
+};
 
 MagicLinkEmail.PreviewProps = {
   magicLink: "https://kaneo.app",
+  locale: "en-US",
 } as MagicLinkEmailProps;
 
 export default MagicLinkEmail;
-
-const main = {
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
-};
-
-const container = {
-  margin: "0 auto",
-  padding: "20px 25px 0px",
-};
-
-const _header = {
-  display: "inline-block",
-};
-
-const heading = {
-  fontSize: "28px",
-  fontWeight: "bold",
-};
-
-const body = {
-  margin: "24px 0",
-};
-
-const paragraph = {
-  fontSize: "16px",
-  lineHeight: "26px",
-};
-
-const link = {
-  color: "#5463FF",
-};
-
-const footerParagraph = {
-  fontSize: "14px",
-  lineHeight: "20px",
-  color: "#6B7280",
-};

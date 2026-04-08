@@ -16,6 +16,7 @@ type WorkspaceIdSource =
         | "label"
         | "timeEntry"
         | "activity"
+        | "comment"
         | "column"
         | "workflowRule";
       idKey: string;
@@ -24,6 +25,16 @@ type WorkspaceIdSource =
 type WorkspaceAccessMiddlewareConfig = {
   sources: WorkspaceIdSource[];
 };
+
+async function readJsonObjectBody(
+  c: Context,
+): Promise<Record<string, unknown>> {
+  const raw = (await c.req.json().catch(() => ({}))) || {};
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return {};
+  }
+  return raw as Record<string, unknown>;
+}
 
 export function workspaceAccessMiddleware(
   config: WorkspaceAccessMiddlewareConfig,
@@ -41,16 +52,17 @@ export function workspaceAccessMiddleware(
       if (source.type === "query") {
         workspaceId = c.req.query(source.key) || null;
       } else if (source.type === "body") {
-        const body = await c.req.json().catch(() => ({}));
-        workspaceId = body[source.key] || null;
+        const body = await readJsonObjectBody(c);
+        workspaceId =
+          typeof body[source.key] === "string" ? body[source.key] : null;
       } else if (source.type === "param") {
         workspaceId = c.req.param(source.key) || null;
       } else if (source.type === "lookup") {
-        const body = await c.req.json().catch(() => ({}));
+        const body = await readJsonObjectBody(c);
+        const idFromBody =
+          typeof body[source.idKey] === "string" ? body[source.idKey] : null;
         const id =
-          c.req.param(source.idKey) ||
-          c.req.query(source.idKey) ||
-          body[source.idKey];
+          c.req.param(source.idKey) || c.req.query(source.idKey) || idFromBody;
         if (id) {
           workspaceId = await lookupWorkspaceId(source.resource, id);
         }
@@ -85,6 +97,7 @@ async function lookupWorkspaceId(
     | "label"
     | "timeEntry"
     | "activity"
+    | "comment"
     | "column"
     | "workflowRule",
   id: string,
@@ -162,6 +175,25 @@ async function lookupWorkspaceId(
         return activity?.workspaceId || null;
       }
 
+      case "comment": {
+        const [comment] = await db
+          .select({
+            workspaceId: schema.projectTable.workspaceId,
+          })
+          .from(schema.commentTable)
+          .innerJoin(
+            schema.taskTable,
+            eq(schema.commentTable.taskId, schema.taskTable.id),
+          )
+          .innerJoin(
+            schema.projectTable,
+            eq(schema.taskTable.projectId, schema.projectTable.id),
+          )
+          .where(eq(schema.commentTable.id, id))
+          .limit(1);
+        return comment?.workspaceId || null;
+      }
+
       case "column": {
         const [column] = await db
           .select({
@@ -221,36 +253,65 @@ export const workspaceAccess = {
 
   fromTask: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "task", idKey }],
+      sources: [
+        { type: "lookup", resource: "task", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromTaskId: (idKey = "taskId") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "task", idKey }],
+      sources: [
+        { type: "lookup", resource: "task", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromLabel: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "label", idKey }],
+      sources: [
+        { type: "lookup", resource: "label", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromTimeEntry: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "timeEntry", idKey }],
+      sources: [
+        { type: "lookup", resource: "timeEntry", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromActivity: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "activity", idKey }],
+      sources: [
+        { type: "lookup", resource: "activity", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
+    }),
+
+  fromComment: (idKey = "id") =>
+    workspaceAccessMiddleware({
+      sources: [
+        { type: "lookup", resource: "comment", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromColumn: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "column", idKey }],
+      sources: [
+        { type: "lookup", resource: "column", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 
   fromWorkflowRule: (idKey = "id") =>
     workspaceAccessMiddleware({
-      sources: [{ type: "lookup", resource: "workflowRule", idKey }],
+      sources: [
+        { type: "lookup", resource: "workflowRule", idKey },
+        { type: "query", key: "workspaceId" },
+      ],
     }),
 };

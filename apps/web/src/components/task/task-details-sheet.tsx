@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Maximize2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
@@ -27,6 +28,7 @@ export default function TaskDetailsSheet({
   workspaceId,
   onClose,
 }: TaskDetailsSheetProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentTaskId, setCurrentTaskId] = useState<string | undefined>(
     taskId,
@@ -80,19 +82,21 @@ export default function TaskDetailsSheet({
                     variant="ghost"
                     size="sm"
                     onClick={handleOpenFullPage}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-foreground"
                   >
                     <Maximize2 className="size-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Open in full page</TooltipContent>
+                <TooltipContent>
+                  {t("tasks:detail.openInFullPage")}
+                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-foreground"
             >
               <X className="size-4" />
             </Button>
@@ -111,7 +115,7 @@ export default function TaskDetailsSheet({
             compact={true}
           />
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <div className="px-4 py-4">
               <TaskDetailsContent
                 taskId={currentTaskId}

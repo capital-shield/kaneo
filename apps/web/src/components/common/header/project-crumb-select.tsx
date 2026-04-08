@@ -1,4 +1,5 @@
 import { ChevronsUpDown, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/menu";
-import icons from "@/constants/project-icons";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 
 type ProjectCrumbSelectProps = {
@@ -27,6 +27,7 @@ export default function ProjectCrumbSelect({
   onSelectProject,
   onAddProject,
 }: ProjectCrumbSelectProps) {
+  const { t } = useTranslation();
   const { data: projects = [] } = useGetProjects({ workspaceId });
 
   return (
@@ -36,27 +37,25 @@ export default function ProjectCrumbSelect({
           <Button
             variant="ghost"
             size="xs"
-            className="h-7 justify-between px-2 text-xs text-foreground"
+            className="h-7 justify-between gap-2.5 px-2 text-xs text-foreground"
           />
         }
       >
         <span className="truncate text-left">
-          {projectName || "Select project"}
+          {projectName || t("settings:projectSwitcher.selectProject")}
         </span>
-        <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+        <ChevronsUpDown className="size-3 text-foreground/70" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-72" align="start">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="text-[11px] uppercase tracking-wide">
-            Projects
+            {t("navigation:sidebar.projects")}
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {(projects ?? []).length > 0 ? (
             (projects ?? []).map((project) => {
-              const Icon =
-                icons[project.icon as keyof typeof icons] || icons.Layout;
               return (
                 <DropdownMenuItem
                   key={project.id}
@@ -64,7 +63,6 @@ export default function ProjectCrumbSelect({
                   onClick={() => onSelectProject(project.id)}
                   className="h-8 gap-2 text-sm"
                 >
-                  <Icon className="size-3.5 text-muted-foreground" />
                   <span className="truncate">{project.name}</span>
                 </DropdownMenuItem>
               );
@@ -74,7 +72,7 @@ export default function ProjectCrumbSelect({
               disabled
               className="h-8 text-sm text-muted-foreground"
             >
-              No projects
+              {t("settings:projectSwitcher.noProjects")}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -85,7 +83,7 @@ export default function ProjectCrumbSelect({
             className="h-8 gap-2 text-sm"
           >
             <Plus className="size-3.5" />
-            Add project
+            {t("navigation:projectList.addProject")}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

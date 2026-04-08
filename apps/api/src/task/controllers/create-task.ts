@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, max } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable, userTable } from "../../database/schema";
@@ -10,6 +10,7 @@ async function createTask({
   userId,
   title,
   status,
+  startDate,
   dueDate,
   description,
   priority,
@@ -18,10 +19,13 @@ async function createTask({
   userId?: string;
   title: string;
   status: string;
+  startDate?: Date;
   dueDate?: Date;
   description?: string;
   priority?: string;
 }) {
+  const resolvedPriority = priority || "no-priority";
+
   const [assignee] = await db
     .select({ name: userTable.name })
     .from(userTable)
@@ -44,7 +48,21 @@ async function createTask({
       .limit(1)
       .then((rows) => rows[0]));
 
-  const resolvedStatus = column?.slug ?? status ?? "";
+  const resolvedStatus = column?.slug ?? status ?? "to-do";
+
+  const [maxPositionResult] = await db
+    .select({ maxPosition: max(taskTable.position) })
+    .from(taskTable)
+    .where(
+      and(
+        eq(taskTable.projectId, projectId),
+        column?.id
+          ? eq(taskTable.columnId, column.id)
+          : eq(taskTable.status, resolvedStatus),
+      ),
+    );
+
+  const nextPosition = (maxPositionResult?.maxPosition ?? 0) + 1;
 
   const [createdTask] = await db
     .insert(taskTable)
@@ -54,10 +72,12 @@ async function createTask({
       title: title || "",
       status: resolvedStatus,
       columnId: column?.id ?? null,
+      startDate: startDate || null,
       dueDate: dueDate || null,
       description: description || "",
-      priority: priority || "",
+      priority: resolvedPriority,
       number: nextTaskNumber + 1,
+      position: nextPosition,
     })
     .returning();
 
@@ -72,7 +92,7 @@ async function createTask({
     taskId: createdTask.id,
     userId: createdTask.userId ?? "",
     type: "task",
-    content: "created the task",
+    content: null,
   });
 
   return {

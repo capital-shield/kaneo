@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { Eye, GitBranch, Plug, Settings } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,33 +33,33 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
-const menuItems = [
-  {
-    title: "General",
-    icon: Settings,
-    segment: "general",
-  },
-  {
-    title: "Visibility",
-    icon: Eye,
-    segment: "visibility",
-  },
-  {
-    title: "Integrations",
-    icon: Plug,
-    segment: "integrations",
-  },
-  {
-    title: "Workflow",
-    icon: GitBranch,
-    segment: "workflow",
-  },
-];
-
 function RouteComponent() {
+  const { t } = useTranslation();
   const { workspace, role } = useWorkspacePermission();
   const location = useLocation();
   const navigate = useNavigate();
+  const menuItems = [
+    {
+      title: t("settings:projectGeneral.title"),
+      icon: Settings,
+      segment: "general",
+    },
+    {
+      title: t("settings:projectVisibility.title"),
+      icon: Eye,
+      segment: "visibility",
+    },
+    {
+      title: t("settings:projectIntegrations.title"),
+      icon: Plug,
+      segment: "integrations",
+    },
+    {
+      title: t("settings:projectWorkflow.title"),
+      icon: GitBranch,
+      segment: "workflow",
+    },
+  ];
   const { data: projects } = useGetProjects({
     workspaceId: workspace?.id || "",
   });
@@ -110,21 +111,21 @@ function RouteComponent() {
                 src={workspace?.logo ?? ""}
                 alt={workspace?.name || ""}
               />
-              <AvatarFallback className="border border-border/70 bg-accent/70 text-[11px] font-medium text-accent-foreground">
+              <AvatarFallback className="border border-sidebar-border/70 bg-sidebar-accent/70 text-[11px] font-medium text-sidebar-accent-foreground">
                 {workspaceInitials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <p className="text-sm">{workspace?.name}</p>
-              <p className="text-[11px] text-foreground/60 capitalize">
-                {role}
+              <p className="text-[11px] text-sidebar-foreground/60 capitalize">
+                {t(`team:roles.${role}`, { defaultValue: role })}
               </p>
             </div>
           </div>
 
           <SidebarGroup className="gap-1 p-1">
-            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-foreground/70">
-              Project
+            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-sidebar-foreground/70">
+              {t("navigation:projectSettings.projectLabel")}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <Select
@@ -147,7 +148,9 @@ function RouteComponent() {
                 >
                   <span className="truncate font-normal text-foreground">
                     {selectedProject?.name ||
-                      (projects?.length ? "Select project" : "No projects")}
+                      (projects?.length
+                        ? t("settings:projectSwitcher.selectProject")
+                        : t("settings:projectSwitcher.noProjects"))}
                   </span>
                 </SelectTrigger>
                 <SelectContent
@@ -170,8 +173,8 @@ function RouteComponent() {
           </SidebarGroup>
 
           <SidebarGroup className="gap-1 p-1">
-            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-foreground/70">
-              Settings
+            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-sidebar-foreground/70">
+              {t("navigation:page.settingsTitle")}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
@@ -189,8 +192,9 @@ function RouteComponent() {
                         size="sm"
                         disabled={!selectedProject}
                         className={cn(
-                          "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-foreground/80",
-                          isActive && "bg-accent text-accent-foreground",
+                          "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-sidebar-foreground/80",
+                          isActive &&
+                            "bg-sidebar-accent text-sidebar-accent-foreground",
                         )}
                       >
                         <item.icon className="h-3.5 w-3.5" />

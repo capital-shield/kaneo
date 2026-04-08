@@ -1,20 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
-import {
-  ArrowRight,
-  Calendar,
-  Filter,
-  Plus,
-  Rows3,
-  Table2,
-  User,
-  X,
-} from "lucide-react";
+import { ArrowRight, Calendar, Filter, Plus, User, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BacklogListView from "@/components/backlog-list-view";
-import BacklogTableView from "@/components/backlog-list-view/backlog-table-view";
 import ProjectLayout from "@/components/common/project-layout";
+import SortControl from "@/components/common/sort-control";
 import PageTitle from "@/components/page-title";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import TaskDetailsSheet from "@/components/task/task-details-sheet";
@@ -37,7 +29,11 @@ import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-wor
 import { useGetTasks } from "@/hooks/queries/task/use-get-tasks";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { DUE_DATE_FILTER_VALUES } from "@/hooks/use-task-filters";
+import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
+import type { SortConfig } from "@/lib/sort-tasks";
+import { sortTasks } from "@/lib/sort-tasks";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
@@ -57,6 +53,7 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
+  const { t } = useTranslation();
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
@@ -64,6 +61,10 @@ function RouteComponent() {
   const { project, setProject } = useProjectStore();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const { mutate: updateTask } = useUpdateTask();
+  const [sort, setSort] = useState<SortConfig>({
+    field: "position",
+    direction: "asc",
+  });
 
   const { data: users } = useGetActiveWorkspaceUsers(workspaceId);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
@@ -77,8 +78,7 @@ function RouteComponent() {
     });
   }, [navigate]);
 
-  const { setViewMode, backlogViewMode, setBacklogViewMode } =
-    useUserPreferencesStore();
+  const { setViewMode } = useUserPreferencesStore();
 
   useRegisterShortcuts({
     sequentialShortcuts: {
@@ -97,8 +97,13 @@ function RouteComponent() {
             params: { workspaceId, projectId },
           });
         },
+        [shortcuts.view.gantt]: () => {
+          navigate({
+            to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
+            params: { workspaceId, projectId },
+          });
+        },
         [shortcuts.view.backlog]: () => {},
-        [shortcuts.view.table]: () => setBacklogViewMode("table"),
       },
     },
   });
@@ -142,13 +147,9 @@ function RouteComponent() {
     }
   }, [data, setProject]);
 
-  const getPriorityDisplayName = (priority: string) => {
-    return priority.charAt(0).toUpperCase() + priority.slice(1);
-  };
-
   const getAssigneeDisplayName = (userId: string) => {
     const member = users?.members?.find((m) => m.userId === userId);
-    return member?.user?.name || "Unknown";
+    return member?.user?.name || t("common:people.unknown");
   };
 
   const getTaskLabels = useCallback(
@@ -180,7 +181,7 @@ function RouteComponent() {
           const taskDate = new Date(task.dueDate);
 
           switch (filters.dueDate) {
-            case "Due this week": {
+            case DUE_DATE_FILTER_VALUES.dueThisWeek: {
               const weekStart = new Date(
                 today.getFullYear(),
                 today.getMonth(),
@@ -194,7 +195,7 @@ function RouteComponent() {
               }
               break;
             }
-            case "Due next week": {
+            case DUE_DATE_FILTER_VALUES.dueNextWeek: {
               const nextWeekStart = new Date(
                 today.getFullYear(),
                 today.getMonth(),
@@ -208,13 +209,16 @@ function RouteComponent() {
               }
               break;
             }
-            case "No due date": {
+            case DUE_DATE_FILTER_VALUES.noDueDate: {
               return false;
             }
           }
         }
 
-        if (filters.dueDate === "No due date" && task.dueDate) {
+        if (
+          filters.dueDate === DUE_DATE_FILTER_VALUES.noDueDate &&
+          task.dueDate
+        ) {
           return false;
         }
 
@@ -290,17 +294,30 @@ function RouteComponent() {
     }
   };
 
+  const sortedProject = useMemo(() => {
+    if (!filteredProject || sort.field === "position") return filteredProject;
+    return {
+      ...filteredProject,
+      plannedTasks: sortTasks(filteredProject.plannedTasks || [], sort),
+      archivedTasks: sortTasks(filteredProject.archivedTasks || [], sort),
+    };
+  }, [filteredProject, sort]);
+
   const handleMoveAllPlannedToTodo = () => {
     if (!project) return;
 
     const plannedTasks = project.plannedTasks || [];
 
     if (plannedTasks.length === 0) {
-      toast.info("No planned tasks to move");
+      toast.info(t("tasks:backlog.noTasksToMove"));
       return;
     }
 
-    if (!confirm(`Move all ${plannedTasks.length} planned tasks to To Do?`)) {
+    if (
+      !confirm(
+        t("tasks:backlog.moveAllConfirm", { count: plannedTasks.length }),
+      )
+    ) {
       return;
     }
 
@@ -326,7 +343,9 @@ function RouteComponent() {
     });
 
     setProject(updatedProject);
-    toast.success(`Moved ${plannedTasks.length} tasks to To Do`);
+    toast.success(
+      t("tasks:backlog.moveAllSuccess", { count: plannedTasks.length }),
+    );
   };
 
   return (
@@ -335,31 +354,33 @@ function RouteComponent() {
       workspaceId={workspaceId}
       activeView="backlog"
     >
-      <PageTitle title={`${project?.name}'s backlog`} />
+      <PageTitle
+        title={t("tasks:backlog.pageTitle", { name: project?.name })}
+      />
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
         <div className="border-border/80 border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/70">
           <div className="flex min-h-12 items-center px-3 py-2 md:px-4">
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex w-full items-center gap-2">
+              <div className="flex w-full flex-wrap items-center gap-1.5">
                 <Button
                   variant="ghost"
                   size="xs"
                   onClick={() => setIsTaskModalOpen(true)}
-                  className="h-6 px-2 text-xs text-foreground hover:bg-accent hover:text-accent-foreground"
+                  className="h-6 px-2 text-xs text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 >
                   <Plus className="h-3 w-3 mr-1" />
-                  Plan
+                  {t("tasks:backlog.plan")}
                 </Button>
 
                 <Button
                   variant="ghost"
                   size="xs"
                   onClick={handleMoveAllPlannedToTodo}
-                  className="h-6 px-2 text-xs text-foreground hover:bg-accent hover:text-accent-foreground"
-                  title="Move All Planned to To Do"
+                  className="h-6 px-2 text-xs text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  title={t("tasks:backlog.moveAllTooltip")}
                 >
                   <ArrowRight className="h-3 w-3 mr-1" />
-                  Move All
+                  {t("tasks:backlog.moveAll")}
                 </Button>
 
                 {filters.priority && (
@@ -370,7 +391,9 @@ function RouteComponent() {
                   >
                     {getPriorityIcon(filters.priority)}
                     <span>
-                      Priority: {getPriorityDisplayName(filters.priority)}
+                      {t("tasks:backlog.filters.priority", {
+                        name: getPriorityLabel(filters.priority),
+                      })}
                     </span>
                     <Button
                       variant="ghost"
@@ -394,7 +417,9 @@ function RouteComponent() {
                   >
                     <User className="h-3 w-3" />
                     <span>
-                      Assignee: {getAssigneeDisplayName(filters.assignee)}
+                      {t("tasks:backlog.filters.assignee", {
+                        name: getAssigneeDisplayName(filters.assignee),
+                      })}
                     </span>
                     <Button
                       variant="ghost"
@@ -417,7 +442,19 @@ function RouteComponent() {
                     className="h-7 rounded-md px-2 text-xs font-medium gap-1.5"
                   >
                     <Calendar className="h-3 w-3" />
-                    <span>Due: {filters.dueDate}</span>
+                    <span>
+                      {t("tasks:backlog.filters.due", {
+                        date: t(
+                          filters.dueDate === DUE_DATE_FILTER_VALUES.dueThisWeek
+                            ? "tasks:backlog.filters.dueThisWeek"
+                            : filters.dueDate ===
+                                DUE_DATE_FILTER_VALUES.dueNextWeek
+                              ? "tasks:backlog.filters.dueNextWeek"
+                              : "tasks:backlog.filters.noDueDate",
+                          { defaultValue: filters.dueDate },
+                        ),
+                      })}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -461,7 +498,11 @@ function RouteComponent() {
                                 ?.color || "var(--color-neutral-400)",
                           }}
                         />
-                        <span>Label: {label.name}</span>
+                        <span>
+                          {t("tasks:backlog.filters.label", {
+                            name: label.name,
+                          })}
+                        </span>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -476,6 +517,8 @@ function RouteComponent() {
                       </Button>
                     ))}
 
+                <SortControl sort={sort} onSortChange={setSort} />
+
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -487,14 +530,14 @@ function RouteComponent() {
                     }
                   >
                     <Filter className="h-3.5 w-3.5" />
-                    Filter
+                    {t("tasks:backlog.filter")}
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-80" align="start">
                     <DropdownMenuItem
                       disabled
                       className="h-8 rounded-md border border-border/80 bg-card text-sm text-muted-foreground"
                     >
-                      Add filter...
+                      {t("tasks:backlog.addFilter")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     {hasActiveFilters && (
@@ -503,14 +546,14 @@ function RouteComponent() {
                           onClick={clearFilters}
                           className="h-8 text-sm text-muted-foreground"
                         >
-                          <span>Clear all filters</span>
+                          <span>{t("common:actions.clearAllFilters")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                       </>
                     )}
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="text-[11px] uppercase tracking-wide">
-                        Priority
+                        {t("tasks:priority.label")}
                       </DropdownMenuLabel>
                     </DropdownMenuGroup>
                     {["urgent", "high", "medium", "low"].map((priority) => (
@@ -520,17 +563,19 @@ function RouteComponent() {
                         onCheckedChange={(checked) =>
                           updateFilter("priority", checked ? priority : null)
                         }
-                        className="h-8 rounded-md text-sm [&_svg]:text-foreground"
+                        className="h-8 rounded-md text-sm [&_svg]:text-sidebar-foreground"
                       >
                         {getPriorityIcon(priority)}
-                        <span className="capitalize">{priority}</span>
+                        <span className="capitalize">
+                          {getPriorityLabel(priority)}
+                        </span>
                       </DropdownMenuCheckboxItem>
                     ))}
 
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="text-[11px] uppercase tracking-wide">
-                        Assignee
+                        {t("tasks:assignee.label")}
                       </DropdownMenuLabel>
                     </DropdownMenuGroup>
                     {users?.members?.map((member) => (
@@ -561,28 +606,39 @@ function RouteComponent() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="text-[11px] uppercase tracking-wide">
-                        Due date
+                        {t("tasks:dueDate.label")}
                       </DropdownMenuLabel>
                     </DropdownMenuGroup>
-                    {["Due this week", "Due next week", "No due date"].map(
-                      (dueDate) => (
-                        <DropdownMenuCheckboxItem
-                          key={dueDate}
-                          checked={filters.dueDate === dueDate}
-                          onCheckedChange={(checked) =>
-                            updateFilter("dueDate", checked ? dueDate : null)
-                          }
-                          className="h-8 rounded-md text-sm"
-                        >
-                          <span>{dueDate}</span>
-                        </DropdownMenuCheckboxItem>
-                      ),
-                    )}
+                    {[
+                      {
+                        label: DUE_DATE_FILTER_VALUES.dueThisWeek,
+                        key: "dueThisWeek",
+                      },
+                      {
+                        label: DUE_DATE_FILTER_VALUES.dueNextWeek,
+                        key: "dueNextWeek",
+                      },
+                      {
+                        label: DUE_DATE_FILTER_VALUES.noDueDate,
+                        key: "noDueDate",
+                      },
+                    ].map((item) => (
+                      <DropdownMenuCheckboxItem
+                        key={item.label}
+                        checked={filters.dueDate === item.label}
+                        onCheckedChange={(checked) =>
+                          updateFilter("dueDate", checked ? item.label : null)
+                        }
+                        className="h-8 rounded-md text-sm"
+                      >
+                        <span>{t(`tasks:backlog.filters.${item.key}`)}</span>
+                      </DropdownMenuCheckboxItem>
+                    ))}
 
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="text-[11px] uppercase tracking-wide">
-                        Labels
+                        {t("tasks:labels.label")}
                       </DropdownMenuLabel>
                     </DropdownMenuGroup>
                     {uniqueLabels.length > 0 ? (
@@ -607,7 +663,9 @@ function RouteComponent() {
                                   )?.color || "var(--color-neutral-400)",
                               }}
                             />
-                            <span>{label.name}</span>
+                            <span className="relative max-w-20 -top-0.5 truncate">
+                              {label.name}
+                            </span>
                           </DropdownMenuCheckboxItem>
                         ),
                       )
@@ -616,50 +674,22 @@ function RouteComponent() {
                         disabled
                         className="h-8 rounded-md text-sm text-muted-foreground"
                       >
-                        <span>No labels available</span>
+                        <span>{t("tasks:labels.empty")}</span>
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-
-              <div className="inline-flex items-center gap-1 flex-shrink-0">
-                <button
-                  type="button"
-                  className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
-                    backlogViewMode === "list"
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                  }`}
-                  onClick={() => setBacklogViewMode("list")}
-                >
-                  <Rows3 className="h-3 w-3" />
-                  List
-                </button>
-                <button
-                  type="button"
-                  className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-xs font-medium transition-colors ${
-                    backlogViewMode === "table"
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                  }`}
-                  onClick={() => setBacklogViewMode("table")}
-                >
-                  <Table2 className="h-3 w-3" />
-                  Table
-                </button>
               </div>
             </div>
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden bg-card h-full">
-          {filteredProject ? (
-            backlogViewMode === "table" ? (
-              <BacklogTableView project={filteredProject} />
-            ) : (
-              <BacklogListView project={filteredProject} />
-            )
+          {sortedProject ? (
+            <BacklogListView
+              project={sortedProject}
+              disableDragDrop={sort.field !== "position"}
+            />
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center space-y-4">
@@ -675,6 +705,7 @@ function RouteComponent() {
 
         <CreateTaskModal
           open={isTaskModalOpen}
+          projectId={projectId}
           onClose={() => setIsTaskModalOpen(false)}
           status="planned"
         />

@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -31,6 +32,7 @@ export default function TaskLabelsPopover({
   children,
   triggerNativeButton = true,
 }: TaskLabelsPopoverProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<PopoverStep>("select");
   const [searchValue, setSearchValue] = useState("");
@@ -108,7 +110,7 @@ export default function TaskLabelsPopover({
         );
         if (taskLabel?.id) {
           await deleteLabel({ id: taskLabel.id });
-          toast.success("Label removed");
+          toast.success(t("tasks:popover.labels.removeSuccess"));
         }
       } else {
         // Add label to task
@@ -118,7 +120,7 @@ export default function TaskLabelsPopover({
           taskId: task.id,
           workspaceId,
         });
-        toast.success("Label added");
+        toast.success(t("tasks:popover.labels.addSuccess"));
       }
 
       // Invalidate all relevant queries
@@ -130,7 +132,9 @@ export default function TaskLabelsPopover({
       });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update label",
+        error instanceof Error
+          ? error.message
+          : t("tasks:popover.labels.updateError"),
       );
     }
   };
@@ -170,11 +174,13 @@ export default function TaskLabelsPopover({
         queryKey: ["labels", workspaceId],
       });
 
-      toast.success("Label created and added");
+      toast.success(t("tasks:popover.labels.createSuccess"));
       handleClose();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create label",
+        error instanceof Error
+          ? error.message
+          : t("tasks:popover.labels.createError"),
       );
     }
   };
@@ -187,7 +193,7 @@ export default function TaskLabelsPopover({
           ref={searchInputRef}
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="Search labels..."
+          placeholder={t("tasks:popover.labels.searchPlaceholder")}
           className="border-none p-0 h-auto focus-visible:ring-0 shadow-none !bg-transparent"
         />
       </div>
@@ -195,7 +201,7 @@ export default function TaskLabelsPopover({
       <div className="py-1">
         {filteredLabels.length === 0 && searchValue.length === 0 && (
           <span className="text-xs text-muted-foreground px-2">
-            No labels found
+            {t("tasks:popover.labels.empty")}
           </span>
         )}
         {filteredLabels.map((label) => (
@@ -218,7 +224,9 @@ export default function TaskLabelsPopover({
                   "var(--color-neutral-400)",
               }}
             />
-            <span className="truncate">{label.name}</span>
+            <span className="relative max-w-20 -top-0.5 truncate">
+              {label.name}
+            </span>
           </button>
         ))}
 
@@ -242,7 +250,9 @@ export default function TaskLabelsPopover({
                   "var(--color-neutral-400)",
               }}
             />
-            <span className="truncate">Create "{searchValue}"</span>
+            <span className="truncate">
+              {t("tasks:popover.labels.create", { name: searchValue })}
+            </span>
           </button>
         )}
       </div>
@@ -252,7 +262,9 @@ export default function TaskLabelsPopover({
   const renderColorStep = () => (
     <div className="w-auto">
       <div className="flex items-center justify-between p-2 border-b border-border">
-        <span className="text-xs font-medium">Choose color</span>
+        <span className="text-xs font-medium">
+          {t("tasks:popover.labels.chooseColor")}
+        </span>
         <button
           type="button"
           onClick={() => setStep("select")}
@@ -277,7 +289,9 @@ export default function TaskLabelsPopover({
               className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: color.color }}
             />
-            <span className="truncate">{color.label}</span>
+            <span className="truncate">
+              {t(`tasks:popover.labels.colors.${color.key}`)}
+            </span>
             {selectedColor === color.value && (
               <Check className="w-3 h-3 ml-auto" />
             )}

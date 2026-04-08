@@ -1,6 +1,8 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
+import useProjectStore from "@/store/project";
 import type { ProjectWithTasks } from "@/types/project";
 import { ColumnDropzone } from "./column-dropzone";
 import { ColumnHeader } from "./column-header";
@@ -10,8 +12,10 @@ type ColumnProps = {
 };
 
 function Column({ column }: ColumnProps) {
+  const { t } = useTranslation();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isDropzoneOver, setIsDropzoneOver] = useState(false);
+  const { project } = useProjectStore();
 
   return (
     <div
@@ -24,6 +28,7 @@ function Column({ column }: ColumnProps) {
       <CreateTaskModal
         open={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
+        projectId={project?.id}
         status={column.id}
       />
 
@@ -42,7 +47,7 @@ function Column({ column }: ColumnProps) {
           className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm text-muted-foreground transition-all hover:bg-accent/50 hover:text-foreground"
         >
           <Plus className="w-4 h-4" />
-          <span>Add task</span>
+          <span>{t("tasks:kanban.addTask")}</span>
         </button>
       </div>
     </div>

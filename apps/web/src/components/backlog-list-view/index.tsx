@@ -22,6 +22,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
 import { Archive, ChevronRight, Clock, Flag, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { priorityColorsTaskCard } from "@/constants/priority-colors";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -36,9 +37,14 @@ import BacklogTaskRow from "./backlog-task-row";
 
 type BacklogListViewProps = {
   project?: ProjectWithTasks;
+  disableDragDrop?: boolean;
 };
 
-function BacklogListView({ project }: BacklogListViewProps) {
+function BacklogListView({
+  project,
+  disableDragDrop = false,
+}: BacklogListViewProps) {
+  const { t } = useTranslation();
   const { mutate: updateTask } = useUpdateTask();
   const { setProject } = useProjectStore();
   const {
@@ -114,11 +120,11 @@ function BacklogListView({ project }: BacklogListViewProps) {
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: disableDragDrop ? 999999 : 8 },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200,
+        delay: disableDragDrop ? 999999 : 200,
         tolerance: 8,
       },
     }),
@@ -232,7 +238,7 @@ function BacklogListView({ project }: BacklogListViewProps) {
         finalTasks.forEach((t, index) => {
           updateTask({
             ...t,
-            position: index + 1,
+            position: index,
           });
         });
       } else {
@@ -253,7 +259,19 @@ function BacklogListView({ project }: BacklogListViewProps) {
           updateTask({
             ...t,
             status: targetSection,
-            position: index + 1,
+            position: index,
+          });
+        });
+
+        const sourceTasks =
+          activeTask.status === "planned"
+            ? draft.plannedTasks || []
+            : draft.archivedTasks || [];
+
+        sourceTasks.forEach((t, index) => {
+          updateTask({
+            ...t,
+            position: index,
           });
         });
       }
@@ -314,7 +332,11 @@ function BacklogListView({ project }: BacklogListViewProps) {
             <div className="flex items-center gap-2 h-4">
               <IconComponent className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
               <div className="flex items-center gap-1">
-                <span className="mt-1 mr-1">{title}</span>
+                <span className="mt-1 mr-1">
+                  {t(`tasks:backlog.sections.${sectionId}`, {
+                    defaultValue: title,
+                  })}
+                </span>
                 <span className="text-xs text-muted-foreground mt-0.5">
                   {tasks.length}
                 </span>
@@ -331,7 +353,7 @@ function BacklogListView({ project }: BacklogListViewProps) {
                   setActiveColumn("planned");
                 }}
                 className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
-                title="Add task"
+                title={t("tasks:backlog.addTask")}
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -352,7 +374,11 @@ function BacklogListView({ project }: BacklogListViewProps) {
 
             {tasks.length === 0 && (
               <div className="py-6 px-4 text-center text-xs text-muted-foreground">
-                No {title.toLowerCase()} tasks
+                {t("tasks:backlog.noTasksInSection", {
+                  section: t(`tasks:backlog.sections.${sectionId}`, {
+                    defaultValue: title,
+                  }).toLowerCase(),
+                })}
               </div>
             )}
           </div>
@@ -385,7 +411,7 @@ function BacklogListView({ project }: BacklogListViewProps) {
         <div className="divide-y divide-border/50">
           <BacklogSection
             sectionId="planned"
-            title="Planned"
+            title={t("tasks:backlog.sections.planned")}
             icon={Clock}
             tasks={plannedTasks}
             showAddButton={true}
@@ -393,7 +419,7 @@ function BacklogListView({ project }: BacklogListViewProps) {
 
           <BacklogSection
             sectionId="archived"
-            title="Archived"
+            title={t("tasks:backlog.sections.archived")}
             icon={Archive}
             tasks={archivedTasks}
           />
@@ -432,6 +458,7 @@ function BacklogListView({ project }: BacklogListViewProps) {
 
       <CreateTaskModal
         open={isTaskModalOpen}
+        projectId={project?.id}
         onClose={() => setIsTaskModalOpen(false)}
         status={activeColumn ?? "planned"}
       />

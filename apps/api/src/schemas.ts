@@ -18,6 +18,7 @@ export const projectSchema = v.object({
   description: v.nullable(v.string()),
   createdAt: v.date(),
   isPublic: v.nullable(v.boolean()),
+  archivedAt: v.nullable(v.date()),
 });
 
 export const taskSchema = v.object({
@@ -36,6 +37,7 @@ export const taskSchema = v.object({
     "high",
     "urgent",
   ] as const),
+  startDate: v.optional(v.date()),
   dueDate: v.optional(v.date()),
   createdAt: v.date(),
 });
@@ -58,6 +60,7 @@ export const activitySchema = v.object({
   createdAt: v.date(),
   userId: v.nullable(v.string()),
   content: v.nullable(v.string()),
+  eventData: v.nullable(v.record(v.string(), v.unknown())),
   externalUserName: v.nullable(v.string()),
   externalUserAvatar: v.nullable(v.string()),
   externalSource: v.nullable(v.string()),
@@ -78,7 +81,7 @@ export const timeEntrySchema = v.object({
 export const notificationSchema = v.object({
   id: v.string(),
   userId: v.string(),
-  title: v.string(),
+  title: v.nullable(v.string()),
   content: v.nullable(v.string()),
   type: v.picklist([
     "info",
@@ -87,11 +90,53 @@ export const notificationSchema = v.object({
     "task_status_changed",
     "task_assignee_changed",
     "time_entry_created",
+    "due_date_reminder",
+    "task_overdue",
   ] as const),
+  eventData: v.nullable(v.record(v.string(), v.unknown())),
   isRead: v.optional(v.boolean()),
   resourceId: v.optional(v.string()),
   resourceType: v.optional(v.picklist(["task", "workspace"] as const)),
   createdAt: v.date(),
+});
+
+export const notificationPreferenceWorkspaceRuleSchema = v.object({
+  id: v.string(),
+  workspaceId: v.string(),
+  workspaceName: v.string(),
+  isActive: v.boolean(),
+  emailEnabled: v.boolean(),
+  ntfyEnabled: v.boolean(),
+  gotifyEnabled: v.boolean(),
+  webhookEnabled: v.boolean(),
+  projectMode: v.picklist(["all", "selected"] as const),
+  selectedProjectIds: v.array(v.string()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const notificationPreferenceSchema = v.object({
+  emailAddress: v.nullable(v.string()),
+  emailEnabled: v.boolean(),
+  ntfyEnabled: v.boolean(),
+  ntfyConfigured: v.boolean(),
+  ntfyServerUrl: v.nullable(v.string()),
+  ntfyTopic: v.nullable(v.string()),
+  ntfyTokenConfigured: v.boolean(),
+  maskedNtfyToken: v.nullable(v.string()),
+  gotifyEnabled: v.boolean(),
+  gotifyConfigured: v.boolean(),
+  gotifyServerUrl: v.nullable(v.string()),
+  gotifyTokenConfigured: v.boolean(),
+  maskedGotifyToken: v.nullable(v.string()),
+  webhookEnabled: v.boolean(),
+  webhookConfigured: v.boolean(),
+  webhookUrl: v.nullable(v.string()),
+  webhookSecretConfigured: v.boolean(),
+  maskedWebhookSecret: v.nullable(v.string()),
+  workspaces: v.array(notificationPreferenceWorkspaceRuleSchema),
+  createdAt: v.nullable(v.date()),
+  updatedAt: v.nullable(v.date()),
 });
 
 export const githubIntegrationSchema = v.object({
@@ -100,13 +145,107 @@ export const githubIntegrationSchema = v.object({
   repositoryOwner: v.string(),
   repositoryName: v.string(),
   installationId: v.nullable(v.number()),
+  branchPattern: v.optional(v.string()),
+  commentTaskLinkOnGitHubIssue: v.optional(v.boolean()),
   isActive: v.nullable(v.boolean()),
   createdAt: v.date(),
   updatedAt: v.date(),
 });
 
+export const giteaIntegrationSchema = v.object({
+  id: v.string(),
+  projectId: v.string(),
+  baseUrl: v.string(),
+  repositoryOwner: v.string(),
+  repositoryName: v.string(),
+  maskedAccessToken: v.string(),
+  webhookUrl: v.optional(v.string()),
+  webhookSecret: v.optional(v.string()),
+  branchPattern: v.optional(v.string()),
+  commentTaskLinkOnGiteaIssue: v.optional(v.boolean()),
+  isActive: v.nullable(v.boolean()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const integrationEventsSchema = v.object({
+  taskCreated: v.boolean(),
+  taskStatusChanged: v.boolean(),
+  taskPriorityChanged: v.boolean(),
+  taskTitleChanged: v.boolean(),
+  taskDescriptionChanged: v.boolean(),
+  taskCommentCreated: v.boolean(),
+});
+
+export const slackIntegrationSchema = v.object({
+  id: v.string(),
+  projectId: v.string(),
+  channelName: v.nullable(v.string()),
+  webhookConfigured: v.boolean(),
+  maskedWebhookUrl: v.string(),
+  events: integrationEventsSchema,
+  isActive: v.nullable(v.boolean()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const discordIntegrationSchema = v.object({
+  id: v.string(),
+  projectId: v.string(),
+  channelName: v.nullable(v.string()),
+  webhookConfigured: v.boolean(),
+  maskedWebhookUrl: v.string(),
+  events: integrationEventsSchema,
+  isActive: v.nullable(v.boolean()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const genericWebhookIntegrationSchema = v.object({
+  id: v.string(),
+  projectId: v.string(),
+  webhookConfigured: v.boolean(),
+  maskedWebhookUrl: v.nullable(v.string()),
+  secretConfigured: v.boolean(),
+  maskedSecret: v.nullable(v.string()),
+  events: integrationEventsSchema,
+  isActive: v.nullable(v.boolean()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const telegramIntegrationSchema = v.object({
+  id: v.string(),
+  projectId: v.string(),
+  chatId: v.string(),
+  threadId: v.nullable(v.number()),
+  chatLabel: v.nullable(v.string()),
+  botTokenConfigured: v.boolean(),
+  maskedBotToken: v.string(),
+  events: integrationEventsSchema,
+  isActive: v.nullable(v.boolean()),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+});
+
+export const commentSchema = v.object({
+  id: v.string(),
+  taskId: v.string(),
+  userId: v.string(),
+  content: v.string(),
+  createdAt: v.date(),
+  updatedAt: v.date(),
+  user: v.optional(
+    v.object({
+      name: v.string(),
+      image: v.nullable(v.string()),
+    }),
+  ),
+});
+
 export const configSchema = v.object({
   disableRegistration: v.nullable(v.boolean()),
+  disablePasswordRegistration: v.nullable(v.boolean()),
   isDemoMode: v.boolean(),
   hasSmtp: v.boolean(),
   hasGithubSignIn: v.nullable(v.boolean()),

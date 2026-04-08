@@ -5,6 +5,7 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,17 +24,17 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
-const menuItems = [
-  {
-    title: "General",
-    url: "/dashboard/settings/workspace/general",
-    icon: Settings,
-  },
-];
-
 function RouteComponent() {
+  const { t } = useTranslation();
   const { workspace, role } = useWorkspacePermission();
   const location = useLocation();
+  const menuItems = [
+    {
+      title: t("settings:workspaceGeneral.title"),
+      url: "/dashboard/settings/workspace/general",
+      icon: Settings,
+    },
+  ];
   const isActivePath = (path: string) => location.pathname === path;
   const workspaceInitials =
     workspace?.name
@@ -53,21 +54,21 @@ function RouteComponent() {
                 src={workspace?.logo ?? ""}
                 alt={workspace?.name || ""}
               />
-              <AvatarFallback className="border border-border/70 bg-accent/70 text-[11px] font-medium text-accent-foreground">
+              <AvatarFallback className="border border-sidebar-border/70 bg-sidebar-accent/70 text-[11px] font-medium text-sidebar-accent-foreground">
                 {workspaceInitials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <p className="text-sm">{workspace?.name}</p>
-              <p className="text-[11px] text-foreground/60 capitalize">
-                {role}
+              <p className="text-[11px] text-sidebar-foreground/60 capitalize">
+                {t(`team:roles.${role}`, { defaultValue: role })}
               </p>
             </div>
           </div>
 
           <SidebarGroup className="gap-1 p-1">
-            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-foreground/70">
-              Workspace
+            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-sidebar-foreground/70">
+              {t("navigation:page.settingsWorkspaceTab")}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
@@ -78,9 +79,9 @@ function RouteComponent() {
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-foreground/80",
+                        "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-sidebar-foreground/80",
                         isActivePath(item.url) &&
-                          "bg-accent text-accent-foreground",
+                          "bg-sidebar-accent text-sidebar-accent-foreground",
                       )}
                     >
                       <item.icon className="h-4 w-4" />
