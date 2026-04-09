@@ -68,6 +68,44 @@ describe("KaneoClient", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("uses x-api-key header and skips device auth when apiKey is provided", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify([{ id: "ws-1" }]), { status: 200 }),
+      );
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const client = new KaneoClient({
+      baseUrl: "https://api.example.com",
+      apiKey: "my-api-key",
+    });
+
+    await expect(
+      client.json("/api/auth/organization/list", { method: "GET" }),
+    ).resolves.toEqual([{ id: "ws-1" }]);
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(headers.get("x-api-key")).toBe("my-api-key");
+    expect(headers.get("Authorization")).toBeNull();
+  });
+
+  it("does not retry on 401 when using an api key", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("unauthorized", { status: 401 }));
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const client = new KaneoClient({
+      baseUrl: "https://api.example.com",
+      apiKey: "bad-key",
+    });
+
+    await expect(client.json("/api/task/t-1")).rejects.toThrow();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("surfaces api error messages when a request fails", async () => {
     const auth = {
       getAccessToken: vi.fn().mockResolvedValue("token-123"),

@@ -8,13 +8,22 @@ export type Json =
   | Json[]
   | { [key: string]: Json };
 
+type KaneoClientOptions =
+  | { baseUrl: string; auth: AuthService }
+  | { baseUrl: string; apiKey: string };
+
 export class KaneoClient {
   readonly baseUrl: string;
-  private readonly auth: AuthService;
+  private readonly auth?: AuthService;
+  private readonly apiKey?: string;
 
-  constructor(options: { baseUrl: string; auth: AuthService }) {
+  constructor(options: KaneoClientOptions) {
     this.baseUrl = options.baseUrl;
-    this.auth = options.auth;
+    if ("apiKey" in options) {
+      this.apiKey = options.apiKey;
+    } else {
+      this.auth = options.auth;
+    }
   }
 
   private async authorizedFetch(
@@ -22,9 +31,13 @@ export class KaneoClient {
     init?: RequestInit,
     didRetry = false,
   ): Promise<Response> {
-    const token = await this.auth.getAccessToken();
     const headers = new Headers(init?.headers);
-    headers.set("Authorization", `Bearer ${token}`);
+    if (this.apiKey) {
+      headers.set("x-api-key", this.apiKey);
+    } else {
+      const token = await this.auth!.getAccessToken();
+      headers.set("Authorization", `Bearer ${token}`);
+    }
     if (init?.body != null && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
@@ -36,8 +49,8 @@ export class KaneoClient {
       : timeoutSignal;
     const res = await fetch(url, { ...init, headers, signal });
 
-    if (res.status === 401 && !didRetry) {
-      await this.auth.clearToken();
+    if (res.status === 401 && !didRetry && !this.apiKey) {
+      await this.auth!.clearToken();
       return this.authorizedFetch(path, init, true);
     }
 
