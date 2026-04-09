@@ -46,7 +46,7 @@ function SettingsLayout() {
   return (
     <>
       <PageTitle title={t("navigation:page.settingsTitle")} />
-      <div className="flex flex-col gap-4 p-4 bg-sidebar w-full h-full">
+      <div className="flex flex-col gap-4 p-4 w-full h-full">
         <div className="flex flex-col gap-4 bg-card h-full border border-border rounded-md p-4 relative overflow-hidden">
           <div>
             <Button

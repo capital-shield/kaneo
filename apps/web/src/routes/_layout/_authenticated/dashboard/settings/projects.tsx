@@ -193,8 +193,7 @@ function RouteComponent() {
                         disabled={!selectedProject}
                         className={cn(
                           "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-foreground/80",
-                          isActive &&
-                            "bg-accent text-accent-foreground",
+                          isActive && "bg-accent text-accent-foreground",
                         )}
                       >
                         <item.icon className="h-3.5 w-3.5" />

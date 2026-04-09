@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   ChevronRight,
-  Columns2,
   Folder,
   Forward,
   MoreHorizontal,
@@ -32,6 +31,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import icons from "@/constants/project-icons";
 import useDeleteProject from "@/hooks/mutations/project/use-delete-project";
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
@@ -97,7 +97,7 @@ export function NavProjects() {
           <CollapsibleTrigger
             className="data-panel-open:[&_svg]:rotate-90"
             render={
-              <SidebarGroupLabel className="h-7 cursor-pointer justify-between px-0 text-sidebar-accent-foreground" />
+              <SidebarGroupLabel className="h-7 cursor-pointer justify-between text-sidebar-accent-foreground" />
             }
           >
             <span>{t("navigation:sidebar.projects")}</span>
@@ -107,6 +107,9 @@ export function NavProjects() {
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
                 {projects?.map((project) => {
+                  const Icon =
+                    icons[project.icon as keyof typeof icons] || icons.Layout;
+
                   return (
                     <SidebarMenuItem key={project.id}>
                       <SidebarMenuButton
@@ -115,7 +118,7 @@ export function NavProjects() {
                         className="h-8 gap-2 ps-3.5 text-sm hover:bg-transparent hover:text-sidebar-accent-foreground active:bg-transparent"
                         onClick={() => handleProjectClick(project)}
                       >
-                        <Columns2 className="h-4 w-4" />
+                        <Icon className="h-4 w-4" />
                         <span>{project.name}</span>
                       </SidebarMenuButton>
 

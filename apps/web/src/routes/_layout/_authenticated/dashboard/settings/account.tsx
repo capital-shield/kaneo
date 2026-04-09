@@ -60,9 +60,7 @@ function RouteComponent() {
             </Avatar>
             <div className="flex flex-col">
               <p className="text-sm">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {user?.email}
-              </p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
 

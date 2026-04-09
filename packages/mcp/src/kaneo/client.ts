@@ -35,7 +35,7 @@ export class KaneoClient {
     if (this.apiKey) {
       headers.set("x-api-key", this.apiKey);
     } else {
-      const token = await this.auth!.getAccessToken();
+      const token = await this.auth?.getAccessToken();
       headers.set("Authorization", `Bearer ${token}`);
     }
     if (init?.body != null && !headers.has("Content-Type")) {
@@ -50,7 +50,7 @@ export class KaneoClient {
     const res = await fetch(url, { ...init, headers, signal });
 
     if (res.status === 401 && !didRetry && !this.apiKey) {
-      await this.auth!.clearToken();
+      await this.auth?.clearToken();
       return this.authorizedFetch(path, init, true);
     }
 

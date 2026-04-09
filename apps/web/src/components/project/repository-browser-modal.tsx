@@ -148,7 +148,7 @@ export function RepositoryBrowserModal({
               {[0, 1, 2, 3, 4].map((slot) => (
                 <div
                   key={`loading-skeleton-repo-${slot}`}
-                  className="p-4 border border-border rounded-md bg-sidebar animate-pulse"
+                  className="p-4 border border-border rounded-md animate-pulse"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-muted rounded-full" />
