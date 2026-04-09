@@ -54,20 +54,20 @@ function RouteComponent() {
                 src={workspace?.logo ?? ""}
                 alt={workspace?.name || ""}
               />
-              <AvatarFallback className="border border-sidebar-border/70 bg-sidebar-accent/70 text-[11px] font-medium text-sidebar-accent-foreground">
+              <AvatarFallback className="border border-border bg-muted text-[11px] font-medium text-muted-foreground">
                 {workspaceInitials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <p className="text-sm">{workspace?.name}</p>
-              <p className="text-[11px] text-sidebar-foreground/60 capitalize">
+              <p className="text-[11px] text-muted-foreground capitalize">
                 {t(`team:roles.${role}`, { defaultValue: role })}
               </p>
             </div>
           </div>
 
           <SidebarGroup className="gap-1 p-1">
-            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-sidebar-foreground/70">
+            <SidebarGroupLabel className="h-7 px-2 text-[11px] uppercase tracking-wide text-muted-foreground">
               {t("navigation:page.settingsWorkspaceTab")}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -79,9 +79,9 @@ function RouteComponent() {
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-sidebar-foreground/80",
+                        "h-8 w-full justify-start gap-2 rounded-lg px-2 text-[11px] font-normal text-foreground/80",
                         isActivePath(item.url) &&
-                          "bg-sidebar-accent text-sidebar-accent-foreground",
+                          "bg-accent text-accent-foreground",
                       )}
                     >
                       <item.icon className="h-4 w-4" />
