@@ -80,6 +80,66 @@ describe("AuthService", () => {
     expect(requestDeviceCodeMock).not.toHaveBeenCalled();
   });
 
+  it("skips validation and reuses the token when recently validated", async () => {
+    loadCredentialsMock.mockResolvedValue({
+      version: 1,
+      baseUrl: "https://api.example.com",
+      clientId: "kaneo-mcp",
+      accessToken: "cached-token",
+    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ user: { id: "user-1" } }), {
+        status: 200,
+      }),
+    );
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const service = new AuthService({
+      baseUrl: "https://api.example.com",
+      clientId: "kaneo-mcp",
+    });
+
+    // First call validates
+    await expect(service.getAccessToken()).resolves.toBe("cached-token");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Second call within the revalidation window should skip /get-session
+    await expect(service.getAccessToken()).resolves.toBe("cached-token");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(requestDeviceCodeMock).not.toHaveBeenCalled();
+  });
+
+  it("re-validates the token after the revalidation window expires", async () => {
+    vi.useFakeTimers();
+    loadCredentialsMock.mockResolvedValue({
+      version: 1,
+      baseUrl: "https://api.example.com",
+      clientId: "kaneo-mcp",
+      accessToken: "cached-token",
+    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ user: { id: "user-1" } }), {
+        status: 200,
+      }),
+    );
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const service = new AuthService({
+      baseUrl: "https://api.example.com",
+      clientId: "kaneo-mcp",
+    });
+
+    await expect(service.getAccessToken()).resolves.toBe("cached-token");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(6 * 60 * 1000); // advance past 5-minute window
+
+    await expect(service.getAccessToken()).resolves.toBe("cached-token");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
   it("keeps the cached token when validation cannot confirm validity", async () => {
     loadCredentialsMock.mockResolvedValue({
       version: 1,

@@ -14,10 +14,14 @@ export type AuthServiceOptions = {
 
 type TokenValidationResult = "valid" | "invalid" | "unknown";
 
+const TOKEN_REVALIDATION_MS = 5 * 60 * 1000; // 5 minutes
+
 export class AuthService {
   readonly baseUrl: string;
   readonly clientId: string;
   private activeGetAccessTokenPromise?: Promise<string>;
+  private lastValidatedAt?: number;
+  private lastValidatedToken?: string;
 
   constructor(options: AuthServiceOptions) {
     this.baseUrl = options.baseUrl;
@@ -26,6 +30,8 @@ export class AuthService {
 
   async clearToken(): Promise<void> {
     await clearCredentials();
+    this.lastValidatedAt = undefined;
+    this.lastValidatedToken = undefined;
   }
 
   private async validateAccessToken(
@@ -72,15 +78,29 @@ export class AuthService {
         cached.clientId === this.clientId &&
         cached.accessToken
       ) {
-        const validation = await this.validateAccessToken(cached.accessToken);
-        // Fail-open for "unknown": validateAccessToken returns "unknown" on transient HTTP/network
-        // errors or ambiguous responses. Treating "unknown" like "valid" avoids clearToken() and a full
-        // device re-auth so flaky connectivity does not wipe cached.accessToken; only "invalid" forces
-        // a fresh login. Tests should cover both unknown and invalid paths.
-        if (validation === "valid" || validation === "unknown") {
+        const recentlyValidated =
+          this.lastValidatedToken === cached.accessToken &&
+          this.lastValidatedAt !== undefined &&
+          Date.now() - this.lastValidatedAt < TOKEN_REVALIDATION_MS;
+
+        if (!recentlyValidated) {
+          const validation = await this.validateAccessToken(cached.accessToken);
+          // Fail-open for "unknown": validateAccessToken returns "unknown" on transient HTTP/network
+          // errors or ambiguous responses. Treating "unknown" like "valid" avoids clearToken() and a full
+          // device re-auth so flaky connectivity does not wipe cached.accessToken; only "invalid" forces
+          // a fresh login. Tests should cover both unknown and invalid paths.
+          if (validation === "invalid") {
+            await this.clearToken();
+            this.lastValidatedAt = undefined;
+            this.lastValidatedToken = undefined;
+          } else {
+            this.lastValidatedToken = cached.accessToken;
+            this.lastValidatedAt = Date.now();
+            return cached.accessToken;
+          }
+        } else {
           return cached.accessToken;
         }
-        await this.clearToken();
       }
 
       const code = await requestDeviceCode(this.baseUrl, this.clientId);

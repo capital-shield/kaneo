@@ -136,6 +136,11 @@ export const auth = betterAuth({
   trustedOrigins,
   secret: process.env.AUTH_SECRET || "",
   basePath: "/api/auth",
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
