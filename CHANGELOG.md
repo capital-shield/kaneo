@@ -1,3 +1,112 @@
+# [2.7.0](https://github.com/usekaneo/kaneo/compare/v2.6.9...v2.7.0) (2026-05-01)
+
+
+### Bug Fixes
+
+* **deploy:** aligning .env.sample ([d7037de](https://github.com/usekaneo/kaneo/commit/d7037deea0463baf46205b3fca654edb15266980))
+* **deploy:** double-slash bug in url ([0a8c945](https://github.com/usekaneo/kaneo/commit/0a8c945cdf3414c479faa60768481b714317fb9b))
+* **deploy:** env.sh fails editing nginx-qodo ([f62d459](https://github.com/usekaneo/kaneo/commit/f62d459467b0a96e8c5c63b95eb10ae971b02c32))
+* **deploy:** fix Biome error in runner ([d3946b6](https://github.com/usekaneo/kaneo/commit/d3946b63ed9e6291958b44864ef7cb3969058b07))
+* **deploy:** fix entrypoint exit codes, scan triggers, and docs drift ([47ff644](https://github.com/usekaneo/kaneo/commit/47ff644da544e041100a0d34b22f906f77e9da97))
+* **deploy:** Helm update to avoid losing CORS allowlist ([2019d5e](https://github.com/usekaneo/kaneo/commit/2019d5e33ac34e5c68f9ac5e8886fec074675f52))
+* **deploy:** missing mcp well-known routes ([90e7551](https://github.com/usekaneo/kaneo/commit/90e7551ae8a6cf552ee2b07e3f119962d53d8bca))
+* **deploy:** nit pick ([568126d](https://github.com/usekaneo/kaneo/commit/568126d7237960d2dfcf8c5faf5175e0afae5ee5))
+* **deploy:** pin nginx to 1.28.3-r0 for reproducible builds ([a1cfe7b](https://github.com/usekaneo/kaneo/commit/a1cfe7b890ff6089415121fed6b12a86cf8c152a))
+* **deploy:** preserve status of process that failed ([e333f52](https://github.com/usekaneo/kaneo/commit/e333f52040dece0ff5698fe14a1c79946ba69a06))
+* **deploy:** removing hardcord postgres ports-but really should be 5432 be default ([71c9873](https://github.com/usekaneo/kaneo/commit/71c9873d4c15a4c4ee7e08fc2108794d968be138))
+* **deploy:** resolve CR PR notes ([6a5e84d](https://github.com/usekaneo/kaneo/commit/6a5e84d1d223d3f6ec89e13ebce48c429b8d4ae4))
+* **deploy:** restore postgres host port 5432 in compose and docs ([9dcf712](https://github.com/usekaneo/kaneo/commit/9dcf7120d24ec149ee3ee57a231d70325cb0035f))
+* **deploy:** whitespace in env.example ([5852c24](https://github.com/usekaneo/kaneo/commit/5852c2436eb06b0803141998b8d57f38fc465130))
+* run apikey migration after drizzle and drop user_id not null ([5dfb52a](https://github.com/usekaneo/kaneo/commit/5dfb52a01d3ffec4aaec9964edeab4f47480633d))
+
+
+### Features
+
+* **deploy:** add single kaneo container combining API and web ([4edba3e](https://github.com/usekaneo/kaneo/commit/4edba3e76b039a9bbbe0613b350879fcaaa925dc))
+* **deploy:** reduce required env vars for combined image ([d334bda](https://github.com/usekaneo/kaneo/commit/d334bda1268ec073ac8e2de5ae756153ec08289e))
+* **deploy:** refactor Helm chart and drim docs to single kaneo image ([bfa651e](https://github.com/usekaneo/kaneo/commit/bfa651e78a37642cbce4238d3c6fceabf0042d66))
+## [2.6.9](https://github.com/usekaneo/kaneo/compare/v2.6.8...v2.6.9) (2026-04-21)
+
+
+### Bug Fixes
+
+* .github/ISSUE_TEMPLATE/bug_report.yml ([4f4c33e](https://github.com/usekaneo/kaneo/commit/4f4c33e1b326edae3185cd80f8992c9bdd1116c9))
+* align task list checkboxes to top ([9d44ba7](https://github.com/usekaneo/kaneo/commit/9d44ba708b5addc72548142262da2beead0e7450))
+* restore board label filters after reload ([af09695](https://github.com/usekaneo/kaneo/commit/af09695239ac1a254f79b7971f09de2de1406cc7))
+* **ui:** align task label text vertically ([abb0ae2](https://github.com/usekaneo/kaneo/commit/abb0ae20661334e44158ee9bfa575e6f43563c9f))
+* **web:** sync task label mutations into tasks cache ([fb504d3](https://github.com/usekaneo/kaneo/commit/fb504d3c99d090bde866bb892b2a54b66720ffec))
+
+
+### Features
+
+* add configurable first day of week ([3e532e6](https://github.com/usekaneo/kaneo/commit/3e532e606c4e9fd64eb489fe1c72f8accc1b958a))
+## [2.6.8](https://github.com/usekaneo/kaneo/compare/v2.6.7...v2.6.8) (2026-04-13)
+
+
+### Features
+
+* **nginx:** update well-known endpoints to serve MCP OAuth discovery JSON ([f8df338](https://github.com/usekaneo/kaneo/commit/f8df338429a33c0b84aeb3a8602d912a5fc8fcc2))
+## [2.6.7](https://github.com/usekaneo/kaneo/compare/v2.6.6...v2.6.7) (2026-04-13)
+
+
+### Bug Fixes
+
+* **docker:** update nginx configuration for environment variable handling ([a693fd6](https://github.com/usekaneo/kaneo/commit/a693fd6095b281392059da9ffff96c075a805166))
+## [2.6.6](https://github.com/usekaneo/kaneo/compare/v2.6.5...v2.6.6) (2026-04-13)
+
+
+### Features
+
+* **api:** add mcp redirects ([491fa81](https://github.com/usekaneo/kaneo/commit/491fa817a5d6a6d1887b1bb3ad9fff99c4156329))
+## [2.6.5](https://github.com/usekaneo/kaneo/compare/v2.6.4...v2.6.5) (2026-04-13)
+
+
+### Bug Fixes
+
+* **api:** remove trailing '/api' from KANEO_API_URL in routing ([d311f8c](https://github.com/usekaneo/kaneo/commit/d311f8c333cc78f477418e431dad5db1c93f899c))
+## [2.6.4](https://github.com/usekaneo/kaneo/compare/v2.6.3...v2.6.4) (2026-04-13)
+
+
+### Features
+
+* **mcp:** add OAuth 2.0 well-known endpoints for authorization server ([a271249](https://github.com/usekaneo/kaneo/commit/a271249a12c10ab7f651c07c2d01855bb191b87c))
+## [2.6.3](https://github.com/usekaneo/kaneo/compare/v2.6.2...v2.6.3) (2026-04-13)
+
+
+### Features
+
+* **mcp:** implement device authorization flow with polling mechanism ([4858952](https://github.com/usekaneo/kaneo/commit/485895241cfd7ff0dedc98d6cf852fba64f6732d))
+## [2.6.2](https://github.com/usekaneo/kaneo/compare/v2.6.1...v2.6.2) (2026-04-13)
+
+
+### Bug Fixes
+
+* **api:** simplify visit function in normalizeEmptyAndEnumSchemas ([a00592e](https://github.com/usekaneo/kaneo/commit/a00592e0325540c9ee1f5e4027dafdb5a3204717))
+
+
+### Features
+
+* **mcp:** implement Model Context Protocol server with HTTP and stdio support ([e402fe1](https://github.com/usekaneo/kaneo/commit/e402fe16928e6075a1251ba068380890b3c825e7))
+## [2.6.1](https://github.com/usekaneo/kaneo/compare/v2.6.0...v2.6.1) (2026-04-12)
+
+
+### Bug Fixes
+
+* **api:** avoid checksum query params in presigned S3 uploads ([d798772](https://github.com/usekaneo/kaneo/commit/d79877238d653aaf3ed3b637cdb56de0f72863ad))
+* **docs:** update OpenAPI URL to use the production endpoint ([2b52824](https://github.com/usekaneo/kaneo/commit/2b5282474b28aaa5f97ae092126de692dbfa41b2))
+* **task:** load sidebar status metadata from columns and restore default status i18n ([7d65de7](https://github.com/usekaneo/kaneo/commit/7d65de722db0bce6ea995367e181ab8c22c2a63c))
+* **task:** use renamed project column names in status popovers ([436a14e](https://github.com/usekaneo/kaneo/commit/436a14e4c3d5ce2721cde24556c17c9f81fa75be))
+* **web:** show all workspace members in assignee popovers ([1448bfe](https://github.com/usekaneo/kaneo/commit/1448bfe429885b82ba45100239b1b1b469a6aed6))
+
+
+### Features
+
+* **api:** add normalizeEmptyAndEnumSchemas function for OpenAPI spec processing ([13c544d](https://github.com/usekaneo/kaneo/commit/13c544d1a5e272c0c7ee0f4d57f59822dc2b9de7))
+
+
+### Performance Improvements
+
+* **web:** incrementally render assignee popover members ([4526548](https://github.com/usekaneo/kaneo/commit/452654871ea42a49d103925e4d29de8ff4e68825))
 # [2.6.0](https://github.com/usekaneo/kaneo/compare/v2.5.3...v2.6.0) (2026-04-07)
 
 

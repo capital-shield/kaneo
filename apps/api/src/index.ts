@@ -29,6 +29,7 @@ import githubIntegration, {
 } from "./github-integration";
 import invitation from "./invitation";
 import label from "./label";
+import mcpRoutes, { mcpWellKnownRoutes } from "./mcp";
 import { migrateColumns } from "./migrations/column-migration";
 import notification from "./notification";
 import notificationPreferences from "./notification-preferences";
@@ -59,6 +60,7 @@ import {
   markOptionalSchemaFieldsNullable,
   mergeOpenApiSpecs,
   normalizeApiServerUrl,
+  normalizeEmptyAndEnumSchemas,
   normalizeEmptyRequiredArrays,
   normalizeNullableSchemasForOpenApi30,
   normalizeOrganizationAuthOperations,
@@ -116,9 +118,14 @@ function buildContentDisposition(filename: string) {
 
 export function createApp() {
   const app = new Hono<AppVariables>();
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
-    : undefined;
+  const corsOriginSource = [
+    process.env.CORS_ORIGINS,
+    process.env.KANEO_CLIENT_URL,
+  ].find((value) => value?.trim());
+  const corsOrigins = corsOriginSource
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   app.use(
     "*",
@@ -309,8 +316,10 @@ export function createApp() {
         dedupeOperationIds(
           markOptionalSchemaFieldsNullable(
             normalizeNullableSchemasForOpenApi30(
-              normalizeEmptyRequiredArrays(
-                mergeOpenApiSpecs(honoSpec, normalizedAuthSpec),
+              normalizeEmptyAndEnumSchemas(
+                normalizeEmptyRequiredArrays(
+                  mergeOpenApiSpecs(honoSpec, normalizedAuthSpec),
+                ),
               ),
             ),
           ),
@@ -418,7 +427,13 @@ export function createApp() {
     return auth.handler(c.req.raw);
   });
 
+  api.route("/", mcpRoutes);
+
   api.use("*", async (c, next) => {
+    const path = c.req.path;
+    if (path.startsWith("/api/mcp") || path.startsWith("/api/.well-known/")) {
+      return next();
+    }
     try {
       await authenticateApiRequest(c);
     } catch (error) {
@@ -468,6 +483,16 @@ export function createApp() {
   const invitationApi = api.route("/invitation", invitation);
   const workspaceApi = api.route("/workspace", workspace);
 
+  app.route(
+    "/",
+    mcpWellKnownRoutes(
+      (process.env.KANEO_API_URL || "http://localhost:1337").replace(
+        /\/api\/?$/,
+        "",
+      ),
+    ),
+  );
+
   app.route("/api", api);
 
   return {
@@ -505,13 +530,16 @@ export async function runStartupTasks() {
 
   await migrateWorkspaceUserEmail();
   await migrateSessionColumn();
-  await migrateApiKeyReferenceId();
 
   console.log("🔄 Migrating database...");
   await migrate(db, {
     migrationsFolder: `${currentDir}/../drizzle`,
   });
   console.log("✅ Database migrated successfully!");
+
+  // After Drizzle migrations: apikey table must exist so we can align columns
+  // with Better Auth (reference_id + nullable user_id).
+  await migrateApiKeyReferenceId();
 
   await migrateNotificationPreferencesSchema();
   await migrateGitHubIntegration();
