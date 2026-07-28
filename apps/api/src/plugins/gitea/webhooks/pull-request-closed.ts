@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import db from "../../../database";
 import { externalLinkTable } from "../../../database/schema";
+import { publishEvent } from "../../../events";
 import { updateExternalLink } from "../../github/services/link-manager";
 import {
   findTaskById,
@@ -34,7 +35,10 @@ type PRClosedPayload = {
   };
 };
 
-export async function handleGiteaPullRequestClosed(payload: PRClosedPayload) {
+export async function handleGiteaPullRequestClosed(
+  payload: PRClosedPayload,
+  integrationId?: string,
+) {
   const { pull_request, repository } = payload;
 
   const baseUrl = baseUrlFromRepositoryHtmlUrl(repository.html_url);
@@ -45,6 +49,7 @@ export async function handleGiteaPullRequestClosed(payload: PRClosedPayload) {
     baseUrl,
     owner,
     repository.name,
+    integrationId,
   );
 
   for (const integration of integrations) {
@@ -101,7 +106,22 @@ export async function handleGiteaPullRequestClosed(payload: PRClosedPayload) {
           "pr_merged",
           config.statusTransitions?.onPRMerge || "done",
         );
-        await updateTaskStatus(task.id, targetStatus);
+        const statusResult = await updateTaskStatus(task.id, targetStatus);
+        if (
+          statusResult.applied &&
+          statusResult.before.status !== statusResult.after.status
+        ) {
+          await publishEvent("task.status_changed", {
+            taskId: statusResult.after.id,
+            projectId: statusResult.after.projectId,
+            userId: null,
+            oldStatus: statusResult.before.status,
+            newStatus: statusResult.after.status,
+            title: statusResult.after.title,
+            assigneeId: statusResult.after.userId,
+            type: "status_changed",
+          });
+        }
       }
     }
 

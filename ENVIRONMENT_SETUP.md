@@ -49,6 +49,7 @@ Kaneo supports many optional configuration options including:
 - Access control settings
 - CORS configuration
 - Redis for horizontal scaling
+- Private-network notification receivers (`KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS=true` lets ntfy/Gotify/webhook destinations resolve to private addresses; off by default to prevent SSRF)
 
 #### Redis Configuration
 
@@ -84,6 +85,17 @@ For sending emails (workspace invitations, magic links, etc.), configure these v
 - `SMTP_IGNORE_TLS` - Ignore TLS certificate errors (default: `false`, set to `true` for self-signed certificates)
 
 > **Note:** If you're using an SMTP server with a self-signed or invalid TLS certificate, set `SMTP_IGNORE_TLS=true` to bypass certificate validation.
+
+When SMTP is configured, sign-in uses email verification codes by default. Set `DISABLE_EMAIL_OTP_SIGN_IN=true` to use email/password sign-in instead (workspace invitation emails still use SMTP).
+
+#### Cloud-mode abuse mitigations
+
+Hosted multi-tenant instances should enable the cloud abuse gates. Self-hosted instances can leave these unset.
+
+- `KANEO_CLOUD` - Set to `true` to enable cloud-only protections: disposable-email signup block, Turnstile captcha enforcement, guest-account invite block, and tightened rate limits on `/sign-up/email` and `/organization/invite-member`.
+- `TURNSTILE_SECRET_KEY` - Cloudflare Turnstile secret key (API container, server-side verification). When unset, captcha verification is skipped.
+- `KANEO_TURNSTILE_SITE_KEY` - Cloudflare Turnstile site key, on the **web container**. The production web image bakes the literal placeholder `KANEO_TURNSTILE_SITE_KEY` into the bundle; `apps/web/env.sh` swaps it for the runtime value when the container starts.
+- `VITE_TURNSTILE_SITE_KEY` - Local dev only. Set in `apps/web/.env` when running `pnpm dev`; Vite reads this at build/dev time. Not used in the production image.
 
 For a complete list of all environment variables, their descriptions, and configuration options, see the [official documentation](https://kaneo.app/docs/core/installation/environment-variables).
 
@@ -135,6 +147,16 @@ For a complete list of all environment variables, their descriptions, and config
 2. **Update DATABASE_URL:**
    - Ensure the connection string format is correct
    - Check username, password, host, port, and database name
+
+3. **Match the hostname to where the API runs:**
+   - Use `postgres` only when the API container is on the same Docker Compose network as the Postgres service
+   - Use `localhost` when the API runs directly on your host machine
+   - If you see `getaddrinfo EAI_AGAIN postgres`, the API is trying to resolve the Compose hostname from the wrong network context
+
+4. **Use the right configuration mode:**
+   - For host-native development, prefer an explicit `DATABASE_URL`
+   - If you derive from `POSTGRES_*`, set `POSTGRES_HOST=localhost` when running the API on your host
+   - `POSTGRES_DB` and `POSTGRES_USER` by themselves do not switch Kaneo into derived connection mode
 
 ### Authentication Issues
 

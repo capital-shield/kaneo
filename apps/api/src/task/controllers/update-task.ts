@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
 import { assertValidTaskStatus } from "../validate-task-fields";
 
 async function updateTask(
@@ -18,13 +19,26 @@ async function updateTask(
   userId?: string,
   currentUserId?: string,
 ) {
-  const existingTask = await db.query.taskTable.findFirst({
-    where: eq(taskTable.id, id),
-  });
+  const [existingTask] = await db
+    .select({
+      id: taskTable.id,
+      description: taskTable.description,
+      status: taskTable.status,
+      projectId: taskTable.projectId,
+    })
+    .from(taskTable)
+    .where(eq(taskTable.id, id))
+    .limit(1);
 
   if (!existingTask) {
     throw new HTTPException(404, {
       message: "Task not found",
+    });
+  }
+
+  if (projectId !== existingTask.projectId) {
+    throw new HTTPException(400, {
+      message: "Use the task move endpoint to move tasks between projects",
     });
   }
 
@@ -85,6 +99,12 @@ async function updateTask(
     status: updatedTask.status,
     userId: currentUserId,
   });
+
+  if (existingTask.description !== description) {
+    deleteOrphanedAssets(existingTask.description, description, {
+      taskId: id,
+    }).catch(() => {});
+  }
 
   return updatedTask;
 }

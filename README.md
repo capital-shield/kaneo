@@ -50,6 +50,8 @@ Learn more about Kaneo's features and capabilities in our [documentation](https:
 
 Kaneo is open source. If you find it useful, consider [sponsoring the project](https://github.com/sponsors/andrejsshell) to help support ongoing development.
 
+<!-- sponsors --><a href="https://github.com/danielsada"><img src="https:&#x2F;&#x2F;github.com&#x2F;danielsada.png" width="60px" alt="User avatar: Daniel Sada" /></a><a href="https://github.com/randoneering"><img src="https:&#x2F;&#x2F;github.com&#x2F;randoneering.png" width="60px" alt="User avatar: (justin)randoneering" /></a><!-- sponsors -->
+
 ## Getting Started
 
 ### One-Click Deployment with drim
@@ -101,7 +103,10 @@ volumes:
   postgres_data:
 ```
 
-Save this as `compose.yml`, create a `.env` file with `KANEO_CLIENT_URL=http://localhost:5173`, `POSTGRES_PASSWORD=<password>`, and `AUTH_SECRET=<output of openssl rand -hex 32>`, run `docker compose up -d`, and open [http://localhost:5173](http://localhost:5173).
+Save this as `compose.yml`, copy `.env.sample` to `.env`, uncomment `KANEO_CLIENT_URL=http://localhost:5173`, and set `POSTGRES_PASSWORD=<password>` and `AUTH_SECRET=<output of openssl rand -hex 32>`, run `docker compose up -d`, and open [http://localhost:5173](http://localhost:5173).
+
+In Docker Compose, the bundled Kaneo container reaches PostgreSQL at the service hostname `postgres`.
+If you run the API on your host instead of inside Compose, use `localhost` or set `DATABASE_URL` explicitly.
 
 > **Important:** See our [full documentation](https://kaneo.app/docs/core) for detailed setup instructions, environment variable configuration, and troubleshooting guides.
 

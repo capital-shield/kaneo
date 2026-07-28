@@ -1,9 +1,10 @@
-import { and, asc, eq, max } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
-import getNextTaskNumber from "./get-next-task-number";
+import { assertValidTaskStatus } from "../validate-task-fields";
+import { claimTaskNumber } from "./claim-task-numbers";
 
 async function createTask({
   projectId,
@@ -26,31 +27,22 @@ async function createTask({
   description?: string;
   priority?: string;
 }) {
+  const resolvedStatus = status || "to-do";
   const resolvedPriority = priority || "no-priority";
+
+  await assertValidTaskStatus(resolvedStatus, projectId);
 
   const [assignee] = await db
     .select({ name: userTable.name })
     .from(userTable)
     .where(eq(userTable.id, userId ?? ""));
 
-  const nextTaskNumber = await getNextTaskNumber(projectId);
-
-  const column =
-    (await db.query.columnTable.findFirst({
-      where: and(
-        eq(columnTable.projectId, projectId),
-        eq(columnTable.slug, status || "to-do"),
-      ),
-    })) ??
-    (await db
-      .select()
-      .from(columnTable)
-      .where(eq(columnTable.projectId, projectId))
-      .orderBy(asc(columnTable.position))
-      .limit(1)
-      .then((rows) => rows[0]));
-
-  const resolvedStatus = column?.slug ?? status ?? "to-do";
+  const column = await db.query.columnTable.findFirst({
+    where: and(
+      eq(columnTable.projectId, projectId),
+      eq(columnTable.slug, resolvedStatus),
+    ),
+  });
 
   const [maxPositionResult] = await db
     .select({ maxPosition: max(taskTable.position) })
@@ -66,22 +58,28 @@ async function createTask({
 
   const nextPosition = (maxPositionResult?.maxPosition ?? 0) + 1;
 
-  const [createdTask] = await db
-    .insert(taskTable)
-    .values({
-      projectId,
-      userId: userId || null,
-      title: title || "",
-      status: resolvedStatus,
-      columnId: column?.id ?? null,
-      startDate: startDate || null,
-      dueDate: dueDate || null,
-      description: description || "",
-      priority: resolvedPriority,
-      number: nextTaskNumber + 1,
-      position: nextPosition,
-    })
-    .returning();
+  const createdTask = await db.transaction(async (tx) => {
+    const taskNumber = await claimTaskNumber(projectId, tx);
+
+    const [task] = await tx
+      .insert(taskTable)
+      .values({
+        projectId,
+        userId: userId || null,
+        title: title || "",
+        status: resolvedStatus,
+        columnId: column?.id ?? null,
+        startDate: startDate || null,
+        dueDate: dueDate || null,
+        description: description || "",
+        priority: resolvedPriority,
+        number: taskNumber,
+        position: nextPosition,
+      })
+      .returning();
+
+    return task;
+  });
 
   if (!createdTask) {
     throw new HTTPException(500, {

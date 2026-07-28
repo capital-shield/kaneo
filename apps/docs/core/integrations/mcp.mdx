@@ -20,7 +20,7 @@ Point your MCP client at:
 https://your-kaneo-instance.com/api/mcp
 ```
 
-On first connect, you will be redirected to Kaneo's login page. After you sign in, all MCP tools run as your authenticated user.
+On first connect, you will be redirected to Kaneo to sign in and explicitly approve the MCP client. After approval, all MCP tools run as your authenticated user.
 
 The endpoint implements OAuth 2.1 with PKCE for authentication. Discovery metadata is available at:
 
@@ -101,7 +101,8 @@ Both the HTTP endpoint and stdio package expose the same tools:
 - Projects: `list_projects`, `get_project`, `create_project`, `update_project`
 - Tasks: `list_tasks`, `get_task`, `create_task`, `update_task`, `move_task`, `update_task_status`
 - Comments: `list_task_comments`, `create_task_comment`
-- Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`
+- Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`, `delete_label`
+- Task relations: `create_task_relation`, `get_task_relations`, `delete_task_relation`
 
 ## Debugging
 

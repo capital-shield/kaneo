@@ -1,3 +1,4 @@
+import { publishEvent } from "../../../events";
 import { createOrUpdateExternalLink } from "../../github/services/link-manager";
 import {
   findTaskByNumber,
@@ -42,7 +43,10 @@ const PROTECTED_BRANCHES = [
   "production",
 ];
 
-export async function handleGiteaPush(payload: PushPayload) {
+export async function handleGiteaPush(
+  payload: PushPayload,
+  integrationId?: string,
+) {
   const { ref, repository } = payload;
 
   if (!ref.startsWith("refs/heads/")) {
@@ -67,6 +71,7 @@ export async function handleGiteaPush(payload: PushPayload) {
     origin,
     owner,
     repository.name,
+    integrationId,
   );
 
   if (integrations.length === 0) {
@@ -140,7 +145,22 @@ export async function handleGiteaPush(payload: PushPayload) {
     const isTaskFinal = await isTaskInFinalState(task);
 
     if (task.status !== targetStatus && !isTaskFinal) {
-      await updateTaskStatus(task.id, targetStatus);
+      const statusResult = await updateTaskStatus(task.id, targetStatus);
+      if (
+        statusResult.applied &&
+        statusResult.before.status !== statusResult.after.status
+      ) {
+        await publishEvent("task.status_changed", {
+          taskId: statusResult.after.id,
+          projectId: statusResult.after.projectId,
+          userId: null,
+          oldStatus: statusResult.before.status,
+          newStatus: statusResult.after.status,
+          title: statusResult.after.title,
+          assigneeId: statusResult.after.userId,
+          type: "status_changed",
+        });
+      }
     }
   }
 }

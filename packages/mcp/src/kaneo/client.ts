@@ -8,22 +8,13 @@ export type Json =
   | Json[]
   | { [key: string]: Json };
 
-type KaneoClientOptions =
-  | { baseUrl: string; auth: AuthService }
-  | { baseUrl: string; apiKey: string };
-
 export class KaneoClient {
   readonly baseUrl: string;
-  private readonly auth?: AuthService;
-  private readonly apiKey?: string;
+  private readonly auth: AuthService;
 
-  constructor(options: KaneoClientOptions) {
+  constructor(options: { baseUrl: string; auth: AuthService }) {
     this.baseUrl = options.baseUrl;
-    if ("apiKey" in options) {
-      this.apiKey = options.apiKey;
-    } else {
-      this.auth = options.auth;
-    }
+    this.auth = options.auth;
   }
 
   private async authorizedFetch(
@@ -31,13 +22,9 @@ export class KaneoClient {
     init?: RequestInit,
     didRetry = false,
   ): Promise<Response> {
+    const token = await this.auth.getAccessToken();
     const headers = new Headers(init?.headers);
-    if (this.apiKey) {
-      headers.set("x-api-key", this.apiKey);
-    } else {
-      const token = await this.auth?.getAccessToken();
-      headers.set("Authorization", `Bearer ${token}`);
-    }
+    headers.set("Authorization", `Bearer ${token}`);
     if (init?.body != null && !headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
@@ -49,8 +36,10 @@ export class KaneoClient {
       : timeoutSignal;
     const res = await fetch(url, { ...init, headers, signal });
 
-    if (res.status === 401 && !didRetry && !this.apiKey) {
-      await this.auth?.clearToken();
+    // With a static API key there is nothing to refresh, so surface the 401
+    // instead of looping back into the interactive device flow.
+    if (res.status === 401 && !didRetry && !this.auth.usingApiKey) {
+      await this.auth.clearToken();
       return this.authorizedFetch(path, init, true);
     }
 

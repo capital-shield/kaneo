@@ -1,3 +1,4 @@
+import { publishEvent } from "../../../events";
 import {
   createExternalLink,
   findExternalLink,
@@ -38,7 +39,10 @@ type PROpenedPayload = {
   };
 };
 
-export async function handleGiteaPullRequestOpened(payload: PROpenedPayload) {
+export async function handleGiteaPullRequestOpened(
+  payload: PROpenedPayload,
+  integrationId?: string,
+) {
   const { pull_request, repository } = payload;
 
   const baseUrl = baseUrlFromRepositoryHtmlUrl(repository.html_url);
@@ -49,6 +53,7 @@ export async function handleGiteaPullRequestOpened(payload: PROpenedPayload) {
     baseUrl,
     owner,
     repository.name,
+    integrationId,
   );
 
   for (const integration of integrations) {
@@ -122,7 +127,22 @@ export async function handleGiteaPullRequestOpened(payload: PROpenedPayload) {
     const isTaskFinal = await isTaskInFinalState(task);
 
     if (task.status !== targetStatus && !isTaskFinal) {
-      await updateTaskStatus(task.id, targetStatus);
+      const statusResult = await updateTaskStatus(task.id, targetStatus);
+      if (
+        statusResult.applied &&
+        statusResult.before.status !== statusResult.after.status
+      ) {
+        await publishEvent("task.status_changed", {
+          taskId: statusResult.after.id,
+          projectId: statusResult.after.projectId,
+          userId: null,
+          oldStatus: statusResult.before.status,
+          newStatus: statusResult.after.status,
+          title: statusResult.after.title,
+          assigneeId: statusResult.after.userId,
+          type: "status_changed",
+        });
+      }
     }
 
     return;

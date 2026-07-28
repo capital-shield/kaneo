@@ -1,3 +1,315 @@
+## [2.9.10](https://github.com/usekaneo/kaneo/compare/v2.9.9...v2.9.10) (2026-07-28)
+
+
+### Bug Fixes
+
+* **api:** allocate task numbers atomically via per-project counter ([a2e5132](https://github.com/usekaneo/kaneo/commit/a2e51329d9ba53ea1a524a13018fdaf464811e7b))
+* **api:** return 401 instead of 500 for invalid API keys ([bf7cb38](https://github.com/usekaneo/kaneo/commit/bf7cb38656533b88685513acfbcc531b026a87da))
+
+
+### Features
+
+* **site:** add pricing, privacy policy, and terms pages ([cbe93a0](https://github.com/usekaneo/kaneo/commit/cbe93a0755b6a4d04e2a532ac080c041badc13ae))
+## [2.9.9](https://github.com/usekaneo/kaneo/compare/v2.9.8...v2.9.9) (2026-07-27)
+
+
+### Bug Fixes
+
+* **mcp:** emit type declarations for the package exports entry ([09a1367](https://github.com/usekaneo/kaneo/commit/09a1367094f36bfb687258ed294e830b0f67f0c5))
+
+
+### Features
+
+* **api:** add optional Sentry error tracking via SENTRY_DSN ([47fd67f](https://github.com/usekaneo/kaneo/commit/47fd67fcd0ed92bf7bf835cf99bc0148a00e6719))
+* **site:** add homepage sponsors section with public sponsor sync ([6c8fb8f](https://github.com/usekaneo/kaneo/commit/6c8fb8f5d71664ca2fb4e401ef309f610fd5773a))
+* **site:** make founding sponsorship a badge for all early backers ([91829ab](https://github.com/usekaneo/kaneo/commit/91829ab6ef86b0726a8fc35ff7881c44674848be))
+## [2.9.8](https://github.com/usekaneo/kaneo/compare/v2.9.7...v2.9.8) (2026-07-19)
+
+
+### Features
+
+* webhook events, unicode slugs, board sort ([#1408](https://github.com/usekaneo/kaneo/issues/1408)) ([c17187e](https://github.com/usekaneo/kaneo/commit/c17187ece24b3a3da04eb27192fde2f4f68375d5)), closes [#1395](https://github.com/usekaneo/kaneo/issues/1395) [#1357](https://github.com/usekaneo/kaneo/issues/1357) [#1396](https://github.com/usekaneo/kaneo/issues/1396)
+## [2.9.7](https://github.com/usekaneo/kaneo/compare/v2.9.6...v2.9.7) (2026-07-18)
+
+
+### Features
+
+* **web:** motion and fluidity polish pass ([#1407](https://github.com/usekaneo/kaneo/issues/1407)) ([63e44cc](https://github.com/usekaneo/kaneo/commit/63e44ccff707e1add078bfe9976980f6fc362658))
+## [2.9.6](https://github.com/usekaneo/kaneo/compare/v2.9.5...v2.9.6) (2026-07-18)
+## [2.9.5](https://github.com/usekaneo/kaneo/compare/v2.9.4...v2.9.5) (2026-07-18)
+
+
+### Features
+
+* complete task reminders and notifications ([#1399](https://github.com/usekaneo/kaneo/issues/1399)) ([813dcb3](https://github.com/usekaneo/kaneo/commit/813dcb3631649664c88b05b414f373358c720651))
+## [2.9.4](https://github.com/usekaneo/kaneo/compare/v2.9.3...v2.9.4) (2026-07-17)
+## [2.9.3](https://github.com/usekaneo/kaneo/compare/v2.9.2...v2.9.3) (2026-07-17)
+
+
+### Bug Fixes
+
+* **auth:** fall back for custom OAuth profile names ([#1360](https://github.com/usekaneo/kaneo/issues/1360)) ([02edfa9](https://github.com/usekaneo/kaneo/commit/02edfa915806389824d7f5232e2fa74a4443dfb8))
+* **docker:** allow nginx revision rebuilds in apk pin ([#1405](https://github.com/usekaneo/kaneo/issues/1405)) ([d99d678](https://github.com/usekaneo/kaneo/commit/d99d67863add6b6fb020d9a6f0d8750bef4e1304))
+* **email:** translate French workspace invitations ([#1390](https://github.com/usekaneo/kaneo/issues/1390)) ([1e99d3a](https://github.com/usekaneo/kaneo/commit/1e99d3a28c5c52f746c4364b0f6cae9ba54df229))
+* load task statuses on direct page visits ([#1403](https://github.com/usekaneo/kaneo/issues/1403)) ([1ca05c4](https://github.com/usekaneo/kaneo/commit/1ca05c4c7857e5d2b64d0fc3d0442ee0015f5911))
+* **web:** load status options from columns query ([#1404](https://github.com/usekaneo/kaneo/issues/1404)) ([2fbdd3c](https://github.com/usekaneo/kaneo/commit/2fbdd3cbf7ae9e442eddf65ba34e83dc6de821f3)), closes [#1402](https://github.com/usekaneo/kaneo/issues/1402)
+
+
+### Features
+
+* **i18n:** complete French translations ([#1359](https://github.com/usekaneo/kaneo/issues/1359)) ([772cbc5](https://github.com/usekaneo/kaneo/commit/772cbc5f8fa9e28ed3bf4faabdababbdeca436ac))
+* **i18n:** turkish language support ([#1366](https://github.com/usekaneo/kaneo/issues/1366)) ([8806e86](https://github.com/usekaneo/kaneo/commit/8806e86f0f71833ddca9577f58f5077f5191f095))
+## [2.9.2](https://github.com/usekaneo/kaneo/compare/v2.9.1...v2.9.2) (2026-07-16)
+
+
+### Bug Fixes
+
+* **api:** enforce scoped API key permissions ([#1374](https://github.com/usekaneo/kaneo/issues/1374)) ([9bedc4a](https://github.com/usekaneo/kaneo/commit/9bedc4aee161ac272f8c31d0d6a7d320b6a7c13d))
+* **api:** prioritize project workspace lookup ([#1383](https://github.com/usekaneo/kaneo/issues/1383)) ([7a8320a](https://github.com/usekaneo/kaneo/commit/7a8320a783fa894cd5442bb11c7f23a3df677ca5))
+* **assets:** prevent active content execution ([#1373](https://github.com/usekaneo/kaneo/issues/1373)) ([39b787a](https://github.com/usekaneo/kaneo/commit/39b787a6c2ec051d47bb4e8a9a9012ec978b31d5))
+* **auth:** enforce disabled local login ([#1375](https://github.com/usekaneo/kaneo/issues/1375)) ([8c8eaf3](https://github.com/usekaneo/kaneo/commit/8c8eaf3e86a560eaa477f1af1a8fda1660bcc114))
+* **auth:** protect invitation acceptance from unverified accounts ([#1386](https://github.com/usekaneo/kaneo/issues/1386)) ([a686614](https://github.com/usekaneo/kaneo/commit/a6866143f1ccf85ff84669bb9c7f5541d01ab98d))
+* **auth:** require verified email for account linking ([#1387](https://github.com/usekaneo/kaneo/issues/1387)) ([4a5c818](https://github.com/usekaneo/kaneo/commit/4a5c8187de45ef1da1c4f0d4c3c6032f815d3911))
+* **auth:** restore guest sign-in access ([#1391](https://github.com/usekaneo/kaneo/issues/1391)) ([d7281e1](https://github.com/usekaneo/kaneo/commit/d7281e1a20be25ab057a0a82afac1bb11e0af7b0))
+* **comments:** unify API and activity storage ([#1389](https://github.com/usekaneo/kaneo/issues/1389)) ([23f8bf4](https://github.com/usekaneo/kaneo/commit/23f8bf4f05c43d4023965c80768bdc1c28aeadfc))
+* **editor:** reject active embed URL schemes ([#1376](https://github.com/usekaneo/kaneo/issues/1376)) ([5630fd0](https://github.com/usekaneo/kaneo/commit/5630fd0e5fb0c56e6f40b49bdbe32a30f25e9ed2))
+* **gitea:** bind webhooks to signed integration ([#1378](https://github.com/usekaneo/kaneo/issues/1378)) ([27cb25e](https://github.com/usekaneo/kaneo/commit/27cb25ea0d608d0dbde82da86b70a8bb71b1f267))
+* **gitea:** restrict webhook secret access ([#1377](https://github.com/usekaneo/kaneo/issues/1377)) ([37207a0](https://github.com/usekaneo/kaneo/commit/37207a0e2cf0d4adaf4af6ee17d218b09f6ce7bf))
+* **labels:** enforce task workspace boundary ([#1380](https://github.com/usekaneo/kaneo/issues/1380)) ([4f6ea91](https://github.com/usekaneo/kaneo/commit/4f6ea91d86035e8fd30262df982cb18a29bd5226))
+* **mcp:** require explicit OAuth consent ([#1372](https://github.com/usekaneo/kaneo/issues/1372)) ([2c8b6d8](https://github.com/usekaneo/kaneo/commit/2c8b6d8582ef1f7c9929531e900412b29fca46c3))
+* **mcp:** validate registered redirect URIs ([#1381](https://github.com/usekaneo/kaneo/issues/1381)) ([e18eb00](https://github.com/usekaneo/kaneo/commit/e18eb00e2d49d1f372a95bfd6ff8529dfecf10a0))
+* **tasks:** prevent cross-workspace moves ([#1384](https://github.com/usekaneo/kaneo/issues/1384)) ([797380d](https://github.com/usekaneo/kaneo/commit/797380d2d6e4648b44295c0d13b3440d7e7e5138))
+* **tasks:** prevent cross-workspace relations ([#1385](https://github.com/usekaneo/kaneo/issues/1385)) ([9c2a33b](https://github.com/usekaneo/kaneo/commit/9c2a33b613aececbb5545d7679a7a5ad2cb00979))
+
+
+### Features
+
+* standardize avatar fallback initials ([#1401](https://github.com/usekaneo/kaneo/issues/1401)) ([5cddfa1](https://github.com/usekaneo/kaneo/commit/5cddfa13019f8dfb83976913824954677be33cbb))
+## [2.9.1](https://github.com/usekaneo/kaneo/compare/v2.9.0...v2.9.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* add debug logging for device authorize CI failure ([d84ef47](https://github.com/usekaneo/kaneo/commit/d84ef47d7774eebe2775d29689732f8f0ecef4ce))
+* address OpenAPI review feedback ([e2b0767](https://github.com/usekaneo/kaneo/commit/e2b0767781060f4a360ca69aaefacf09cf179bc2))
+* **board:** reflect disabled card dragging ([8ca1cca](https://github.com/usekaneo/kaneo/commit/8ca1cca7c75ea32b0e2a64be880bded86be53248))
+* **chart:** generate per-release auth secret ([1387239](https://github.com/usekaneo/kaneo/commit/138723994789a6a14fc037a465570d4d3602dfe9))
+* **chart:** provide auth secret in validation matrix ([19c21f0](https://github.com/usekaneo/kaneo/commit/19c21f0115d6b948bd069fca3314846416ca644e))
+* **chart:** require explicit auth secret ([3317948](https://github.com/usekaneo/kaneo/commit/331794873882870fb6828e6a82fcb63992c0d7da))
+* **charts/ci:** Adding dynamic versioning in helm ci ([b768d3d](https://github.com/usekaneo/kaneo/commit/b768d3d0dcace19c168512f25c9a11e2284e24dd))
+* **charts/ci:** fixing the publishing steps for helm chart ([a3b5112](https://github.com/usekaneo/kaneo/commit/a3b5112c1da8f3bfd3637adc1f8040d2ab702e20))
+* **ci:** grant actions: write to trigger-helm-publish ([e78e2fc](https://github.com/usekaneo/kaneo/commit/e78e2fc02b7fb631af58e7d30b167de9d624fbe4))
+* **ci:** pass inputs.version via env to github-script ([376adc6](https://github.com/usekaneo/kaneo/commit/376adc65fb3b595afab0fa42b9974277556c0de9))
+* **ci:** resolving concern from qodo/coderabbit ([2a13e6e](https://github.com/usekaneo/kaneo/commit/2a13e6e6c977c8f46bc371ca2084447c8cb1d11a))
+* **ci:** use  in release main-branch guard ([dc860d8](https://github.com/usekaneo/kaneo/commit/dc860d8f97fa81ada5f2bded8f1ec4a94b720a31))
+* clean up drag preview on component unmount ([422baec](https://github.com/usekaneo/kaneo/commit/422baec264c5ff1cef2f6cd8a4abb6242ad9c55e))
+* destructure columns from createProjectFixture in label tests ([212ff18](https://github.com/usekaneo/kaneo/commit/212ff184c18017eae37a59670cacd8870fa1f5fd))
+* **docker:** stop nightly arm64 build hanging on native bcrypt ([d046087](https://github.com/usekaneo/kaneo/commit/d04608772063e6b07a4f5c0304d6a90436c1f27d))
+* **docker:** update pinned nginx package ([9369771](https://github.com/usekaneo/kaneo/commit/93697712f3c0f96ab0182379cb2d809a3ce8244e))
+* **docs:** validate local OpenAPI reference ([0c9fccc](https://github.com/usekaneo/kaneo/commit/0c9fcccb056a60e4bfc7e6c34caf12841e4504a9))
+* guard Enter key handlers in labels dialogs with isPending state ([6c8fc8a](https://github.com/usekaneo/kaneo/commit/6c8fc8afa59c772df1de78e8c07e261237f48fd5))
+* **helm:** app version fix, guard, and trigger added ([66399ae](https://github.com/usekaneo/kaneo/commit/66399aea043876757d59a1f2163e52be64ff3046))
+* **i18n:** make workspace roles settings translatable ([8c8bf38](https://github.com/usekaneo/kaneo/commit/8c8bf38f9de84be15ee27b614035531d12e10c9f))
+* invalidate labels query cache on workspace-level label deletion ([385cd7e](https://github.com/usekaneo/kaneo/commit/385cd7e8f06d89ea332834119602891e648c0ef7))
+* **label:** cascade delete task-level label copies when workspace label is deleted ([4d9fed0](https://github.com/usekaneo/kaneo/commit/4d9fed05b6164e850740252cb38c08334ff67ad2))
+* **labels:** address workspace label review ([006056c](https://github.com/usekaneo/kaneo/commit/006056c77a93df06094d8d05b35ec6647d4019a2))
+* make drag preview non-interactive ([cb27ef0](https://github.com/usekaneo/kaneo/commit/cb27ef043f269f31ad55b5f641379fead2f7aade))
+* prevent oversized workflow column drag preview ([#1394](https://github.com/usekaneo/kaneo/issues/1394)) ([90652d1](https://github.com/usekaneo/kaneo/commit/90652d1203e367e218ecf52b6e39da87f471f6ca))
+* propagate label color changes to existing task assignments ([bbd4589](https://github.com/usekaneo/kaneo/commit/bbd45892acf8b6c78c5e8099a662f96ff0121094))
+* publish label deletion events and sync to GitHub/Gitea when labels are cascaded from workspace ([94559e7](https://github.com/usekaneo/kaneo/commit/94559e72f37498393eae01d9338bf289bca20058))
+* **qodo:** applying fixes recommended by qodo review ([58fbb84](https://github.com/usekaneo/kaneo/commit/58fbb84b38fb8deef3e4bfea41256a3547c5a8e9))
+* replace invalid vi.Mock type references with imported Mock type ([607a3d2](https://github.com/usekaneo/kaneo/commit/607a3d26ceee4fa8a39a77f3137df2a4ab92fc5a))
+* replace onClose with onOpenChange in labels settings dialogs ([ad0b0da](https://github.com/usekaneo/kaneo/commit/ad0b0daf07def5b6b09c0ccd9e508f5d1a2beb09))
+* reset shared invalidate spy between useUpdateLabel tests ([c6487cd](https://github.com/usekaneo/kaneo/commit/c6487cd2fc424d4b884540c21e9986f6ab60320e))
+* **review:** further updates from code review ([9334a83](https://github.com/usekaneo/kaneo/commit/9334a83df76ce58ac154575d4c15365f77e813be))
+* **site:** use official Product Hunt logo ([abcc3bb](https://github.com/usekaneo/kaneo/commit/abcc3bb889f77c883aaf64ec52c22b552dd7f32e))
+
+
+### Features
+
+* add DISABLE_EMAIL_OTP_SIGN_IN for password sign-in with SMTP ([3fbdfbc](https://github.com/usekaneo/kaneo/commit/3fbdfbcdc24196bba34808f6b501afbc426ada24))
+* **i18n:** add Indonesian locale ([1fe6bd0](https://github.com/usekaneo/kaneo/commit/1fe6bd0bd8875733a905fde9076c68e0168a6dad))
+* **settings:** add workspace labels management page with CRUD ([e656a69](https://github.com/usekaneo/kaneo/commit/e656a698f5889c30253683df8d70e4f90815bb3d))
+# [2.9.0](https://github.com/usekaneo/kaneo/compare/v2.8.0...v2.9.0) (2026-06-30)
+
+
+### Bug Fixes
+
+* **auth:** allow unverified users to accept workspace invitations ([d2f2b0f](https://github.com/usekaneo/kaneo/commit/d2f2b0f559204c4b97cd32aaff322a8cc526782d))
+* **auth:** link OIDC sign-in to existing same-email accounts ([#987](https://github.com/usekaneo/kaneo/issues/987)) ([0667479](https://github.com/usekaneo/kaneo/commit/0667479cb693dc66f2fda59da564219620133884))
+
+
+### Features
+
+* **comments:** [@mention](https://github.com/mention) workspace members in task comments ([#1353](https://github.com/usekaneo/kaneo/issues/1353)) ([98184d2](https://github.com/usekaneo/kaneo/commit/98184d2611a218dc1463b5e1c3b0fa71efd9be81))
+* **tasks:** notify members [@mentioned](https://github.com/mentioned) in a task description ([#1353](https://github.com/usekaneo/kaneo/issues/1353)) ([554b5ac](https://github.com/usekaneo/kaneo/commit/554b5ac9e4f21070b2901943dfead400cb864c58))
+# [2.8.0](https://github.com/usekaneo/kaneo/compare/v2.7.8...v2.8.0) (2026-06-30)
+
+
+### Bug Fixes
+
+* **api:** drop malformed Better Auth schema fields from OpenAPI output ([e986f58](https://github.com/usekaneo/kaneo/commit/e986f58173a0c8c205e61c6c28dc0f90d27407c7))
+* **auth:** claim device code before approve/deny (better-auth 1.6.11) ([d57a957](https://github.com/usekaneo/kaneo/commit/d57a9574d68fe618a7ffd24a13f33bf0aa2cf87a))
+* **subtasks:** make the leading checkbox toggle completion ([#1352](https://github.com/usekaneo/kaneo/issues/1352)) ([7627210](https://github.com/usekaneo/kaneo/commit/762721001416fafcea0af713585f2d428d13d309))
+
+
+### Features
+
+* **mcp:** support KANEO_API_KEY for non-interactive auth ([014cc96](https://github.com/usekaneo/kaneo/commit/014cc9622b5aa527e617a6eb58944e7aa5558c7d))
+* **notifications:** opt-in flag to allow private webhook destinations ([412c568](https://github.com/usekaneo/kaneo/commit/412c56879d11eaeb3ff2db0e1612e32e8c727002))
+## [2.7.8](https://github.com/usekaneo/kaneo/compare/v2.7.7...v2.7.8) (2026-06-29)
+
+
+### Bug Fixes
+
+* add enabled guard to useGetTask ([b689d48](https://github.com/usekaneo/kaneo/commit/b689d48de18993be7d07db84be690cf3680490e2))
+* add WebSocket keepalive pings and DB connection timeouts ([#1323](https://github.com/usekaneo/kaneo/issues/1323)) ([6ae96c6](https://github.com/usekaneo/kaneo/commit/6ae96c6d6fbbef947440c7b6baa3a712c50ed9a9))
+* auto-login failure can leave the sign-in page permanently stuck on skeleton ([e29bebb](https://github.com/usekaneo/kaneo/commit/e29bebb9c5dbb7372e7e76eb498c6f40c3917dd9))
+* **bug:** added normalizedApiServerUrl to resolve asset url ([5b9633e](https://github.com/usekaneo/kaneo/commit/5b9633e8402b69b6905477e377fcff93907b3d81))
+* **bug:** derive fallback asset URL from request origin instead of hardcoded localhost:1337 ([686a0cb](https://github.com/usekaneo/kaneo/commit/686a0cbd3318ab324bf1b46eced045f5d2453d30))
+* **command-palette:** default to planned status when creating a task from backlog ([020ec96](https://github.com/usekaneo/kaneo/commit/020ec962e44fa30f5c005289de7ca4adc8f5c7c4))
+* **comment:** improve comment formatting in task event publication. ([02dec8e](https://github.com/usekaneo/kaneo/commit/02dec8e34818a0909513c405e61fe6707140936e))
+* **deps:** allow @hono/node-server v2 so the [#1292](https://github.com/usekaneo/kaneo/issues/1292) upgrade takes effect ([#1313](https://github.com/usekaneo/kaneo/issues/1313)) ([b527638](https://github.com/usekaneo/kaneo/commit/b52763822bb8144a52d549151359b05ffb404fd2))
+* **docker:** bump pinned nginx to 1.28.3-r4 ([97388a0](https://github.com/usekaneo/kaneo/commit/97388a0d5397e20ec1beb3b1ff03238d770104a0))
+* **docs:** resolves bug 1346 ([#1350](https://github.com/usekaneo/kaneo/issues/1350)) ([709453f](https://github.com/usekaneo/kaneo/commit/709453fd87a2c5ed6fa18b924510d2b6bc5cbaf4))
+* **docs:** resolving qodo suggestions ([72caad9](https://github.com/usekaneo/kaneo/commit/72caad9bd04d94767691475fd9af8efc93db5b9d))
+* **docs:** updating README.md for helm chart. Replaced steps and added clear direction ([53a245d](https://github.com/usekaneo/kaneo/commit/53a245dac23f6178d963c2609731e2a63b2a7712))
+* **editor:** add table row/column controls to the bubble menu ([adde63d](https://github.com/usekaneo/kaneo/commit/adde63db46b6a6d38059c262c39f1ad7f9c01b9a))
+* errorCallbackURL redirect loop, empty <p>, integration test ([81c5d6a](https://github.com/usekaneo/kaneo/commit/81c5d6a8255bbbc204231404c1bd3f3efa485c2e))
+* **github-integration:** surface server error text on verify failure ([781274d](https://github.com/usekaneo/kaneo/commit/781274d0af5cb683d86277275139d08f49d5e593))
+* **helm:** define KANEO_POSTGRES_PASSWORD before DATABASE_URL ([#1309](https://github.com/usekaneo/kaneo/issues/1309)) ([ac43e74](https://github.com/usekaneo/kaneo/commit/ac43e74d928b564c77b27a0753b0febb83034325))
+* **helm:** resolve agent reviews and suggestions ([9380e69](https://github.com/usekaneo/kaneo/commit/9380e698539271cf0ac8cad8e2e96fff34bfe5ef))
+* **mcp:** guard delete_label against workspace labels ([27b8304](https://github.com/usekaneo/kaneo/commit/27b83048bd1c310688adc9c9113e57a79c554179))
+* **notifications:** full-bleed inbox dropdown and drop duplicate query key ([8c1e212](https://github.com/usekaneo/kaneo/commit/8c1e21265e82b5538ea5fa0376ac003e257d03d5)), closes [#1324](https://github.com/usekaneo/kaneo/issues/1324) [#1323](https://github.com/usekaneo/kaneo/issues/1323)
+* **permissions:** let members with create-only permission create tasks ([e71a8f9](https://github.com/usekaneo/kaneo/commit/e71a8f98d639a8a3a887160d0cb27d755294aedf))
+* **task-relations:** distinguish "blocked by" from "blocks" ([867df7d](https://github.com/usekaneo/kaneo/commit/867df7d4b8ce4b92cec6513eaba468d910d499f8))
+* **tests:** added integration tests for fix validation ([caba382](https://github.com/usekaneo/kaneo/commit/caba3829de12ba84efb9c9d8d2b5cc3bf0ae617b))
+* use custom column names in webhook status reports ([#1343](https://github.com/usekaneo/kaneo/issues/1343)) ([8ef65f0](https://github.com/usekaneo/kaneo/commit/8ef65f02ad1463295eec1e2265d2a087bd1aa9f2))
+* use LF line endings in husky commit-msg hook ([4a9fe04](https://github.com/usekaneo/kaneo/commit/4a9fe04a8f5dc417d6fcd24e40262aeb5360d788))
+
+
+### Features
+
+* **ci:** add helm chart publishing ([9b141f3](https://github.com/usekaneo/kaneo/commit/9b141f369e55e70b78e68925b2d4d2eaad5052e6))
+* **comments:** allow users to delete their own comments ([#1322](https://github.com/usekaneo/kaneo/issues/1322)) ([02e1712](https://github.com/usekaneo/kaneo/commit/02e1712e3cce44a727fc77f524f40df423f61a34))
+* custom OAuth auto login, allow disabling the Login Form ([97b2b98](https://github.com/usekaneo/kaneo/commit/97b2b98aa955fc6ee61961a98559ce427a38d015))
+* **helm:** prep for helm chart publishing ([1972efa](https://github.com/usekaneo/kaneo/commit/1972efa2ae1b2690e816508877bb9a300e067a12))
+* **mcp:** add task-relation and label-delete tools ([dfc2d9b](https://github.com/usekaneo/kaneo/commit/dfc2d9b0f47286d5a279fb44c12e4430c8592275))
+* **notifications:** notification inbox with real-time WebSocket updates ([#1324](https://github.com/usekaneo/kaneo/issues/1324)) ([3c09c5b](https://github.com/usekaneo/kaneo/commit/3c09c5bb423116a01c2163cf200f972bc44994f2))
+* support AWS IAM roles for S3 storage ([#1342](https://github.com/usekaneo/kaneo/issues/1342)) ([089a7de](https://github.com/usekaneo/kaneo/commit/089a7de9c5b14f344dd958bb06f07c23e73e9cdf))
+## [2.7.7](https://github.com/usekaneo/kaneo/compare/v2.7.6...v2.7.7) (2026-05-29)
+
+
+### Bug Fixes
+
+* **ci:** build internal deps before running tests ([1c69023](https://github.com/usekaneo/kaneo/commit/1c69023f977f5282f98f052b4a2db0622996dc96))
+* **ci:** route test:integration through turbo so deps are built first ([8d0cbaf](https://github.com/usekaneo/kaneo/commit/8d0cbaff44e9b882cfe776c05797d32da72652c0))
+* **web:** empty unset KANEO_* placeholders so self-hosted signup works ([d9420a8](https://github.com/usekaneo/kaneo/commit/d9420a817279931d1c9c94b7406146e0b52e31e2)), closes [#1304](https://github.com/usekaneo/kaneo/issues/1304)
+## [2.7.6](https://github.com/usekaneo/kaneo/compare/v2.7.5...v2.7.6) (2026-05-29)
+
+
+### Bug Fixes
+
+* **docker:** build @kaneo/permissions in web stages too ([6b8d4ca](https://github.com/usekaneo/kaneo/commit/6b8d4cae815339c0d4ac1714b785ba32b723dbf5))
+* **github:** skip issues opened by the configured app bot ([9078121](https://github.com/usekaneo/kaneo/commit/9078121ab85660fcfdc596d8f1aec3f2e88b7a40))
+* **permissions:** compile package to dist for prod node runtime ([75273c9](https://github.com/usekaneo/kaneo/commit/75273c9a660ff5fb0c8feba71c5d70d22642d8ad))
+* **rbac:** chunk default-role seed insert to stay under bind-param cap ([365d575](https://github.com/usekaneo/kaneo/commit/365d5759b398cbec887ccb744b8f175e53f29799))
+
+
+### Features
+
+* **auth:** cloud abuse-mitigation gates for sign-up and invites ([1d44a33](https://github.com/usekaneo/kaneo/commit/1d44a33fd9e011da7a7063a9a7d780d726f9dd76))
+## [2.7.5](https://github.com/usekaneo/kaneo/compare/v2.7.4...v2.7.5) (2026-05-27)
+
+
+### Bug Fixes
+
+* **auth:** widen ac to AccessControl for organization() typing ([e21c6d4](https://github.com/usekaneo/kaneo/commit/e21c6d43e0f9f82c45d5efd4060f3f6a90f4c64b))
+* **ci:** use RELEASE_TOKEN PAT so release events fire downstream ([62eac52](https://github.com/usekaneo/kaneo/commit/62eac52593f67c117a5355edf96552ec24497a12))
+* **columns:** allow workflow icon updates ([2f02835](https://github.com/usekaneo/kaneo/commit/2f02835c5642785d39a02f7cd54d9fdd3a667f94))
+* **deps:** regenerate pnpm-lock.yaml (stale next@16 reference) ([7e86f06](https://github.com/usekaneo/kaneo/commit/7e86f069c5062e26a525d4d9aa0d83f86c7cfb86))
+* **docker:** bump pinned nginx to 1.28.3-r2 in Dockerfile.kaneo ([7e7ba28](https://github.com/usekaneo/kaneo/commit/7e7ba2844251620f319e146b813071a85793af76))
+* **github:** accept \n-escaped and base64-encoded GITHUB_PRIVATE_KEY ([63c060b](https://github.com/usekaneo/kaneo/commit/63c060bc74a30b167a680fd6cc1d7b8b51c41b8a)), closes [#1299](https://github.com/usekaneo/kaneo/issues/1299)
+* **package:** revert version to 2.7.4 in package.json ([0ac1302](https://github.com/usekaneo/kaneo/commit/0ac1302a9c27fe6d42c656eff72a65e22abd300f))
+* **rbac:** address CodeRabbit follow-up on admin promotion and sign-in flash ([c882894](https://github.com/usekaneo/kaneo/commit/c8828941ba07ac0db64e15bff94d56570bf6c167))
+* **rbac:** address PR review feedback (build, tests, label permissions) ([21c0f75](https://github.com/usekaneo/kaneo/commit/21c0f754ecbcb5c253241ffc3737497cf15f983e))
+* **rbac:** address Qodo re-review (admin promotion, registration, instance status) ([67eda1e](https://github.com/usekaneo/kaneo/commit/67eda1ea6c6eca01748e3d8895229bdebe090f97)), closes [#4](https://github.com/usekaneo/kaneo/issues/4) [#3](https://github.com/usekaneo/kaneo/issues/3) [#1](https://github.com/usekaneo/kaneo/issues/1) [#2](https://github.com/usekaneo/kaneo/issues/2)
+* **rbac:** address review bot comments ([68a9f65](https://github.com/usekaneo/kaneo/commit/68a9f654cf5c72a7cbc9e20319a963df9e69b4b5)), closes [#2](https://github.com/usekaneo/kaneo/issues/2)
+* **rbac:** validate custom-role permission JSON before authorizing ([c522001](https://github.com/usekaneo/kaneo/commit/c5220012b9c8a8522de4bda2291eaa540722acb7))
+* **web:** align invite member modal styling ([81932e3](https://github.com/usekaneo/kaneo/commit/81932e31569838f1ccadaeedc6be51fd51d3cbb8))
+* **web:** ensure active workspace is set when deep-linking to settings ([31cd7e0](https://github.com/usekaneo/kaneo/commit/31cd7e03ebd10519aa998161798d3d6e84a425e2))
+* **web:** invalidate the right caches on workspace user role update ([a411821](https://github.com/usekaneo/kaneo/commit/a411821fb7eb6132292c6978459420abc7a0e5da))
+
+
+### Features
+
+* **rbac:** gate workspace UI on server-checked permissions ([c414432](https://github.com/usekaneo/kaneo/commit/c41443276ca783395c0ff95c568f96005501554e))
+* **site:** add product hunt landing badge ([28fb3e3](https://github.com/usekaneo/kaneo/commit/28fb3e397689fe54eb04848c5fea554a4525da15))
+* **web:** move members page back to workspace sidebar with new table design ([565b898](https://github.com/usekaneo/kaneo/commit/565b898c14ebf7c6419940a59e564acfeaa9d5ac))
+* **web:** ownership transfer in workspace general settings ([405de6e](https://github.com/usekaneo/kaneo/commit/405de6e7caec1a23fa772a9550514313590b27f0))
+* workspace RBAC with custom roles and instance admin ([039f4bb](https://github.com/usekaneo/kaneo/commit/039f4bb00f0b40ae10a00b51281bde213b098492))
+## [2.7.5](https://github.com/usekaneo/kaneo/compare/v2.7.4...v2.7.5) (2026-05-27)
+
+
+### Bug Fixes
+
+* **auth:** widen ac to AccessControl for organization() typing ([e21c6d4](https://github.com/usekaneo/kaneo/commit/e21c6d43e0f9f82c45d5efd4060f3f6a90f4c64b))
+* **columns:** allow workflow icon updates ([2f02835](https://github.com/usekaneo/kaneo/commit/2f02835c5642785d39a02f7cd54d9fdd3a667f94))
+* **deps:** regenerate pnpm-lock.yaml (stale next@16 reference) ([7e86f06](https://github.com/usekaneo/kaneo/commit/7e86f069c5062e26a525d4d9aa0d83f86c7cfb86))
+* **github:** accept \n-escaped and base64-encoded GITHUB_PRIVATE_KEY ([63c060b](https://github.com/usekaneo/kaneo/commit/63c060bc74a30b167a680fd6cc1d7b8b51c41b8a)), closes [#1299](https://github.com/usekaneo/kaneo/issues/1299)
+* **rbac:** address CodeRabbit follow-up on admin promotion and sign-in flash ([c882894](https://github.com/usekaneo/kaneo/commit/c8828941ba07ac0db64e15bff94d56570bf6c167))
+* **rbac:** address PR review feedback (build, tests, label permissions) ([21c0f75](https://github.com/usekaneo/kaneo/commit/21c0f754ecbcb5c253241ffc3737497cf15f983e))
+* **rbac:** address Qodo re-review (admin promotion, registration, instance status) ([67eda1e](https://github.com/usekaneo/kaneo/commit/67eda1ea6c6eca01748e3d8895229bdebe090f97)), closes [#4](https://github.com/usekaneo/kaneo/issues/4) [#3](https://github.com/usekaneo/kaneo/issues/3) [#1](https://github.com/usekaneo/kaneo/issues/1) [#2](https://github.com/usekaneo/kaneo/issues/2)
+* **rbac:** address review bot comments ([68a9f65](https://github.com/usekaneo/kaneo/commit/68a9f654cf5c72a7cbc9e20319a963df9e69b4b5)), closes [#2](https://github.com/usekaneo/kaneo/issues/2)
+* **rbac:** validate custom-role permission JSON before authorizing ([c522001](https://github.com/usekaneo/kaneo/commit/c5220012b9c8a8522de4bda2291eaa540722acb7))
+* **web:** align invite member modal styling ([81932e3](https://github.com/usekaneo/kaneo/commit/81932e31569838f1ccadaeedc6be51fd51d3cbb8))
+* **web:** ensure active workspace is set when deep-linking to settings ([31cd7e0](https://github.com/usekaneo/kaneo/commit/31cd7e03ebd10519aa998161798d3d6e84a425e2))
+* **web:** invalidate the right caches on workspace user role update ([a411821](https://github.com/usekaneo/kaneo/commit/a411821fb7eb6132292c6978459420abc7a0e5da))
+
+
+### Features
+
+* **rbac:** gate workspace UI on server-checked permissions ([c414432](https://github.com/usekaneo/kaneo/commit/c41443276ca783395c0ff95c568f96005501554e))
+* **site:** add product hunt landing badge ([28fb3e3](https://github.com/usekaneo/kaneo/commit/28fb3e397689fe54eb04848c5fea554a4525da15))
+* **web:** move members page back to workspace sidebar with new table design ([565b898](https://github.com/usekaneo/kaneo/commit/565b898c14ebf7c6419940a59e564acfeaa9d5ac))
+* **web:** ownership transfer in workspace general settings ([405de6e](https://github.com/usekaneo/kaneo/commit/405de6e7caec1a23fa772a9550514313590b27f0))
+* workspace RBAC with custom roles and instance admin ([039f4bb](https://github.com/usekaneo/kaneo/commit/039f4bb00f0b40ae10a00b51281bde213b098492))
+## [2.7.4](https://github.com/usekaneo/kaneo/compare/v2.7.3...v2.7.4) (2026-05-18)
+
+
+### Bug Fixes
+
+* **api:** restore atomic ownership check on activity comment writes ([12e9b94](https://github.com/usekaneo/kaneo/commit/12e9b942a1e78d48f2222908eb8267205855da27))
+
+
+### Features
+
+* **api:** add S3 key prefix support and auto-delete orphaned assets ([#1258](https://github.com/usekaneo/kaneo/issues/1258)) ([84fd6bd](https://github.com/usekaneo/kaneo/commit/84fd6bd38bd2f5f670502e79f28b99783436f10d))
+## [2.7.3](https://github.com/usekaneo/kaneo/compare/v2.7.2...v2.7.3) (2026-05-18)
+
+
+### Bug Fixes
+
+* **api:** resolve issue [#1231](https://github.com/usekaneo/kaneo/issues/1231) ([#1257](https://github.com/usekaneo/kaneo/issues/1257)) ([94072ee](https://github.com/usekaneo/kaneo/commit/94072eec4c81fe5d4fb041d0a25342fa576431ff))
+* **db:** add missing foreign key indexes ([#1226](https://github.com/usekaneo/kaneo/issues/1226)) ([09742d4](https://github.com/usekaneo/kaneo/commit/09742d4452babdde1ebb359d290d04b0723384ed))
+* emit task.status_changed for git webhook status updates ([#1263](https://github.com/usekaneo/kaneo/issues/1263)) ([89c8207](https://github.com/usekaneo/kaneo/commit/89c8207052cea65cc1be7491651179cd41f98a4d))
+* inconsistent import extension ([4b5afc9](https://github.com/usekaneo/kaneo/commit/4b5afc9abb93a6c0d12d7c370152796691ff7a1c))
+* properly construct WS URL ([13d2ecc](https://github.com/usekaneo/kaneo/commit/13d2eccca3ced31cdbce55a022daa9f6f9c31197))
+* remove duplicate import tasks modal close button ([#1264](https://github.com/usekaneo/kaneo/issues/1264)) ([4f4d36b](https://github.com/usekaneo/kaneo/commit/4f4d36b69602cbbeba8ec0608745b1a687fb6e97))
+* replace em dash with hyphen in titles and metadata ([00b1f86](https://github.com/usekaneo/kaneo/commit/00b1f865f89e410e62936612cf4310af00e1060e))
+* **web:** Fix websocket path ([#1228](https://github.com/usekaneo/kaneo/issues/1228)) ([7059683](https://github.com/usekaneo/kaneo/commit/70596832d4eb325001a661cfadf6d4044a73863e))
+
+
+### Features
+
+* **i18n:** add Korean (ko-KR) translation ([#1229](https://github.com/usekaneo/kaneo/issues/1229)) ([cb5f607](https://github.com/usekaneo/kaneo/commit/cb5f607a4901b3275885c0bf62e232bbe92b19d5))
+* **site:** add Product Hunt launch badge to hero ([6d33c9e](https://github.com/usekaneo/kaneo/commit/6d33c9e37a53c83e5bb635ecfb18aa0df9293464)), closes [#141](https://github.com/usekaneo/kaneo/issues/141) [#124](https://github.com/usekaneo/kaneo/issues/124) [#140](https://github.com/usekaneo/kaneo/issues/140)
+## [2.7.2](https://github.com/usekaneo/kaneo/compare/v2.7.1...v2.7.2) (2026-05-05)
+
+
+### Features
+
+* **chart:** add kaneo.extraEnv for arbitrary env vars ([1cfa2e9](https://github.com/usekaneo/kaneo/commit/1cfa2e92d446976ffca4964a40d578fa5db1f386)), closes [#1203](https://github.com/usekaneo/kaneo/issues/1203)
 ## [2.7.1](https://github.com/usekaneo/kaneo/compare/v2.7.0...v2.7.1) (2026-05-04)
 
 

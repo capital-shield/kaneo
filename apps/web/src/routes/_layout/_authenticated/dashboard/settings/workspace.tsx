@@ -2,9 +2,10 @@ import {
   createFileRoute,
   Link,
   Outlet,
+  redirect,
   useLocation,
 } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
+import { Settings, Shield, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,34 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import getWorkspaces from "@/fetchers/workspace/get-workspaces";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/cn";
+import { getInitials } from "@/lib/get-initials";
 
 export const Route = createFileRoute(
   "/_layout/_authenticated/dashboard/settings/workspace",
 )({
+  // Settings pages live outside `/dashboard/workspace/$workspaceId`, so they
+  // have no route param to identify "which workspace". They rely on the
+  // session's active organization. A user who deep-links here (or refreshes)
+  // before ever visiting a workspace dashboard would otherwise see an empty
+  // sidebar ("WS / Roles.Undefined") and a stuck "Loading…" — pick the first
+  // workspace as active so the layout has something to render.
+  beforeLoad: async () => {
+    const session = await authClient.getSession();
+    if (session?.data?.session?.activeOrganizationId) return;
+
+    const workspaces = await getWorkspaces();
+    if (workspaces.length === 0) {
+      throw redirect({ to: "/onboarding" });
+    }
+
+    await authClient.organization.setActive({
+      organizationId: workspaces[0].id,
+    });
+  },
   component: RouteComponent,
 });
 
@@ -34,15 +57,19 @@ function RouteComponent() {
       url: "/dashboard/settings/workspace/general",
       icon: Settings,
     },
+    {
+      title: t("settings:workspaceRoles.title", { defaultValue: "Roles" }),
+      url: "/dashboard/settings/workspace/roles",
+      icon: Shield,
+    },
+    {
+      title: t("settings:workspaceLabels.title", { defaultValue: "Labels" }),
+      url: "/dashboard/settings/workspace/labels",
+      icon: Tag,
+    },
   ];
   const isActivePath = (path: string) => location.pathname === path;
-  const workspaceInitials =
-    workspace?.name
-      ?.split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "WS";
+  const workspaceInitials = getInitials(workspace?.name, "WS");
 
   return (
     <div className="flex gap-6 h-full">

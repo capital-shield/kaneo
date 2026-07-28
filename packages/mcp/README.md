@@ -25,6 +25,7 @@ DEVICE_AUTH_CLIENT_IDS=kaneo-cli,kaneo-mcp,your-client-id
 |----------|-------------|
 | `KANEO_API_URL` | Kaneo API origin (default `http://localhost:1337`). Do not include `/api`. |
 | `KANEO_MCP_CLIENT_ID` | Device-flow client id (default `kaneo-mcp`). Must match `DEVICE_AUTH_CLIENT_IDS` on the server. |
+| `KANEO_API_KEY` | **Optional.** A Kaneo API key (create one under Settings → Account → Developer). When set, the server authenticates with it as a Bearer token and skips the interactive device flow — use this for headless/Docker setups. |
 
 ## Install
 
@@ -108,10 +109,21 @@ On the first tool call that needs Kaneo, the server:
 4. Polls `POST /api/auth/device/token` until approved
 5. Stores the access token at `~/.config/kaneo-mcp/credentials.json` with mode `0600`
 
+### Non-interactive (API key)
+
+For headless or sandboxed environments where opening a browser is impractical, set `KANEO_API_KEY` to a key created under Settings → Account → Developer. The server sends it as a Bearer token on every request and skips the device flow entirely, so no token is cached to disk.
+
 ## Tools
 
 - Session: `whoami`, `list_workspaces`
 - Projects: `list_projects`, `get_project`, `create_project`, `update_project`
 - Tasks: `list_tasks`, `get_task`, `create_task`, `update_task`, `move_task`, `update_task_status`
-- Comments: `list_task_comments`, `create_task_comment`
-- Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`
+- Comments: `list_task_comments`, `create_task_comment`, `update_task_comment`, `delete_task_comment`
+- Labels: `list_workspace_labels`, `create_label`, `attach_label_to_task`, `detach_label_from_task`, `delete_label`
+- Task relations: `create_task_relation`, `get_task_relations`, `delete_task_relation`
+
+## Releasing
+
+Bump `version` in `packages/mcp/package.json` and merge to `main`. The [publish workflow](../../.github/workflows/publish-mcp.yml) runs the package tests, publishes the new version to npm, and creates a `mcp-v<version>` GitHub release. Nothing is published while the version stays the same, so tool changes reach npm only once the version is bumped.
+
+Publishing a GitHub release manually also works: tag it `mcp-v<version>` with the tag version matching `packages/mcp/package.json` on the tagged commit.

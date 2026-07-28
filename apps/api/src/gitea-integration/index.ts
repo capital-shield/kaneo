@@ -9,8 +9,15 @@ import { integrationTable, projectTable } from "../database/schema";
 import { type GiteaConfig, validateGiteaConfig } from "../plugins/gitea/config";
 import { handleGiteaWebhookRequest } from "../plugins/gitea/webhook-handler";
 import { giteaIntegrationSchema } from "../schemas";
+import {
+  hasWorkspacePermission,
+  requireWorkspacePermission,
+} from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
-import { workspaceAccess } from "../utils/workspace-access-middleware";
+import {
+  workspaceAccess,
+  workspaceAccessMiddleware,
+} from "../utils/workspace-access-middleware";
 import createGiteaIntegration from "./controllers/create-gitea-integration";
 import deleteGiteaIntegration from "./controllers/delete-gitea-integration";
 import getGiteaIntegration from "./controllers/get-gitea-integration";
@@ -142,10 +149,18 @@ const giteaIntegration = new Hono<{
       },
     }),
     validator("param", v.object({ projectId: v.string() })),
-    workspaceAccess.fromProject("projectId"),
+    workspaceAccessMiddleware({
+      sources: [{ type: "lookup", resource: "project", idKey: "projectId" }],
+    }),
     async (c) => {
       const { projectId } = c.req.valid("param");
-      const integration = await getGiteaIntegration(projectId);
+      const includeWebhookSecret = await hasWorkspacePermission(c, {
+        workspace: ["manage_settings"],
+      });
+      const integration = await getGiteaIntegration(
+        projectId,
+        includeWebhookSecret,
+      );
       if (!integration) {
         return c.json(null, 200);
       }
@@ -180,6 +195,7 @@ const giteaIntegration = new Hono<{
       }),
     ),
     workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ workspace: ["manage_settings"] }),
     async (c) => {
       const { projectId } = c.req.valid("param");
       const body = c.req.valid("json");
@@ -190,7 +206,7 @@ const giteaIntegration = new Hono<{
         repositoryOwner: body.repositoryOwner,
         repositoryName: body.repositoryName,
       });
-      const integration = await getGiteaIntegration(projectId);
+      const integration = await getGiteaIntegration(projectId, true);
       if (!integration) {
         throw new HTTPException(500, { message: "Failed to load integration" });
       }
@@ -223,6 +239,7 @@ const giteaIntegration = new Hono<{
       }),
     ),
     workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ workspace: ["manage_settings"] }),
     async (c) => {
       const { projectId } = c.req.valid("param");
       const body = c.req.valid("json");
@@ -276,7 +293,7 @@ const giteaIntegration = new Hono<{
           ),
         );
 
-      const updated = await getGiteaIntegration(projectId);
+      const updated = await getGiteaIntegration(projectId, true);
       if (!updated) {
         throw new HTTPException(500, { message: "Failed to load integration" });
       }
@@ -307,6 +324,7 @@ const giteaIntegration = new Hono<{
     }),
     validator("param", v.object({ projectId: v.string() })),
     workspaceAccess.fromProject("projectId"),
+    requireWorkspacePermission({ workspace: ["manage_settings"] }),
     async (c) => {
       const { projectId } = c.req.valid("param");
       const result = await deleteGiteaIntegration(projectId);
@@ -362,6 +380,7 @@ const giteaIntegration = new Hono<{
 
       return next();
     },
+    requireWorkspacePermission({ task: ["create"] }),
     async (c) => {
       const { projectId } = c.req.valid("json");
       const result = await importGiteaIssues(projectId);

@@ -97,6 +97,47 @@ export const normalizeOrganizationAuthOperations = (
         summaryObjectParts,
       )}`.trim();
       operation.tags = ["Organization Management"];
+
+      if (path === "/auth/organization/get-invitation" && method === "get") {
+        const parameters = operation.parameters;
+        if (Array.isArray(parameters)) {
+          const idParameter = parameters.find(
+            (parameter) =>
+              isPlainObject(parameter) &&
+              parameter.name === "id" &&
+              parameter.in === "query",
+          );
+          if (isPlainObject(idParameter)) {
+            idParameter.required = true;
+          }
+        }
+      }
+
+      if (path === "/auth/organization/update-team" && method === "post") {
+        const requestBody = operation.requestBody;
+        if (isPlainObject(requestBody)) {
+          const content = requestBody.content;
+          const jsonContent = isPlainObject(content)
+            ? content["application/json"]
+            : undefined;
+          const schema = isPlainObject(jsonContent)
+            ? jsonContent.schema
+            : undefined;
+          const properties = isPlainObject(schema)
+            ? schema.properties
+            : undefined;
+          const data = isPlainObject(properties) ? properties.data : undefined;
+          const dataProperties = isPlainObject(data)
+            ? data.properties
+            : undefined;
+          const id = isPlainObject(dataProperties)
+            ? dataProperties.id
+            : undefined;
+          if (isPlainObject(id)) {
+            delete id.default;
+          }
+        }
+      }
     }
   }
 
@@ -410,6 +451,44 @@ export const normalizeEmptyRequiredArrays = (spec: Record<string, unknown>) => {
   return spec;
 };
 
+// Better Auth's generateOpenAPISchema sometimes emits a `properties` entry whose
+// value is a primitive instead of a schema object — e.g. the organization
+// `create-role` `additionalFields` field comes through as
+// `properties: { type: "object" }`. OpenAPI validators (Mintlify) reject the
+// invalid sub-schema, so drop any property whose schema is not an object.
+export const normalizeMalformedPropertySchemas = (
+  spec: Record<string, unknown>,
+) => {
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        visit(item);
+      }
+      return;
+    }
+
+    if (!isPlainObject(node)) {
+      return;
+    }
+
+    if (isPlainObject(node.properties)) {
+      const properties = node.properties as Record<string, unknown>;
+      for (const [key, value] of Object.entries(properties)) {
+        if (!isPlainObject(value)) {
+          delete properties[key];
+        }
+      }
+    }
+
+    for (const value of Object.values(node)) {
+      visit(value);
+    }
+  };
+
+  visit(spec);
+  return spec;
+};
+
 export const markOptionalSchemaFieldsNullable = (
   spec: Record<string, unknown>,
 ) => {
@@ -484,6 +563,11 @@ export const normalizeEmptyAndEnumSchemas = (spec: Record<string, unknown>) => {
     for (const [k, value] of Object.entries(node)) {
       // Replace remaining empty schemas {} (e.g. v.any() or v.unknown()).
       if (isPlainObject(value) && Object.keys(value).length === 0) {
+        // An empty properties map is valid and must remain a map. Replacing it
+        // with a schema object would create `properties: { type: "object" }`.
+        if (k === "properties") {
+          continue;
+        }
         // additionalProperties: {} → true (means "any additional properties")
         node[k] = k === "additionalProperties" ? true : { type: "object" };
         continue;

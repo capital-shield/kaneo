@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { AuthService } from "../auth/auth-service.js";
 import { KaneoClient } from "./client.js";
 
 describe("KaneoClient", () => {
@@ -68,7 +69,7 @@ describe("KaneoClient", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("uses x-api-key header and skips device auth when apiKey is provided", async () => {
+  it("sends the api key as a bearer token and skips device auth", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(
@@ -78,7 +79,11 @@ describe("KaneoClient", () => {
 
     const client = new KaneoClient({
       baseUrl: "https://api.example.com",
-      apiKey: "my-api-key",
+      auth: new AuthService({
+        baseUrl: "https://api.example.com",
+        clientId: "kaneo-mcp",
+        apiKey: "my-api-key",
+      }),
     });
 
     await expect(
@@ -87,8 +92,7 @@ describe("KaneoClient", () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = new Headers(init.headers);
-    expect(headers.get("x-api-key")).toBe("my-api-key");
-    expect(headers.get("Authorization")).toBeNull();
+    expect(headers.get("Authorization")).toBe("Bearer my-api-key");
   });
 
   it("does not retry on 401 when using an api key", async () => {
@@ -99,7 +103,11 @@ describe("KaneoClient", () => {
 
     const client = new KaneoClient({
       baseUrl: "https://api.example.com",
-      apiKey: "bad-key",
+      auth: new AuthService({
+        baseUrl: "https://api.example.com",
+        clientId: "kaneo-mcp",
+        apiKey: "bad-key",
+      }),
     });
 
     await expect(client.json("/api/task/t-1")).rejects.toThrow();

@@ -54,6 +54,7 @@ function CommandPalette() {
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const projectIdFromRoute =
     location.pathname.match(/\/project\/([^/]+)/)?.[1] ?? undefined;
+  const isBacklogView = location.pathname.endsWith("/backlog");
 
   useRegisterShortcuts({
     shortcuts: {
@@ -64,7 +65,7 @@ function CommandPalette() {
     modifierShortcuts: {
       [shortcuts.palette.prefix]: {
         [shortcuts.palette.open]: () => {
-          setOpen(true);
+          setOpen((prev) => !prev);
         },
       },
     },
@@ -121,13 +122,11 @@ function CommandPalette() {
           },
           {
             value: "members",
-            label: t("navigation:commandPalette.members"),
+            label: t("navigation:commandPalette.members", {
+              defaultValue: "Members",
+            }),
             onRun: () => {
-              if (!workspace?.id) return;
-              navigate({
-                to: "/dashboard/workspace/$workspaceId/members",
-                params: { workspaceId: workspace.id },
-              });
+              navigate({ to: "/dashboard/settings/workspace/members" });
             },
           },
           {
@@ -246,7 +245,7 @@ function CommandPalette() {
   return (
     <>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandDialogPopup>
+        <CommandDialogPopup instant>
           <Command items={groupedItems}>
             <CommandInput
               placeholder={t("navigation:commandPalette.inputPlaceholder")}
@@ -320,6 +319,7 @@ function CommandPalette() {
       <CreateTaskModal
         open={isCreateTaskOpen}
         projectId={projectIdFromRoute}
+        status={isBacklogView ? "planned" : undefined}
         onClose={() => setIsCreateTaskOpen(false)}
       />
       <CreateWorkspaceModal

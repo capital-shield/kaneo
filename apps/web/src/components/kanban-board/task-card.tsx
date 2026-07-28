@@ -31,6 +31,7 @@ import useExternalLinks from "@/hooks/queries/external-link/use-external-links";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
 import { dueDateStatusColors, getDueDateStatus } from "@/lib/due-date-status";
+import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import queryClient from "@/query-client";
@@ -65,9 +66,10 @@ function getUserRingColor(userId: string | null | undefined) {
 
 type TaskCardProps = {
   task: Task;
+  disableDragDrop?: boolean;
 };
 
-function TaskCard({ task }: TaskCardProps) {
+function TaskCard({ task, disableDragDrop = false }: TaskCardProps) {
   const { t } = useTranslation();
   const {
     attributes,
@@ -76,7 +78,7 @@ function TaskCard({ task }: TaskCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task.id, disabled: disableDragDrop });
   const { project } = useProjectStore();
   const { data: workspace } = useActiveWorkspace();
   const { mutateAsync: deleteTask } = useDeleteTask();
@@ -199,7 +201,9 @@ function TaskCard({ task }: TaskCardProps) {
           {/** biome-ignore lint/a11y/noStaticElementInteractions: false positive for onClick and onKeyDown */}
           <div
             onClick={handleTaskCardClick}
-            className={`group relative cursor-move rounded-lg border bg-background p-3 shadow-xs/5 transition-all duration-200 ease-out ${
+            className={`group relative rounded-lg border bg-background p-3 shadow-xs/5 transition-[background-color,border-color,box-shadow,scale] duration-150 ease-out active:scale-[0.98] ${
+              disableDragDrop ? "cursor-default" : "cursor-move"
+            } ${
               isDragging
                 ? "border-ring/40 bg-card shadow-lg"
                 : "hover:border-border/90 hover:bg-background hover:shadow-sm"
@@ -233,8 +237,8 @@ function TaskCard({ task }: TaskCardProps) {
                       src={assignee?.user?.image ?? ""}
                       alt={assignee?.user?.name || ""}
                     />
-                    <AvatarFallback className="text-xs font-medium">
-                      {assignee?.user?.name?.charAt(0).toUpperCase()}
+                    <AvatarFallback className="text-xs font-medium border border-border/30">
+                      {getInitials(assignee?.user?.name)}
                     </AvatarFallback>
                   </Avatar>
                 ) : (

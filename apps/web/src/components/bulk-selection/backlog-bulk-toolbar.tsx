@@ -48,7 +48,9 @@ import { useBulkOperations } from "@/hooks/mutations/task/use-bulk-operations";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getColumnIcon } from "@/lib/column";
+import { getInitials } from "@/lib/get-initials";
 import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
@@ -102,6 +104,9 @@ function BacklogBulkToolbar() {
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id ?? "",
   );
+  const { canManageTasks, canAssignTasks } = useWorkspacePermission();
+  const canEdit = canManageTasks();
+  const canAssign = canAssignTasks();
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -254,9 +259,10 @@ function BacklogBulkToolbar() {
     [bulkDueDate, selectedTaskIds, selectedCount, clearSelection, t],
   );
 
-  const groupedItems = useMemo<BacklogActionGroup[]>(
-    () => [
-      {
+  const groupedItems = useMemo<BacklogActionGroup[]>(() => {
+    const groups: BacklogActionGroup[] = [];
+    if (canEdit) {
+      groups.push({
         value: "actions",
         label: t("tasks:bulk.actions"),
         items: [
@@ -277,8 +283,10 @@ function BacklogBulkToolbar() {
             },
           },
         ],
-      },
-      {
+      });
+    }
+    if (canAssign) {
+      groups.push({
         value: "assign",
         label: t("tasks:bulk.assignTo"),
         items: (workspaceUsers?.members ?? []).map((member) => ({
@@ -291,7 +299,7 @@ function BacklogBulkToolbar() {
                 alt={member.user?.name || ""}
               />
               <AvatarFallback className="text-xs font-medium border border-border/30">
-                {member.user?.name?.charAt(0).toUpperCase()}
+                {getInitials(member.user?.name)}
               </AvatarFallback>
             </Avatar>
           ),
@@ -299,8 +307,10 @@ function BacklogBulkToolbar() {
             void handleBulkAssign(member.userId);
           },
         })),
-      },
-      {
+      });
+    }
+    if (canEdit) {
+      groups.push({
         value: "priority",
         label: t("tasks:bulk.setPriority"),
         items: priorityOptions.map((opt) => ({
@@ -311,8 +321,8 @@ function BacklogBulkToolbar() {
             void handleBulkPriority(opt.value);
           },
         })),
-      },
-      {
+      });
+      groups.push({
         value: "label",
         label: t("tasks:bulk.addLabel"),
         items: uniqueLabels.map((label) => ({
@@ -332,25 +342,28 @@ function BacklogBulkToolbar() {
             void handleBulkAddLabel(label.id);
           },
         })),
-      },
-    ],
-    [
-      workspaceUsers?.members,
-      uniqueLabels,
-      handleBulkDelete,
-      handleBulkArchive,
-      handleBulkAssign,
-      handleBulkPriority,
-      handleBulkAddLabel,
-      priorityOptions,
-      t,
-    ],
-  );
+      });
+    }
+    return groups;
+  }, [
+    canEdit,
+    canAssign,
+    workspaceUsers?.members,
+    uniqueLabels,
+    handleBulkDelete,
+    handleBulkArchive,
+    handleBulkAssign,
+    handleBulkPriority,
+    handleBulkAddLabel,
+    priorityOptions,
+    t,
+  ]);
 
   if (selectedCount === 0) return null;
+  if (!canEdit && !canAssign) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+    <div className="-translate-x-1/2 fixed bottom-6 left-1/2 z-50 transition-[translate,opacity] duration-200 ease-out starting:translate-y-3 starting:opacity-0 motion-reduce:starting:translate-y-0">
       <Toolbar className="items-center gap-1 rounded-xl border-border/80 bg-background px-1.5 py-1 shadow-lg/8">
         <ToolbarGroup className="px-1.5">
           <span className="text-sm font-medium text-foreground">
@@ -358,74 +371,82 @@ function BacklogBulkToolbar() {
           </span>
         </ToolbarGroup>
 
-        <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
+        {canEdit && (
+          <>
+            <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
+            <ToolbarGroup>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="gap-1.5">
+                    <ArrowUpToLine className="size-4" />
+                    {t("tasks:bulk.moveToBoard")}
+                    <ChevronDown className="size-3 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-48">
+                  {(project?.columns ?? []).map((col) => (
+                    <DropdownMenuItem
+                      key={col.id}
+                      onClick={() => handleMoveToBoard(col.id)}
+                    >
+                      {getColumnIcon(col.id, col.isFinal, col.icon)}
+                      <span className="ml-2">{col.name}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </ToolbarGroup>
 
-        <ToolbarGroup>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" className="gap-1.5">
-                <ArrowUpToLine className="size-4" />
-                {t("tasks:bulk.moveToBoard")}
-                <ChevronDown className="size-3 opacity-60" />
+            <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
+            <ToolbarGroup>
+              <Popover
+                open={isDatePickerOpen}
+                onOpenChange={setIsDatePickerOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button size="sm" variant="ghost">
+                    <CalendarIcon className="size-4" />
+                    {t("tasks:bulk.setDueDate")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0" align="center">
+                  <Calendar
+                    mode="single"
+                    onSelect={handleBulkDueDate}
+                    className="w-full bg-popover"
+                  />
+                  <div className="p-0 border-t border-border">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground rounded-none"
+                      onClick={() => handleBulkDueDate(undefined)}
+                    >
+                      <X className="h-4 w-4" />
+                      {t("tasks:dueDate.clear")}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </ToolbarGroup>
+          </>
+        )}
+
+        {groupedItems.length > 0 && (
+          <>
+            <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
+            <ToolbarGroup>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsActionsOpen(true)}
+              >
+                <Menu className="size-4" />
+                {t("tasks:bulk.actions")}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-48">
-              {(project?.columns ?? []).map((col) => (
-                <DropdownMenuItem
-                  key={col.id}
-                  onClick={() => handleMoveToBoard(col.id)}
-                >
-                  {getColumnIcon(col.id, col.isFinal)}
-                  <span className="ml-2">{col.name}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </ToolbarGroup>
-
-        <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
-
-        <ToolbarGroup>
-          <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-            <PopoverTrigger asChild>
-              <Button size="sm" variant="ghost">
-                <CalendarIcon className="size-4" />
-                {t("tasks:bulk.setDueDate")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0" align="center">
-              <Calendar
-                mode="single"
-                onSelect={handleBulkDueDate}
-                className="w-full bg-popover"
-              />
-              <div className="p-0 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground rounded-none"
-                  onClick={() => handleBulkDueDate(undefined)}
-                >
-                  <X className="h-4 w-4" />
-                  {t("tasks:dueDate.clear")}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </ToolbarGroup>
-
-        <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
-
-        <ToolbarGroup>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsActionsOpen(true)}
-          >
-            <Menu className="size-4" />
-            {t("tasks:bulk.actions")}
-          </Button>
-        </ToolbarGroup>
+            </ToolbarGroup>
+          </>
+        )}
 
         <ToolbarSeparator orientation="vertical" className="my-1 h-5" />
 

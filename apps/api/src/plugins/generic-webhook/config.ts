@@ -61,6 +61,15 @@ export async function assertPublicWebhookDestination(
     throw new Error("Generic webhook URL must use http or https");
   }
 
+  // Self-hosters whose receivers (Gotify, ntfy, ...) live on a private network
+  // can opt out of the SSRF/private-address guard. Default off keeps protection on.
+  if (
+    process.env.KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS === "true" ||
+    process.env.KANEO_ALLOW_PRIVATE_WEBHOOK_DESTINATIONS === "1"
+  ) {
+    return;
+  }
+
   if (isDisallowedAddress(url.hostname)) {
     throw new Error(
       "Generic webhook destination resolves to a non-routable address",
@@ -86,6 +95,12 @@ export const genericWebhookEventKeys = [
   "taskTitleChanged",
   "taskDescriptionChanged",
   "taskCommentCreated",
+  "taskDeleted",
+  "taskMoved",
+  "taskDueDateChanged",
+  "taskAssigneeChanged",
+  "taskUnassigned",
+  "dueDateReminder",
 ] as const;
 
 export type GenericWebhookEventKey = (typeof genericWebhookEventKeys)[number];
@@ -124,7 +139,16 @@ export const genericWebhookConfigSchema = v.object({
       taskTitleChanged: v.optional(v.boolean()),
       taskDescriptionChanged: v.optional(v.boolean()),
       taskCommentCreated: v.optional(v.boolean()),
+      taskDeleted: v.optional(v.boolean()),
+      taskMoved: v.optional(v.boolean()),
+      taskDueDateChanged: v.optional(v.boolean()),
+      taskAssigneeChanged: v.optional(v.boolean()),
+      taskUnassigned: v.optional(v.boolean()),
+      dueDateReminder: v.optional(v.boolean()),
     }),
+  ),
+  dueDateReminderLeadTimeMinutes: v.optional(
+    v.pipe(v.number(), v.integer(), v.minValue(5), v.maxValue(43_200)),
   ),
 });
 
@@ -142,6 +166,12 @@ export const defaultGenericWebhookEvents: Record<
   taskTitleChanged: false,
   taskDescriptionChanged: false,
   taskCommentCreated: true,
+  taskDeleted: false,
+  taskMoved: false,
+  taskDueDateChanged: false,
+  taskAssigneeChanged: false,
+  taskUnassigned: false,
+  dueDateReminder: false,
 };
 
 export function normalizeGenericWebhookConfig(
@@ -161,6 +191,8 @@ export function normalizeGenericWebhookConfig(
           failureCount: config.health.failureCount ?? 0,
         }
       : undefined,
+    dueDateReminderLeadTimeMinutes:
+      config.dueDateReminderLeadTimeMinutes ?? 1440,
     events: {
       ...defaultGenericWebhookEvents,
       ...(config.events ?? {}),

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import CreateTaskModal from "@/components/shared/modals/create-task-modal";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { getColumnIcon } from "@/lib/column";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
@@ -18,6 +19,9 @@ export function ColumnHeader({ column }: ColumnHeaderProps) {
   const { t } = useTranslation();
   const { project, setProject } = useProjectStore();
   const { mutate: updateTask } = useUpdateTask();
+  const { canManageTasks, canCreateTasks } = useWorkspacePermission();
+  const canTask = canManageTasks();
+  const canCreate = canCreateTasks();
 
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -50,7 +54,7 @@ export function ColumnHeader({ column }: ColumnHeaderProps) {
     <div className="flex items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-2">
         <span className="text-muted-foreground">
-          {getColumnIcon(column.id, column.isFinal)}
+          {getColumnIcon(column.id, column.isFinal, column.icon)}
         </span>
         <span className="truncate text-sm font-medium text-foreground/95">
           {column.name}
@@ -61,24 +65,26 @@ export function ColumnHeader({ column }: ColumnHeaderProps) {
       </div>
 
       <div className="flex items-center">
-        {column.isFinal && column.tasks.length > 0 && (
+        {canTask && column.isFinal && column.tasks.length > 0 && (
           <button
             type="button"
             onClick={() => setIsArchiveModalOpen(true)}
-            className="flex items-center rounded-md px-2 py-1 text-left text-muted-foreground transition-all hover:bg-accent/50"
+            className="flex items-center rounded-md px-2 py-1 text-left text-muted-foreground transition-colors hover:bg-accent/50"
             title={t("tasks:listView.archiveAllTooltip")}
           >
             <Archive className="w-4 h-4 text-muted-foreground" />
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => setIsTaskModalOpen(true)}
-          className="flex items-center rounded-md px-2 py-1 text-left text-muted-foreground transition-all hover:bg-accent/50"
-          title={t("tasks:kanban.addTask")}
-        >
-          <Plus className="w-4 h-4 text-muted-foreground" />
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => setIsTaskModalOpen(true)}
+            className="flex items-center rounded-md px-2 py-1 text-left text-muted-foreground transition-colors hover:bg-accent/50"
+            title={t("tasks:kanban.addTask")}
+          >
+            <Plus className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
 
       <CreateTaskModal

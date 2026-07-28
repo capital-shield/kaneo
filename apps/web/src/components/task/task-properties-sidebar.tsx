@@ -31,6 +31,7 @@ import { cn } from "@/lib/cn";
 import { getColumnIcon } from "@/lib/column";
 import { dueDateStatusColors, getDueDateStatus } from "@/lib/due-date-status";
 import { formatDateShort } from "@/lib/format";
+import { getInitials } from "@/lib/get-initials";
 import { getPriorityLabel, getStatusDisplayLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
@@ -98,6 +99,7 @@ export default function TaskPropertiesSidebar({
     statusColumn?.name,
   );
   const statusIsFinal = statusColumn?.isFinal ?? false;
+  const statusIcon = statusColumn?.icon;
 
   const projectSlug = project?.slug;
   const taskNumber = task?.number;
@@ -165,9 +167,6 @@ export default function TaskPropertiesSidebar({
                     />
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -198,7 +197,11 @@ export default function TaskPropertiesSidebar({
                     size="sm"
                     className="justify-start h-7 px-1.5 gap-1.5"
                   >
-                    {getColumnIcon(task.status ?? "", statusIsFinal)}
+                    {getColumnIcon(
+                      task.status ?? "",
+                      statusIsFinal,
+                      statusIcon,
+                    )}
                     <span className="text-xs font-semibold truncate">
                       {statusLabel}
                     </span>
@@ -233,7 +236,9 @@ export default function TaskPropertiesSidebar({
                           alt={assignee?.user?.name || ""}
                         />
                         <AvatarFallback className="text-[9px] font-medium border border-border/30 flex-shrink-0 h-[16px] w-[16px]">
-                          {assignee?.user?.name?.charAt(0).toUpperCase()}
+                          {getInitials(
+                            assignee?.user?.name || task.assigneeName,
+                          )}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
@@ -349,9 +354,6 @@ export default function TaskPropertiesSidebar({
                       />
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -382,7 +384,11 @@ export default function TaskPropertiesSidebar({
                       size="sm"
                       className="justify-start h-7 px-1.5 gap-1.5"
                     >
-                      {getColumnIcon(task.status ?? "", statusIsFinal)}
+                      {getColumnIcon(
+                        task.status ?? "",
+                        statusIsFinal,
+                        statusIcon,
+                      )}
                       <span className="text-xs font-semibold truncate">
                         {statusLabel}
                       </span>
@@ -417,7 +423,9 @@ export default function TaskPropertiesSidebar({
                             alt={assignee?.user?.name || ""}
                           />
                           <AvatarFallback className="text-[9px] font-medium border border-border/30 shrink-0 h-[16px] w-[16px]">
-                            {assignee?.user?.name?.charAt(0).toUpperCase()}
+                            {getInitials(
+                              assignee?.user?.name || task.assigneeName,
+                            )}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
@@ -535,9 +543,6 @@ export default function TaskPropertiesSidebar({
                         />
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -569,7 +574,11 @@ export default function TaskPropertiesSidebar({
                       size="sm"
                       className="justify-start h-7 px-1.5 gap-1.5 w-full"
                     >
-                      {getColumnIcon(task.status ?? "", statusIsFinal)}
+                      {getColumnIcon(
+                        task.status ?? "",
+                        statusIsFinal,
+                        statusIcon,
+                      )}
                       <span className="text-xs font-semibold truncate">
                         {statusLabel}
                       </span>
@@ -604,7 +613,9 @@ export default function TaskPropertiesSidebar({
                             alt={assignee?.user?.name || ""}
                           />
                           <AvatarFallback className="text-[9px] font-medium border border-border/30 shrink-0 h-[16px] w-[16px]">
-                            {assignee?.user?.name?.charAt(0).toUpperCase()}
+                            {getInitials(
+                              assignee?.user?.name || task.assigneeName,
+                            )}
                           </AvatarFallback>
                         </Avatar>
                       ) : (

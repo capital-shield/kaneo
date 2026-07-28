@@ -76,6 +76,7 @@ export const timeEntrySchema = v.object({
   endTime: v.optional(v.date()),
   duration: v.nullable(v.number()),
   createdAt: v.date(),
+  updatedAt: v.date(),
 });
 
 export const notificationSchema = v.object({
@@ -92,12 +93,15 @@ export const notificationSchema = v.object({
     "time_entry_created",
     "due_date_reminder",
     "task_overdue",
+    "task_mention",
+    "task_comment",
   ] as const),
   eventData: v.nullable(v.record(v.string(), v.unknown())),
   isRead: v.optional(v.boolean()),
   resourceId: v.optional(v.string()),
   resourceType: v.optional(v.picklist(["task", "workspace"] as const)),
   createdAt: v.date(),
+  updatedAt: v.date(),
 });
 
 export const notificationPreferenceWorkspaceRuleSchema = v.object({
@@ -134,6 +138,11 @@ export const notificationPreferenceSchema = v.object({
   webhookUrl: v.nullable(v.string()),
   webhookSecretConfigured: v.boolean(),
   maskedWebhookSecret: v.nullable(v.string()),
+  taskAssignmentEnabled: v.boolean(),
+  taskCommentEnabled: v.boolean(),
+  taskStatusChangeEnabled: v.boolean(),
+  dueDateReminderEnabled: v.boolean(),
+  dueDateReminderLeadTimeMinutes: v.number(),
   workspaces: v.array(notificationPreferenceWorkspaceRuleSchema),
   createdAt: v.nullable(v.date()),
   updatedAt: v.nullable(v.date()),
@@ -208,7 +217,16 @@ export const genericWebhookIntegrationSchema = v.object({
   maskedWebhookUrl: v.nullable(v.string()),
   secretConfigured: v.boolean(),
   maskedSecret: v.nullable(v.string()),
-  events: integrationEventsSchema,
+  events: v.object({
+    ...integrationEventsSchema.entries,
+    taskDeleted: v.boolean(),
+    taskMoved: v.boolean(),
+    taskDueDateChanged: v.boolean(),
+    taskAssigneeChanged: v.boolean(),
+    taskUnassigned: v.boolean(),
+    dueDateReminder: v.boolean(),
+  }),
+  dueDateReminderLeadTimeMinutes: v.number(),
   isActive: v.nullable(v.boolean()),
   createdAt: v.date(),
   updatedAt: v.date(),
@@ -246,6 +264,7 @@ export const commentSchema = v.object({
 export const configSchema = v.object({
   disableRegistration: v.nullable(v.boolean()),
   disablePasswordRegistration: v.nullable(v.boolean()),
+  disableEmailOtpSignIn: v.nullable(v.boolean()),
   isDemoMode: v.boolean(),
   hasSmtp: v.boolean(),
   hasGithubSignIn: v.nullable(v.boolean()),
@@ -253,5 +272,7 @@ export const configSchema = v.object({
   hasDiscordSignIn: v.nullable(v.boolean()),
   hasCustomOAuth: v.nullable(v.boolean()),
   hasGuestAccess: v.nullable(v.boolean()),
+  disableLoginForm: v.nullable(v.boolean()),
+  customOAuthAutoLogin: v.nullable(v.boolean()),
   customOAuthLogoutUrl: v.nullable(v.string()),
 });

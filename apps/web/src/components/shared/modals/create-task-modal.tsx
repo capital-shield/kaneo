@@ -44,8 +44,10 @@ import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { formatDateMedium } from "@/lib/format";
+import { getInitials } from "@/lib/get-initials";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
@@ -164,6 +166,9 @@ function CreateTaskModal({
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(
     workspace?.id || "",
   );
+  const { canCreateTasks, canManageLabels } = useWorkspacePermission();
+  const canCreateTaskCapability = canCreateTasks();
+  const canCreateLabelCapability = canManageLabels();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -566,6 +571,11 @@ function CreateTaskModal({
     setLabels(labels.filter((l) => l.name !== labelName));
   };
 
+  // Defense-in-depth: if the user lacks task-create permission, don't render
+  // the modal even if a stale trigger somehow opens it (e.g., keyboard
+  // shortcut after the capability has changed).
+  if (!canCreateTaskCapability) return null;
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
@@ -749,9 +759,7 @@ function CreateTaskModal({
                             alt={selectedUser?.user?.name || ""}
                           />
                           <AvatarFallback className="text-[10px] font-medium border border-border/30">
-                            {selectedUser?.user?.name
-                              ?.charAt(0)
-                              .toUpperCase() || "?"}
+                            {getInitials(selectedUser?.user?.name)}
                           </AvatarFallback>
                         </Avatar>
                         <span>{selectedUser.user?.name}</span>
@@ -799,7 +807,7 @@ function CreateTaskModal({
                             alt={member?.user?.name || ""}
                           />
                           <AvatarFallback className="text-xs font-medium border border-border/30">
-                            {member?.user?.name?.charAt(0).toUpperCase() || "?"}
+                            {getInitials(member?.user?.name)}
                           </AvatarFallback>
                         </Avatar>
                         <span className="text-sm">{member?.user?.name}</span>
@@ -919,10 +927,12 @@ function CreateTaskModal({
                           </button>
                         ))}
 
-                        {isCreatingNewLabel && filteredLabels.length > 0 && (
-                          <div className="border-t border-border my-1" />
-                        )}
-                        {isCreatingNewLabel && (
+                        {canCreateLabelCapability &&
+                          isCreatingNewLabel &&
+                          filteredLabels.length > 0 && (
+                            <div className="border-t border-border my-1" />
+                          )}
+                        {canCreateLabelCapability && isCreatingNewLabel && (
                           <button
                             type="button"
                             className="w-full flex items-center gap-2 px-2 py-1.5 text-xs hover:bg-accent/50 text-left"
@@ -1003,7 +1013,7 @@ function CreateTaskModal({
                   type="checkbox"
                   checked={createMore}
                   onChange={(e) => setCreateMore(e.target.checked)}
-                  className="rounded border-border bg-background text-primary focus:ring-ring focus:ring-offset-0 focus:ring-2 transition-all"
+                  className="rounded border-border bg-background text-primary focus:ring-ring focus:ring-offset-0 focus:ring-2 transition-[border-color,box-shadow]"
                 />
                 {t("common:modals.createTask.createMore")}
               </label>

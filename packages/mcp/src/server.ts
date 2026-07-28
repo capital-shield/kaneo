@@ -14,14 +14,13 @@ export function createMcpServer(): McpServer {
   const baseUrl = normalizeBaseUrl(
     process.env.KANEO_API_URL || "http://localhost:1337",
   );
-  const apiKey = process.env.KANEO_MCP_API_KEY;
-  const client = apiKey
-    ? new KaneoClient({ baseUrl, apiKey })
-    : (() => {
-        const clientId = process.env.KANEO_MCP_CLIENT_ID || "kaneo-mcp";
-        const auth = new AuthService({ baseUrl, clientId });
-        return new KaneoClient({ baseUrl, auth });
-      })();
+  const clientId = process.env.KANEO_MCP_CLIENT_ID || "kaneo-mcp";
+  // KANEO_MCP_API_KEY is kept as a fallback for headless configs created
+  // before the variable was renamed to KANEO_API_KEY.
+  const apiKey =
+    process.env.KANEO_API_KEY || process.env.KANEO_MCP_API_KEY || undefined;
+  const auth = new AuthService({ baseUrl, clientId, apiKey });
+  const client = new KaneoClient({ baseUrl, auth });
   const server = new McpServer({
     name: "kaneo-mcp",
     version: packageVersion,

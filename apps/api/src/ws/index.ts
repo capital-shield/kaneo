@@ -15,6 +15,55 @@ type ProjectConnection = {
   initiatorId: string;
 };
 
+type UserConnection = {
+  ws: WSContext;
+};
+
+/**
+ * User-scoped connections — tracks WebSocket connections keyed by userId.
+ * Used for delivering user-targeted events like NOTIFICATION_CREATED.
+ */
+const userConnections = new Map<string, Set<UserConnection>>();
+
+export function addUserConnection(userId: string, ws: WSContext) {
+  if (!userConnections.has(userId)) {
+    userConnections.set(userId, new Set());
+  }
+  const conn: UserConnection = { ws };
+  userConnections.get(userId)?.add(conn);
+  return conn;
+}
+
+export function removeUserConnection(userId: string, conn: UserConnection) {
+  const connections = userConnections.get(userId);
+  if (connections) {
+    connections.delete(conn);
+    if (connections.size === 0) {
+      userConnections.delete(userId);
+    }
+  }
+}
+
+export function broadcastToUser(
+  userId: string,
+  message: { type: string; [key: string]: unknown },
+) {
+  const connections = userConnections.get(userId);
+  if (!connections) return;
+
+  const payload = JSON.stringify(message);
+  for (const conn of connections) {
+    try {
+      conn.ws.send(payload);
+    } catch {
+      connections.delete(conn);
+    }
+  }
+  if (connections.size === 0) {
+    userConnections.delete(userId);
+  }
+}
+
 /**
  * Local connections — Each instance tracks only its own WebSocket connections.
  */
@@ -207,7 +256,6 @@ const taskUpdateEvents = [
   "task.label_deleted",
   "task-relation.created",
   "task-relation.deleted",
-  "task.comment_created",
   "comment.created",
   "comment.deleted",
   "comment.updated",
@@ -261,6 +309,15 @@ subscribeToEvent<{
   );
 });
 
+subscribeToEvent<{ notificationId: string; userId: string }>(
+  "notification.created",
+  async (data) => {
+    if (data.userId) {
+      broadcastToUser(data.userId, { type: "NOTIFICATION_CREATED" });
+    }
+  },
+);
+
 for (const eventName of taskUpdateEvents) {
   subscribeToEvent<TaskEvent>(eventName, async (data) => {
     const { projectId, initiatorId } = data;
@@ -285,7 +342,6 @@ for (const eventName of taskUpdateEvents) {
       case "task.label_deleted":
         type = "TASK_LABEL_UPDATED";
         break;
-      case "task.comment_created":
       case "comment.created":
       case "comment.deleted":
       case "comment.updated":
