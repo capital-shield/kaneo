@@ -25,6 +25,8 @@
 			"!**/.cache",
 			"!**/coverage",
 			"!**/.claude",
+			"!**/.pi",
+			"!**/.pi-subagents",
 			"!**/openapi.json",
 			"!**/utils"
 		]
@@ -37,7 +39,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"style": {
 				"noParameterAssign": "error",
 				"useAsConstAssertion": "error",
@@ -57,5 +59,18 @@
 			"quoteStyle": "double",
 			"indentStyle": "space"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["release.config.js", "scripts/release/*.mjs"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noTemplateCurlyInString": "off",
+						"noUndeclaredEnvVars": "off"
+					}
+				}
+			}
+		}
+	]
 }

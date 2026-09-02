@@ -8,6 +8,8 @@ import {
   workspaceTable,
   workspaceUserTable,
 } from "../../database/schema";
+import { escapeLikePattern } from "../like-pattern";
+import { TASK_SHORT_ID_PATTERN } from "../task-short-id";
 
 type SearchParams = {
   query: string;
@@ -143,15 +145,19 @@ async function globalSearch(params: SearchParams): Promise<{
   const searchPattern = `%${query.toLowerCase()}%`;
 
   const taskIdMatch = query.match(/^([a-zA-Z]+)-(\d+)$/);
-  const idSlug = taskIdMatch ? taskIdMatch[1] : null;
-  const idNumber = taskIdMatch ? Number.parseInt(taskIdMatch[2], 10) : null;
+  const taskIdQuery =
+    taskIdMatch?.[1] && taskIdMatch[2]
+      ? { slug: taskIdMatch[1], number: Number.parseInt(taskIdMatch[2], 10) }
+      : null;
 
   const workspaceFilter = workspaceId
     ? eq(projectTable.workspaceId, workspaceId)
     : inArray(projectTable.workspaceId, accessibleWorkspaceIds);
 
-  // Check if query matches short-id pattern (e.g. "DEP-23")
-  const shortIdMatch = query.match(/^([A-Za-z][\w-]*)-(\d+)$/);
+  // Check if query matches short-id pattern (e.g. "DEP-23"). `generateProjectSlug`
+  // normalizes to NFKC before it stores a key, so the query is normalized too,
+  // or a decomposed "ПА-23" would never reach the stored composed form.
+  const shortIdMatch = query.normalize("NFKC").match(TASK_SHORT_ID_PATTERN);
 
   if (type === "all" || type === "tasks") {
     const seenTaskIds = new Set<string>();
@@ -190,7 +196,11 @@ async function globalSearch(params: SearchParams): Promise<{
           and(
             workspaceFilter,
             projectId ? eq(taskTable.projectId, projectId) : undefined,
-            ilike(projectTable.slug, slug),
+            // A project key may hold `_`, which `ilike` reads as "any one
+            // character", so `DE_-23` would also match a task in `DEP` and the
+            // `limit(1)` below would pick whichever came back first. Escaping
+            // keeps the case-insensitive comparison and drops the wildcards.
+            ilike(projectTable.slug, escapeLikePattern(slug)),
             eq(taskTable.number, taskNumber),
           ),
         )
@@ -222,7 +232,7 @@ async function globalSearch(params: SearchParams): Promise<{
     // Also run text search for tasks
     const taskRelevanceScore = sql<number>`
       CASE
-        WHEN ${taskIdMatch ? sql`LOWER(${projectTable.slug}) = LOWER(${idSlug}) AND ${taskTable.number} = ${idNumber}` : sql`FALSE`} THEN 4
+        WHEN ${taskIdQuery ? sql`LOWER(${projectTable.slug}) = LOWER(${taskIdQuery.slug}) AND ${taskTable.number} = ${taskIdQuery.number}` : sql`FALSE`} THEN 4
         WHEN LOWER(${taskTable.title}) LIKE ${searchPattern} THEN 3
         WHEN LOWER(${taskTable.description}) LIKE ${searchPattern} THEN 2
         ELSE 1
@@ -258,11 +268,11 @@ async function globalSearch(params: SearchParams): Promise<{
           or(
             ilike(taskTable.title, searchPattern),
             ilike(taskTable.description, searchPattern),
-            ...(taskIdMatch && idSlug !== null && idNumber !== null
+            ...(taskIdQuery
               ? [
                   and(
-                    ilike(projectTable.slug, idSlug),
-                    eq(taskTable.number, idNumber),
+                    ilike(projectTable.slug, taskIdQuery.slug),
+                    eq(taskTable.number, taskIdQuery.number),
                   ),
                 ]
               : []),

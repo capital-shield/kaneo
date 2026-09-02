@@ -81,8 +81,10 @@ export default function TaskCardContextMenuContent({
   const { mutateAsync: updateTaskTitle } = useUpdateTaskTitle();
   const { mutateAsync: updateTaskDescription } = useUpdateTaskDescription();
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
-  const { canManageTasks, canAssignTasks } = useWorkspacePermission();
-  const canEdit = canManageTasks();
+  const { canUpdateTasks, canDeleteTasks, canAssignTasks } =
+    useWorkspacePermission();
+  const canEdit = canUpdateTasks();
+  const canDelete = canDeleteTasks();
   const canAssign = canAssignTasks();
 
   const { mutateAsync: createLabel } = useCreateLabel();
@@ -387,31 +389,43 @@ export default function TaskCardContextMenuContent({
         </ContextMenuSub>
       )}
 
-      {canEdit && (
+      {(canEdit || canDelete) && (
         <>
-          <ContextMenuSeparator />
+          {canEdit && (
+            <>
+              <ContextMenuSeparator />
 
-          <ContextMenuItem onClick={() => handleChange("status", "archived")}>
-            <span>{t("tasks:actions.archive")}</span>
-          </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => handleChange("status", "archived")}
+              >
+                <span>{t("tasks:actions.archive")}</span>
+              </ContextMenuItem>
 
-          <ContextMenuItem onClick={() => handleChange("status", "planned")}>
-            <span>{t("tasks:actions.markAsPlanned")}</span>
-          </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => handleChange("status", "planned")}
+              >
+                <span>{t("tasks:actions.markAsPlanned")}</span>
+              </ContextMenuItem>
+            </>
+          )}
 
-          <ContextMenuSeparator />
+          {canDelete && (
+            <>
+              <ContextMenuSeparator />
 
-          <ContextMenuItem
-            className="text-destructive"
-            onClick={(e) => {
-              e.preventDefault();
-              setTimeout(() => {
-                onDeleteClick();
-              }, 0);
-            }}
-          >
-            <span>{t("tasks:actions.delete")}</span>
-          </ContextMenuItem>
+              <ContextMenuItem
+                className="text-destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTimeout(() => {
+                    onDeleteClick();
+                  }, 0);
+                }}
+              >
+                <span>{t("tasks:actions.delete")}</span>
+              </ContextMenuItem>
+            </>
+          )}
         </>
       )}
     </ContextMenuContent>

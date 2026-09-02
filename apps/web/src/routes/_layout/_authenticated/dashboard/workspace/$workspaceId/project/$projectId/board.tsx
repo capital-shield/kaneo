@@ -108,6 +108,11 @@ function RouteComponent() {
         [shortcuts.view.board]: () => setViewMode("board"),
         [shortcuts.view.list]: () => setViewMode("list"),
         [shortcuts.view.table]: () => setViewMode("table"),
+        [shortcuts.view.calendar]: () =>
+          navigate({
+            to: "/dashboard/workspace/$workspaceId/project/$projectId/calendar",
+            params: { workspaceId, projectId },
+          }),
         [shortcuts.view.gantt]: () =>
           navigate({
             to: "/dashboard/workspace/$workspaceId/project/$projectId/gantt",
@@ -215,7 +220,7 @@ function RouteComponent() {
       headerActions={boardHeaderSearch}
     >
       <PageTitle
-        title={`${project?.name} — ${viewMode === "board" ? t("tasks:view.board") : viewMode === "table" ? t("tasks:view.table") : t("tasks:view.list")}`}
+        title={`${project?.name} · ${viewMode === "board" ? t("tasks:view.board") : viewMode === "table" ? t("tasks:view.table") : t("tasks:view.list")}`}
         hideAppName
       />
       <div className="relative flex flex-col h-full min-h-0 overflow-hidden">

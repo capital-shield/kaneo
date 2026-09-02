@@ -3,6 +3,10 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import {
+  assertAssignableUser,
+  getProjectWorkspaceId,
+} from "../../utils/assert-assignable-user";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { claimTaskNumber } from "./claim-task-numbers";
 
@@ -30,12 +34,23 @@ async function createTask({
   const resolvedStatus = status || "to-do";
   const resolvedPriority = priority || "no-priority";
 
+  const normalizedUserId = userId?.trim() || undefined;
+
   await assertValidTaskStatus(resolvedStatus, projectId);
 
-  const [assignee] = await db
-    .select({ name: userTable.name })
-    .from(userTable)
-    .where(eq(userTable.id, userId ?? ""));
+  let assignee: { name: string } | undefined;
+
+  if (normalizedUserId) {
+    await assertAssignableUser(
+      normalizedUserId,
+      await getProjectWorkspaceId(projectId),
+    );
+
+    [assignee] = await db
+      .select({ name: userTable.name })
+      .from(userTable)
+      .where(eq(userTable.id, normalizedUserId));
+  }
 
   const column = await db.query.columnTable.findFirst({
     where: and(
@@ -65,7 +80,7 @@ async function createTask({
       .insert(taskTable)
       .values({
         projectId,
-        userId: userId || null,
+        userId: normalizedUserId ?? null,
         title: title || "",
         status: resolvedStatus,
         columnId: column?.id ?? null,

@@ -40,10 +40,10 @@ export default function TermsPage() {
               <p className="mt-5 text-foreground/85 text-base leading-relaxed">
                 These terms govern your use of the managed Kaneo Cloud service
                 at cloud.kaneo.app, operated by Andrej Acevski (sole proprietor,
-                North Macedonia), referred to as “we” or “us”. By creating an
-                account you agree to these terms. The open-source Kaneo software
-                itself is separately licensed under the MIT license, and
-                self-hosted installations are not covered by these terms.
+                Macedonia), referred to as “we” or “us”. By creating an account
+                you agree to these terms. The open-source Kaneo software itself
+                is separately licensed under the MIT license, and self-hosted
+                installations are not covered by these terms.
               </p>
             </div>
 
@@ -78,11 +78,11 @@ export default function TermsPage() {
                 . Paid plans start with a 14-day free trial. Payments are
                 processed by Creem as merchant of record. Creem is the seller of
                 record and handles payment collection, invoices, and applicable
-                taxes such as VAT. Subscriptions renew automatically (monthly or
-                annually) until cancelled. You can cancel anytime; your plan
-                remains active until the end of the paid period. If you believe
-                a charge is in error, contact us within 14 days and we will work
-                with you on a refund where appropriate.
+                taxes. Subscriptions renew automatically (monthly or annually)
+                until cancelled. You can cancel anytime; your plan remains
+                active until the end of the paid period. If you believe a charge
+                is in error, contact us within 14 days and we will work with you
+                on a refund where appropriate.
               </p>
               <p>
                 Accounts created before paid plans were introduced keep free
@@ -149,9 +149,8 @@ export default function TermsPage() {
               <p>
                 We may update these terms; material changes will be announced to
                 registered users by email at least 30 days in advance. These
-                terms are governed by the laws of North Macedonia, without
-                affecting mandatory consumer protections of your country of
-                residence.
+                terms are governed by the laws of Macedonia, without affecting
+                mandatory consumer protections of your country of residence.
               </p>
             </Section>
           </div>

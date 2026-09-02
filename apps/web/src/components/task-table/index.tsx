@@ -159,11 +159,11 @@ function TaskTable({ tasks, projectSlug }: TaskTableProps) {
         header: ({ column }) => (
           <SortableHeader label="Labels" column={column} className="w-40" />
         ),
-        accessorFn: (row) => row.labels[0]?.name ?? "",
+        accessorFn: (row) => row.labels?.[0]?.name ?? "",
         cell: ({ row }) => (
           <td className="w-40 px-2">
             <div className="flex flex-wrap gap-1">
-              {row.original.labels.map(
+              {row.original.labels?.map(
                 (label: { id: string; name: string; color: string }) => (
                   <Badge
                     key={label.id}

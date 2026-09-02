@@ -640,7 +640,7 @@ export default function BoardToolbar({
                 subject={t("tasks:boardFilters.subjects.labels")}
                 operator={t("tasks:boardFilters.operators.includeAnyOf")}
                 value={t("tasks:boardFilters.selectedCount", {
-                  count: filters.labels.length,
+                  count: selectedUniqueLabels.length,
                 })}
                 onClear={clearLabelFilters}
               />
