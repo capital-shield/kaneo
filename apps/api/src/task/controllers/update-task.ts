@@ -8,6 +8,7 @@ import {
   assertAssignableUser,
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
+import { completedAtForStatus } from "../completed-at";
 import { assertValidTaskStatus } from "../validate-task-fields";
 
 async function updateTask(
@@ -70,6 +71,7 @@ async function updateTask(
       title,
       status,
       columnId: column?.id ?? null,
+      completedAt: completedAtForStatus(column?.isFinal),
       startDate: startDate || null,
       dueDate: dueDate || null,
       projectId,

@@ -875,7 +875,9 @@
 			"columnsTitle": "Colunas",
 			"columnsDescription": "Gerencie as colunas exibidas no seu quadro. Arraste para reordenar. Ative \"Coluna de concluído\" para as etapas que representam trabalho concluído.",
 			"automationTitle": "Regras de automação",
-			"automationDescription": "Mapeie eventos de integração para colunas. Quando um evento ocorrer, a tarefa vinculada será movida para a coluna especificada."
+			"automationDescription": "Mapeie eventos de integração para colunas. Quando um evento ocorrer, a tarefa vinculada será movida para a coluna especificada.",
+			"autoArchiveTitle": "Arquivamento automático",
+			"autoArchiveDescription": "Remova automaticamente do quadro as tarefas concluídas depois de algum tempo. As tarefas arquivadas continuam disponíveis no backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Selecionar projeto",
@@ -1270,6 +1272,15 @@
 			"merged": "Mesclado",
 			"draft": "Rascunho",
 			"open": "Aberto"
+		},
+		"autoArchive": {
+			"loading": "Carregando...",
+			"label": "Arquivar tarefas concluídas",
+			"hint": "Tarefas em uma coluna final são arquivadas depois de concluídas por esse período.",
+			"optionOff": "Desativado",
+			"optionDays": "Após {{days}} dias",
+			"toastUpdated": "Arquivamento automático atualizado",
+			"toastError": "Não foi possível atualizar o arquivamento automático"
 		}
 	},
 	"navigation": {

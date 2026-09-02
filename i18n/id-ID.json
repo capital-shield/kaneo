@@ -712,7 +712,9 @@
 			"columnsTitle": "Kolom",
 			"columnsDescription": "Kelola kolom yang muncul di papan Anda. Seret untuk mengurutkan ulang. Aktifkan \"Kolom selesai\" untuk tahap yang mewakili pekerjaan selesai.",
 			"automationTitle": "Aturan Otomatisasi",
-			"automationDescription": "Petakan event integrasi ke kolom. Saat event terjadi, tugas tertaut berpindah ke kolom yang ditentukan."
+			"automationDescription": "Petakan event integrasi ke kolom. Saat event terjadi, tugas tertaut berpindah ke kolom yang ditentukan.",
+			"autoArchiveTitle": "Arsip Otomatis",
+			"autoArchiveDescription": "Pindahkan tugas yang selesai dari papan secara otomatis setelah beberapa waktu. Tugas yang diarsipkan tetap tersedia di backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Pilih proyek",
@@ -1268,6 +1270,15 @@
 			"updateError": "Gagal memperbarui label",
 			"deleteError": "Gagal menghapus label",
 			"nameRequired": "Nama label wajib diisi"
+		},
+		"autoArchive": {
+			"loading": "Memuat...",
+			"label": "Arsipkan tugas yang selesai",
+			"hint": "Tugas di kolom selesai akan diarsipkan setelah selesai selama durasi ini.",
+			"optionOff": "Nonaktif",
+			"optionDays": "Setelah {{days}} hari",
+			"toastUpdated": "Arsip otomatis diperbarui",
+			"toastError": "Gagal memperbarui arsip otomatis"
 		}
 	},
 	"navigation": {

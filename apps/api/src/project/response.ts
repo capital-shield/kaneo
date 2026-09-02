@@ -25,6 +25,10 @@ export const projectSchema = z
       description:
         "Highest task number issued in this project; the next task gets this plus one.",
     }),
+    autoArchiveDoneAfterDays: z.number().nullable().openapi({
+      description:
+        "Days a task may sit in a final column before it is archived automatically. Null disables auto-archiving.",
+    }),
   })
   .openapi("Project");
 

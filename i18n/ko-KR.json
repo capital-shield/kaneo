@@ -712,7 +712,9 @@
 			"columnsTitle": "컬럼",
 			"columnsDescription": "보드에 표시되는 컬럼을 관리합니다. 드래그하여 순서를 바꿉니다. 완료된 작업을 나타내는 단계의 경우 \"완료 컬럼\"을 켜세요.",
 			"automationTitle": "자동화 규칙",
-			"automationDescription": "연동 이벤트를 컬럼에 매핑합니다. 이벤트가 발생하면 연결된 작업이 지정된 컬럼으로 이동합니다."
+			"automationDescription": "연동 이벤트를 컬럼에 매핑합니다. 이벤트가 발생하면 연결된 작업이 지정된 컬럼으로 이동합니다.",
+			"autoArchiveTitle": "자동 보관",
+			"autoArchiveDescription": "완료된 작업이 일정 기간이 지나면 보드에서 자동으로 사라집니다. 보관된 작업은 백로그에서 계속 확인할 수 있습니다."
 		},
 		"projectSwitcher": {
 			"selectProject": "프로젝트 선택",
@@ -1268,6 +1270,15 @@
 			"updateError": "라벨 업데이트에 실패했습니다",
 			"deleteError": "라벨 삭제에 실패했습니다",
 			"nameRequired": "라벨 이름은 필수입니다"
+		},
+		"autoArchive": {
+			"loading": "불러오는 중...",
+			"label": "완료된 작업 보관",
+			"hint": "완료 컬럼의 작업은 이 기간이 지나면 보관됩니다.",
+			"optionOff": "사용 안 함",
+			"optionDays": "{{days}}일 후",
+			"toastUpdated": "자동 보관이 업데이트되었습니다",
+			"toastError": "자동 보관 업데이트에 실패했습니다"
 		}
 	},
 	"navigation": {

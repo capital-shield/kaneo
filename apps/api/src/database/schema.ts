@@ -329,6 +329,7 @@ export const projectTable = pgTable(
     archivedAt: timestamp("archived_at", { mode: "date" }),
     lastTaskNumber: integer("last_task_number").notNull().default(0),
     position: integer("position").notNull().default(0),
+    autoArchiveDoneAfterDays: integer("auto_archive_done_after_days"),
   },
   (table) => [
     unique("project_workspace_id_id_unique").on(table.workspaceId, table.id),
@@ -426,6 +427,7 @@ export const taskTable = pgTable(
     priority: text("priority").default("low").notNull(),
     startDate: timestamp("start_date", { mode: "date" }),
     dueDate: timestamp("due_date", { mode: "date" }),
+    completedAt: timestamp("completed_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
@@ -437,6 +439,7 @@ export const taskTable = pgTable(
     index("task_dueDate_idx").on(table.dueDate),
     index("task_assigneeId_idx").on(table.userId),
     index("task_columnId_idx").on(table.columnId),
+    index("task_completedAt_idx").on(table.completedAt),
     unique("task_project_number_unique").on(table.projectId, table.number),
   ],
 );

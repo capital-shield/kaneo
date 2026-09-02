@@ -8,6 +8,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { completedAtForStatus } from "../completed-at";
 import { claimTaskNumber } from "./claim-task-numbers";
 
 type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -29,6 +30,7 @@ async function resolveDestinationStatus(
       id: columnTable.id,
       slug: columnTable.slug,
       position: columnTable.position,
+      isFinal: columnTable.isFinal,
     })
     .from(columnTable)
     .where(eq(columnTable.projectId, destinationProjectId))
@@ -150,6 +152,7 @@ async function moveTask({
         projectId: destinationProjectId,
         status: resolvedColumn.slug,
         columnId: resolvedColumn.id,
+        completedAt: completedAtForStatus(resolvedColumn.isFinal),
         number: nextTaskNumber,
         position: nextPosition,
       })

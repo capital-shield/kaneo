@@ -6,6 +6,7 @@ import {
   integrationTable,
   taskTable,
 } from "../../../database/schema";
+import { completedAtForStatus } from "../../../task/completed-at";
 
 export type TaskRow = InferSelectModel<typeof taskTable>;
 
@@ -62,7 +63,11 @@ export async function updateTaskStatus(
 
   await db
     .update(taskTable)
-    .set({ status: newStatus, columnId })
+    .set({
+      status: newStatus,
+      columnId,
+      completedAt: completedAtForStatus(column?.isFinal),
+    })
     .where(eq(taskTable.id, taskId));
 
   const after = await db.query.taskTable.findFirst({

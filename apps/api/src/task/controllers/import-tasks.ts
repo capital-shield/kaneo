@@ -4,6 +4,7 @@ import db from "../../database";
 import { columnTable, projectTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { filterAssignableUsers } from "../../utils/assert-assignable-user";
+import { completedAtForNewTask } from "../completed-at";
 import {
   coercePriority,
   coerceStatus,
@@ -93,6 +94,7 @@ async function importTasks(
             title: taskData.title,
             status,
             columnId: column?.id ?? null,
+            completedAt: completedAtForNewTask(column?.isFinal),
             startDate: taskData.startDate ? new Date(taskData.startDate) : null,
             dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
             description: taskData.description || "",

@@ -712,7 +712,9 @@
 			"columnsTitle": "Spalten",
 			"columnsDescription": "Verwalte die Spalten, die auf deinem Board erscheinen. Ziehe sie, um sie neu anzuordnen. Aktiviere „Fertige Spalte“ für Phasen, die abgeschlossene Arbeit darstellen.",
 			"automationTitle": "Automatisierungsregeln",
-			"automationDescription": "Ordne Integrationsereignisse Spalten zu. Wenn ein Ereignis eintritt, wird die verknüpfte Aufgabe in die angegebene Spalte verschoben."
+			"automationDescription": "Ordne Integrationsereignisse Spalten zu. Wenn ein Ereignis eintritt, wird die verknüpfte Aufgabe in die angegebene Spalte verschoben.",
+			"autoArchiveTitle": "Automatisch archivieren",
+			"autoArchiveDescription": "Erledigte Aufgaben automatisch vom Board entfernen, sobald sie eine Weile fertig sind. Archivierte Aufgaben bleiben im Backlog verfügbar."
 		},
 		"projectSwitcher": {
 			"selectProject": "Projekt auswählen",
@@ -1269,6 +1271,15 @@
 			"updateError": "Label konnte nicht aktualisiert werden",
 			"deleteError": "Label konnte nicht gelöscht werden",
 			"nameRequired": "Label-Name ist erforderlich"
+		},
+		"autoArchive": {
+			"loading": "Wird geladen...",
+			"label": "Erledigte Aufgaben archivieren",
+			"hint": "Aufgaben in einer Abschlussspalte werden archiviert, sobald sie so lange erledigt sind.",
+			"optionOff": "Aus",
+			"optionDays": "Nach {{days}} Tagen",
+			"toastUpdated": "Automatisches Archivieren aktualisiert",
+			"toastError": "Automatisches Archivieren konnte nicht aktualisiert werden"
 		}
 	},
 	"navigation": {

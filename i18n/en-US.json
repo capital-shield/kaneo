@@ -874,7 +874,9 @@
 			"columnsTitle": "Columns",
 			"columnsDescription": "Manage the columns that appear on your board. Drag to reorder. Turn on \"Done column\" for stages that represent completed work.",
 			"automationTitle": "Automation Rules",
-			"automationDescription": "Map integration events to columns. When an event occurs, the linked task moves to the specified column."
+			"automationDescription": "Map integration events to columns. When an event occurs, the linked task moves to the specified column.",
+			"autoArchiveTitle": "Auto-Archive",
+			"autoArchiveDescription": "Move completed tasks off the board automatically once they have been done for a while. Archived tasks stay available in the backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Select project",
@@ -1269,6 +1271,15 @@
 			"merged": "Merged",
 			"draft": "Draft",
 			"open": "Open"
+		},
+		"autoArchive": {
+			"loading": "Loading...",
+			"label": "Archive completed tasks",
+			"hint": "Tasks in a done column are archived once they have been completed for this long.",
+			"optionOff": "Off",
+			"optionDays": "After {{days}} days",
+			"toastUpdated": "Auto-archive updated",
+			"toastError": "Failed to update auto-archive"
 		}
 	},
 	"navigation": {

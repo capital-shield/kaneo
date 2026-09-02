@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
+import AutoArchiveSettings from "@/components/project/auto-archive-settings";
 import ColumnEditor from "@/components/project/column-editor";
 import WorkflowEditor from "@/components/project/workflow-editor";
 
@@ -49,6 +50,18 @@ function RouteComponent() {
             </p>
           </div>
           <WorkflowEditor projectId={projectId} />
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-md font-medium">
+              {t("settings:projectWorkflow.autoArchiveTitle")}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {t("settings:projectWorkflow.autoArchiveDescription")}
+            </p>
+          </div>
+          <AutoArchiveSettings projectId={projectId} />
         </div>
       </div>
     </>

@@ -24,6 +24,17 @@ export const updateProjectBody = z.object({
   slug: z.string(),
   description: z.string(),
   isPublic: z.boolean(),
+  autoArchiveDoneAfterDays: z
+    .number()
+    .int()
+    .min(1)
+    .max(365)
+    .nullable()
+    .optional()
+    .openapi({
+      description:
+        "Days a task may sit in a final column before it is archived automatically. Null disables auto-archiving; omit to leave the setting untouched.",
+    }),
 });
 
 export const reorderProjectsBody = z.object({

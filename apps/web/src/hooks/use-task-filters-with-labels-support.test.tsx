@@ -29,6 +29,7 @@ describe("useTaskFiltersWithLabelsSupport", () => {
       createdAt: "2026-04-16T00:00:00.000Z",
       updatedAt: "2026-04-16T00:00:00.000Z",
       workspaceId: "workspace-1",
+      autoArchiveDoneAfterDays: null,
       columns: [
         {
           id: "todo",
@@ -117,6 +118,7 @@ describe("useTaskFiltersWithLabelsSupport", () => {
         createdAt: "2026-04-16T00:00:00.000Z",
         updatedAt: "2026-04-16T00:00:00.000Z",
         workspaceId: "workspace-1",
+        autoArchiveDoneAfterDays: null,
         columns: [
           {
             id: "todo",

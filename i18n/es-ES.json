@@ -609,7 +609,9 @@
 			"columnsTitle": "Columnas",
 			"columnsDescription": "Gestiona las columnas de tu tablero. Arrastra para reordenar. Activa la columna  \"Hecho\" para representar el trabajo completado.",
 			"automationTitle": "Reglas de automatización",
-			"automationDescription": "Mapea eventos de integración y columnas integration. Cuando un evento ocurre, la tarea vinculada se moverá a la columna especificada."
+			"automationDescription": "Mapea eventos de integración y columnas integration. Cuando un evento ocurre, la tarea vinculada se moverá a la columna especificada.",
+			"autoArchiveTitle": "Archivado automático",
+			"autoArchiveDescription": "Retira automáticamente del tablero las tareas completadas cuando llevan un tiempo terminadas. Las tareas archivadas siguen disponibles en el backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Selecciona proyecto",
@@ -1270,6 +1272,15 @@
 			"connect": "Conectar Telegram",
 			"saveChanges": "Guardar cambios",
 			"disconnect": "Desconectar"
+		},
+		"autoArchive": {
+			"loading": "Cargando...",
+			"label": "Archivar tareas completadas",
+			"hint": "Las tareas en una columna final se archivan cuando llevan completadas este tiempo.",
+			"optionOff": "Desactivado",
+			"optionDays": "Después de {{days}} días",
+			"toastUpdated": "Archivado automático actualizado",
+			"toastError": "No se pudo actualizar el archivado automático"
 		}
 	},
 	"navigation": {

@@ -873,7 +873,9 @@
 			"columnsTitle": "Cột",
 			"columnsDescription": "Quản lý các cột xuất hiện trên bảng của bạn. Kéo để sắp xếp lại. Bật \"Cột hoàn thành\" cho các giai đoạn thể hiện công việc đã hoàn tất.",
 			"automationTitle": "Quy tắc tự động hóa",
-			"automationDescription": "Ánh xạ sự kiện tích hợp với các cột. Khi một sự kiện xảy ra, công việc liên kết sẽ chuyển sang cột được chỉ định."
+			"automationDescription": "Ánh xạ sự kiện tích hợp với các cột. Khi một sự kiện xảy ra, công việc liên kết sẽ chuyển sang cột được chỉ định.",
+			"autoArchiveTitle": "Tự động lưu trữ",
+			"autoArchiveDescription": "Tự động chuyển các công việc đã hoàn thành khỏi bảng sau một khoảng thời gian. Công việc đã lưu trữ vẫn có trong backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Chọn dự án",
@@ -1268,6 +1270,15 @@
 			"merged": "Đã gộp",
 			"draft": "Bản nháp",
 			"open": "Đang mở"
+		},
+		"autoArchive": {
+			"loading": "Đang tải...",
+			"label": "Lưu trữ công việc đã hoàn thành",
+			"hint": "Công việc ở cột kết thúc sẽ được lưu trữ sau khi hoàn thành đủ khoảng thời gian này.",
+			"optionOff": "Tắt",
+			"optionDays": "Sau {{days}} ngày",
+			"toastUpdated": "Đã cập nhật tự động lưu trữ",
+			"toastError": "Không thể cập nhật tự động lưu trữ"
 		}
 	},
 	"navigation": {

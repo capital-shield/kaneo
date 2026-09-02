@@ -609,7 +609,9 @@
 			"columnsTitle": "Kolommen",
 			"columnsDescription": "Beheer de kolommen op je bord. Sleep om de volgorde te wijzigen. Schakel \"Gereed-kolom\" in voor stadia die voltooid werk vertegenwoordigen.",
 			"automationTitle": "Automatiseringsregels",
-			"automationDescription": "Koppel integratie-gebeurtenissen aan kolommen. Bij een gebeurtenis verplaatst de taak automatisch naar de gekozen kolom."
+			"automationDescription": "Koppel integratie-gebeurtenissen aan kolommen. Bij een gebeurtenis verplaatst de taak automatisch naar de gekozen kolom.",
+			"autoArchiveTitle": "Automatisch archiveren",
+			"autoArchiveDescription": "Verplaats afgeronde taken automatisch van het bord zodra ze een tijdje klaar zijn. Gearchiveerde taken blijven beschikbaar in de backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Project selecteren",
@@ -1269,6 +1271,15 @@
 			"connect": "Verbind Telegram",
 			"saveChanges": "Wijzigingen opslaan",
 			"disconnect": "Ontkoppelen"
+		},
+		"autoArchive": {
+			"loading": "Laden...",
+			"label": "Afgeronde taken archiveren",
+			"hint": "Taken in een eindkolom worden gearchiveerd zodra ze zo lang afgerond zijn.",
+			"optionOff": "Uit",
+			"optionDays": "Na {{days}} dagen",
+			"toastUpdated": "Automatisch archiveren bijgewerkt",
+			"toastError": "Automatisch archiveren bijwerken mislukt"
 		}
 	},
 	"navigation": {

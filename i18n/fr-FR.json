@@ -712,7 +712,9 @@
 			"columnsTitle": "Colonnes",
 			"columnsDescription": "Gérez les colonnes qui apparaissent sur votre tableau. Faites glisser pour réorganiser. Activez \"Colonne terminée\" pour les étapes qui représentent le travail terminé.",
 			"automationTitle": "Règles d'automatisation",
-			"automationDescription": "Mappez les événements d'intégration aux colonnes. Lorsqu'un événement se produit, la tâche liée se déplace vers la colonne spécifiée."
+			"automationDescription": "Mappez les événements d'intégration aux colonnes. Lorsqu'un événement se produit, la tâche liée se déplace vers la colonne spécifiée.",
+			"autoArchiveTitle": "Archivage automatique",
+			"autoArchiveDescription": "Retirez automatiquement du tableau les tâches terminées après un certain temps. Les tâches archivées restent disponibles dans le backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Sélectionner un projet",
@@ -1270,6 +1272,15 @@
 			"updateError": "Échec de la mise à jour du label",
 			"deleteError": "Échec de la suppression du label",
 			"nameRequired": "Le nom du label est requis"
+		},
+		"autoArchive": {
+			"loading": "Chargement...",
+			"label": "Archiver les tâches terminées",
+			"hint": "Les tâches d'une colonne finale sont archivées une fois terminées depuis cette durée.",
+			"optionOff": "Désactivé",
+			"optionDays": "Après {{days}} jours",
+			"toastUpdated": "Archivage automatique mis à jour",
+			"toastError": "Échec de la mise à jour de l'archivage automatique"
 		}
 	},
 	"navigation": {

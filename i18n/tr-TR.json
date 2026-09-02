@@ -712,7 +712,9 @@
 			"columnsTitle": "Sütunlar",
 			"columnsDescription": "Panonuzda görünecek sütunları yönetin. Yeniden sıralamak için sürükleyin. Tamamlanmış işleri temsil eden aşamalar için \"Tamamlandı sütunu\"nu açın.",
 			"automationTitle": "Otomasyon Kuralları",
-			"automationDescription": "Entegrasyon olaylarını sütunlarla eşleştirin. Bir olay gerçekleştiğinde, bağlı talep belirtilen sütuna taşınır."
+			"automationDescription": "Entegrasyon olaylarını sütunlarla eşleştirin. Bir olay gerçekleştiğinde, bağlı talep belirtilen sütuna taşınır.",
+			"autoArchiveTitle": "Otomatik Arşivleme",
+			"autoArchiveDescription": "Tamamlanan görevleri bir süre sonra panodan otomatik olarak kaldırın. Arşivlenen görevler backlog'da erişilebilir kalır."
 		},
 		"projectSwitcher": {
 			"selectProject": "Proje seç",
@@ -1269,6 +1271,15 @@
 			"updateError": "Etiket güncellenemedi",
 			"deleteError": "Etiket silinemedi",
 			"nameRequired": "Etiket adı gereklidir"
+		},
+		"autoArchive": {
+			"loading": "Yükleniyor...",
+			"label": "Tamamlanan görevleri arşivle",
+			"hint": "Bitiş sütunundaki görevler, bu süre boyunca tamamlanmış kaldıktan sonra arşivlenir.",
+			"optionOff": "Kapalı",
+			"optionDays": "{{days}} gün sonra",
+			"toastUpdated": "Otomatik arşivleme güncellendi",
+			"toastError": "Otomatik arşivleme güncellenemedi"
 		}
 	},
 	"navigation": {

@@ -875,7 +875,9 @@
 			"columnsTitle": "Colonne",
 			"columnsDescription": "Gestisci le colonne che appaiono sulla tua board. Trascina per riordinare. Attiva \"Colonna completata\" per le fasi che rappresentano lavoro concluso.",
 			"automationTitle": "Regole di Automazione",
-			"automationDescription": "Mappa eventi di integrazione alle colonne. Quando si verifica un evento, l'attività collegata si sposta nella colonna specificata."
+			"automationDescription": "Mappa eventi di integrazione alle colonne. Quando si verifica un evento, l'attività collegata si sposta nella colonna specificata.",
+			"autoArchiveTitle": "Archiviazione automatica",
+			"autoArchiveDescription": "Rimuovi automaticamente dalla board le attività completate dopo un certo periodo. Le attività archiviate restano disponibili nel backlog."
 		},
 		"projectSwitcher": {
 			"selectProject": "Seleziona progetto",
@@ -1270,6 +1272,15 @@
 			"merged": "Unito",
 			"draft": "Bozza",
 			"open": "Aperto"
+		},
+		"autoArchive": {
+			"loading": "Caricamento...",
+			"label": "Archivia le attività completate",
+			"hint": "Le attività in una colonna finale vengono archiviate dopo essere state completate per questo periodo.",
+			"optionOff": "Disattivato",
+			"optionDays": "Dopo {{days}} giorni",
+			"toastUpdated": "Archiviazione automatica aggiornata",
+			"toastError": "Impossibile aggiornare l'archiviazione automatica"
 		}
 	},
 	"navigation": {

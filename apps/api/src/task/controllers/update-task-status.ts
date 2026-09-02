@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { completedAtForStatus } from "../completed-at";
 import { assertValidTaskStatus } from "../validate-task-fields";
 
 async function updateTaskStatus({
@@ -35,7 +36,11 @@ async function updateTaskStatus({
 
   const [updatedTask] = await db
     .update(taskTable)
-    .set({ status, columnId: column?.id ?? null })
+    .set({
+      status,
+      columnId: column?.id ?? null,
+      completedAt: completedAtForStatus(column?.isFinal),
+    })
     .where(eq(taskTable.id, id))
     .returning();
 

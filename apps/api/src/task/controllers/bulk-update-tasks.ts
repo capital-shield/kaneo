@@ -13,6 +13,7 @@ import { publishEvent } from "../../events";
 import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gitea";
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
 import { assertAssignableUser } from "../../utils/assert-assignable-user";
+import { completedAtForStatus } from "../completed-at";
 import {
   assertValidPriority,
   assertValidTaskStatus,
@@ -116,7 +117,11 @@ async function bulkUpdateTasks({
 
         const result = await db
           .update(taskTable)
-          .set({ status: value, columnId: column?.id ?? null })
+          .set({
+            status: value,
+            columnId: column?.id ?? null,
+            completedAt: completedAtForStatus(column?.isFinal),
+          })
           .where(inArray(taskTable.id, projectTaskIds));
 
         updatedCount += result.rowCount ?? projectTaskIds.length;

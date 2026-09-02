@@ -101,6 +101,10 @@ export const boardSchema = z
         description: z.string().nullable(),
         isPublic: z.boolean().nullable(),
         workspaceId: z.string(),
+        autoArchiveDoneAfterDays: z.number().nullable().openapi({
+          description:
+            "Days a task may sit in a final column before it is archived automatically. Null disables auto-archiving.",
+        }),
         columns: z.array(boardColumnSchema),
         archivedTasks: z.array(boardTaskSchema),
         plannedTasks: z.array(boardTaskSchema),

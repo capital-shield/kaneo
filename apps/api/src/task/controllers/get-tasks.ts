@@ -261,6 +261,7 @@ async function getTasks(projectId: string, options: GetTasksOptions = {}) {
       description: project.description,
       isPublic: project.isPublic,
       workspaceId: project.workspaceId,
+      autoArchiveDoneAfterDays: project.autoArchiveDoneAfterDays,
       columns,
       archivedTasks,
       plannedTasks,

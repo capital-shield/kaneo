@@ -11,6 +11,7 @@ async function updateProject(
   description: string,
   isPublic: boolean,
   workspaceId: string,
+  autoArchiveDoneAfterDays?: number | null,
 ) {
   const [existingProject] = await db
     .select()
@@ -36,6 +37,9 @@ async function updateProject(
       slug,
       description,
       isPublic,
+      ...(autoArchiveDoneAfterDays === undefined
+        ? {}
+        : { autoArchiveDoneAfterDays }),
     })
     .where(eq(projectTable.id, id))
     .returning();

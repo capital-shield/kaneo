@@ -873,7 +873,9 @@
 			"columnsTitle": "列",
 			"columnsDescription": "管理看板上显示的列，可拖拽排序。打开“完成列”以表示已完成阶段。",
 			"automationTitle": "自动化规则",
-			"automationDescription": "将集成事件映射到列。当事件发生时，关联的任务会移动到指定的列。"
+			"automationDescription": "将集成事件映射到列。当事件发生时，关联的任务会移动到指定的列。",
+			"autoArchiveTitle": "自动归档",
+			"autoArchiveDescription": "完成一段时间后自动将任务移出看板。归档的任务仍可在待办列表中查看。"
 		},
 		"projectSwitcher": {
 			"selectProject": "选择项目",
@@ -1268,6 +1270,15 @@
 			"merged": "已合并",
 			"draft": "草稿",
 			"open": "打开"
+		},
+		"autoArchive": {
+			"loading": "加载中...",
+			"label": "归档已完成的任务",
+			"hint": "完成列中的任务在保持完成状态达到该时长后会被归档。",
+			"optionOff": "关闭",
+			"optionDays": "{{days}} 天后",
+			"toastUpdated": "自动归档已更新",
+			"toastError": "自动归档更新失败"
 		}
 	},
 	"navigation": {

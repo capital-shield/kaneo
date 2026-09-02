@@ -3422,6 +3422,12 @@
 						},
 						"automationDescription": {
 							"type": "string"
+						},
+						"autoArchiveTitle": {
+							"type": "string"
+						},
+						"autoArchiveDescription": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -3431,7 +3437,45 @@
 						"columnsTitle",
 						"columnsDescription",
 						"automationTitle",
-						"automationDescription"
+						"automationDescription",
+						"autoArchiveTitle",
+						"autoArchiveDescription"
+					]
+				},
+				"autoArchive": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"loading": {
+							"type": "string"
+						},
+						"label": {
+							"type": "string"
+						},
+						"hint": {
+							"type": "string"
+						},
+						"optionOff": {
+							"type": "string"
+						},
+						"optionDays": {
+							"type": "string"
+						},
+						"toastUpdated": {
+							"type": "string"
+						},
+						"toastError": {
+							"type": "string"
+						}
+					},
+					"required": [
+						"loading",
+						"label",
+						"hint",
+						"optionOff",
+						"optionDays",
+						"toastUpdated",
+						"toastError"
 					]
 				},
 				"projectSwitcher": {
@@ -5123,6 +5167,7 @@
 				"projectIntegrations",
 				"projectVisibility",
 				"projectWorkflow",
+				"autoArchive",
 				"projectSwitcher",
 				"columnEditor",
 				"githubIntegration",
