@@ -1,3 +1,8 @@
+### Bug Fixes
+
+- **docker:** ship the fork migration chain in the images: [1a0c508](https://github.com/capital-shield/kaneo/commit/1a0c50867817f8ffb3af512864e7b1995ad60a28)
+- **ci:** stop the release commenting on pull requests: [89124a0](https://github.com/capital-shield/kaneo/commit/89124a02153877801289dcd664f6c9fa2ff4765e)
+
 ### Features
 
 - **tasks:** auto-archive completed tasks after a configurable delay: [aa46c64](https://github.com/capital-shield/kaneo/commit/aa46c6433f19c402faa6d2c8da6a3cb36139fc73)
