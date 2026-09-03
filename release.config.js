@@ -35,6 +35,17 @@ export default {
       },
     ],
 
-    "@semantic-release/github",
+    [
+      "@semantic-release/github",
+      {
+        // This fork's history carries upstream's "Merge pull request #NNNN"
+        // commits. Commenting on them looks the numbers up in *this* repo,
+        // where they do not exist, and the 404 fails the release after the
+        // tag and GitHub Release have already been published.
+        successComment: false,
+        failComment: false,
+        failTitle: false,
+      },
+    ],
   ],
 };
