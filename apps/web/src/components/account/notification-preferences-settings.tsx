@@ -574,7 +574,7 @@ export function NotificationPreferencesSettings() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-5 rounded-md border bg-sidebar p-4">
+      <div className="flex flex-col gap-5 rounded-md border bg-background p-4">
         <div className="flex flex-col gap-1">
           <h2 className="font-medium">
             {t("settings:notificationsPage.eventPreferencesTitle")}

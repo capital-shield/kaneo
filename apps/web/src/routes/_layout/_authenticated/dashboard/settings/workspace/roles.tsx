@@ -282,7 +282,7 @@ function RouteComponent() {
               {t("settings:workspaceRoles.newRole")}
             </Button>
           </div>
-          <div className="border border-border rounded-md bg-sidebar">
+          <div className="border border-border rounded-md bg-background">
             {isLoading && !draftActive ? (
               <p className="text-xs text-muted-foreground px-4 py-6">
                 {t("settings:workspaceRoles.loading")}
@@ -630,7 +630,7 @@ function DraftEditor({
         />
       </div>
       <Separator />
-      <div className="flex justify-end gap-2 px-4 py-3 bg-sidebar">
+      <div className="flex justify-end gap-2 px-4 py-3 bg-background">
         <Button
           variant="ghost"
           size="sm"
@@ -729,7 +729,7 @@ function CustomRoleEditor({
         />
       </div>
       <Separator />
-      <div className="flex items-center justify-between gap-2 px-4 py-3 bg-sidebar">
+      <div className="flex items-center justify-between gap-2 px-4 py-3 bg-background">
         {isDefault ? (
           <span className="text-xs text-muted-foreground">
             {t("settings:workspaceRoles.defaultRoleHelp")}

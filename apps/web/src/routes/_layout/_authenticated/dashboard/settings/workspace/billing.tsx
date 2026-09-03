@@ -180,7 +180,7 @@ function RouteComponent() {
           />
 
           {billing.foundingFree ? (
-            <div className="overflow-hidden rounded-md border border-primary/30 bg-sidebar">
+            <div className="overflow-hidden rounded-md border border-primary/30 bg-background">
               <div className="flex items-start gap-3 p-5">
                 <div className="mt-0.5 flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <Sparkles className="size-4.5" />
@@ -200,7 +200,7 @@ function RouteComponent() {
               </div>
             </div>
           ) : hasSubscription ? (
-            <div className="rounded-md border border-border bg-sidebar">
+            <div className="rounded-md border border-border bg-background">
               <div className="flex flex-wrap items-start justify-between gap-4 p-5">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
@@ -252,7 +252,7 @@ function RouteComponent() {
           ) : (
             <div
               className={cn(
-                "rounded-md border bg-sidebar p-5",
+                "rounded-md border bg-background p-5",
                 trialExpired ? "border-warning/40" : "border-border",
               )}
             >
@@ -297,7 +297,7 @@ function RouteComponent() {
                 subtitle="Switch anytime. Cancel whenever you like."
               />
               <div className="inline-flex items-center gap-2">
-                <div className="inline-flex rounded-md border border-border bg-sidebar p-0.5 text-xs">
+                <div className="inline-flex rounded-md border border-border bg-muted p-0.5 text-xs">
                   {(["monthly", "annual"] as const).map((value) => (
                     <button
                       key={value}

@@ -215,7 +215,7 @@ export default function ColumnEditor({ projectId }: ColumnEditorProps) {
             onDragStart={(e) => handleDragStart(e, index)}
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
-            className="flex items-center gap-2 p-2 border border-border rounded-md bg-sidebar hover:bg-sidebar-accent/50 transition-colors"
+            className="flex items-center gap-2 p-2 border border-border rounded-md bg-background hover:bg-sidebar-accent/50 transition-colors"
           >
             <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab shrink-0" />
             <Popover

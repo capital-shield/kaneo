@@ -211,7 +211,7 @@ export function RepositoryBrowserModal({
                       type="button"
                       onClick={() => handleSelectRepository(repository)}
                       className={cn(
-                        "w-full p-4 border rounded-md text-left transition-colors group bg-sidebar",
+                        "w-full p-4 border rounded-md text-left transition-colors group bg-background",
                         "hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                         selectedRepository === repository.full_name
                           ? "border-primary bg-accent"

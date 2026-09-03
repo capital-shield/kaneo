@@ -73,7 +73,7 @@ export default function AutoArchiveSettings({
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 p-3 border border-border rounded-md bg-sidebar">
+    <div className="flex items-center justify-between gap-4 p-3 border border-border rounded-md bg-background">
       <div className="space-y-0.5">
         <p className="text-sm">{t("settings:autoArchive.label")}</p>
         <p className="text-xs text-muted-foreground">

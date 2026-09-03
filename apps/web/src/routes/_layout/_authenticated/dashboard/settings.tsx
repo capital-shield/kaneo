@@ -64,7 +64,7 @@ function SettingsLayout() {
     <>
       <PageTitle title={t("navigation:page.settingsTitle")} />
 
-      <div className="flex h-full w-full flex-col bg-sidebar p-2 sm:p-4">
+      <div className="flex h-full w-full flex-col p-2 sm:p-4">
         <div className="relative flex h-full min-h-0 flex-col gap-6 overflow-hidden rounded-md border border-border bg-card p-3 md:gap-4 sm:p-4">
           <div className="shrink-0">
             <div className="flex items-center">
