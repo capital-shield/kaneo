@@ -52,6 +52,7 @@ RUN sed -i 's/"prepare": "husky"/"prepare": ""/g' package.json && \
 
 COPY --from=api-builder /app/apps/api/dist ./apps/api/dist
 COPY --from=api-builder /app/apps/api/drizzle ./apps/api/drizzle
+COPY --from=api-builder /app/apps/api/drizzle-fork ./apps/api/drizzle-fork
 COPY --from=api-builder /app/packages/email ./packages/email
 COPY --from=api-builder /app/packages/permissions ./packages/permissions
 
@@ -98,6 +99,10 @@ COPY --from=api-runtime --chown=appuser:appuser /app /app
 
 # Fail the build early if the runtime dependency layout is broken on the target architecture
 RUN cd /app/apps/api && node -e "const fs=require('fs');for(const m of ['bcryptjs','hono','pg','drizzle-orm','better-auth','ioredis','valibot','octokit','@modelcontextprotocol/sdk']){fs.accessSync('node_modules/'+m+'/package.json')}"
+
+# Both migration chains must ship: a missing journal only surfaces at
+# startup, where it takes the API down.
+RUN cd /app/apps/api && node -e "const fs=require('fs');for(const j of ['drizzle','drizzle-fork']){fs.accessSync(j+'/meta/_journal.json')}"
 
 COPY --from=web-builder --chown=appuser:appuser /app/apps/web/dist /usr/share/nginx/html
 COPY --chown=appuser:appuser apps/web/nginx.kaneo.conf /etc/nginx/conf.d/default.conf

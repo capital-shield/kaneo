@@ -77,11 +77,16 @@ COPY --from=prod-deps --chown=appuser:appuser /app ./
 # Built application and workspace packages
 COPY --from=builder --chown=appuser:appuser /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=appuser:appuser /app/apps/api/drizzle ./apps/api/drizzle
+COPY --from=builder --chown=appuser:appuser /app/apps/api/drizzle-fork ./apps/api/drizzle-fork
 COPY --from=builder --chown=appuser:appuser /app/packages/email ./packages/email
 COPY --from=builder --chown=appuser:appuser /app/packages/permissions ./packages/permissions
 
 # Fail the build early if the runtime dependency layout is broken on the target architecture
 RUN cd /app/apps/api && node -e "const fs=require('fs');for(const m of ['bcryptjs','hono','pg','drizzle-orm','better-auth','ioredis','valibot','octokit','@modelcontextprotocol/sdk']){fs.accessSync('node_modules/'+m+'/package.json')}"
+
+# Both migration chains must ship: a missing journal only surfaces at
+# startup, where it takes the API down.
+RUN cd /app/apps/api && node -e "const fs=require('fs');for(const j of ['drizzle','drizzle-fork']){fs.accessSync(j+'/meta/_journal.json')}"
 
 # Switch to non-root user
 USER appuser

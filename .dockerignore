@@ -3,6 +3,9 @@
 .turbo
 **/.next
 **/.turbo
+# Incremental tsc state: without this a local build inherits a stale cache,
+# tsc skips emitting JS, and the image ships type declarations only.
+**/.cache
 **/coverage
 **/dist
 **/node_modules
