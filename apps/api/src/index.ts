@@ -797,6 +797,13 @@ export async function runStartupTasks() {
       await migrate(getDatabase(), {
         migrationsFolder: `${currentDir}/../drizzle`,
       });
+      // Fork-only schema changes live in their own chain with their own
+      // bookkeeping table, so upstream's chain stays byte-identical and the two
+      // never have to be interleaved on merge. See drizzle-fork/README.md.
+      await migrate(getDatabase(), {
+        migrationsFolder: `${currentDir}/../drizzle-fork`,
+        migrationsTable: "__drizzle_migrations_fork",
+      });
       console.log("✅ Database migrated successfully!");
     },
   });

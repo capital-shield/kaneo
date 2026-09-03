@@ -24,6 +24,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest --config vitest.config.ts",
     "db:generate": "drizzle-kit generate",
+    "db:generate:fork": "node scripts/generate-fork-migration.mjs",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed:user-data": "tsx scripts/seed-user-data.ts",

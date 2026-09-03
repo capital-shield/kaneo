@@ -7,6 +7,10 @@ import db from "../../../apps/api/src/database";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(currentDir, "../../../apps/api/drizzle");
+const forkMigrationsFolder = resolve(
+  currentDir,
+  "../../../apps/api/drizzle-fork",
+);
 
 let migrationPromise: Promise<void> | null = null;
 
@@ -67,6 +71,10 @@ export async function ensureTestDatabaseMigrated() {
       await ensureTestDatabaseExists();
       await migrate(db, {
         migrationsFolder,
+      });
+      await migrate(db, {
+        migrationsFolder: forkMigrationsFolder,
+        migrationsTable: "__drizzle_migrations_fork",
       });
     })();
   }
