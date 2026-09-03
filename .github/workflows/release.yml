@@ -193,10 +193,9 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           VERSION: ${{ needs.plan.outputs.version }}
         run: |
-          for image in kaneo web api; do
-            ref="ghcr.io/${OWNER,,}/${image}"
-            docker buildx imagetools create --tag "${ref}:latest" "${ref}:${VERSION}"
-          done
+          # This fork publishes only the combined image (see build-images.yml).
+          ref="ghcr.io/${OWNER,,}/kaneo"
+          docker buildx imagetools create --tag "${ref}:latest" "${ref}:${VERSION}"
 
   chart-publish:
     name: Publish chart
