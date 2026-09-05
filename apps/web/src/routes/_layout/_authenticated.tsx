@@ -20,7 +20,9 @@ export const Route = createFileRoute("/_layout/_authenticated")({
       throw redirect({
         to: "/auth/sign-in",
         search: {
-          redirect: location.pathname + location.search + location.hash,
+          // `location.search` is the parsed search object (null-prototype),
+          // not a string; `href` is already pathname + searchStr + hash.
+          redirect: location.href,
         },
       });
     }
