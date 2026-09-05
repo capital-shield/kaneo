@@ -1,5 +1,13 @@
 ### Bug Fixes
 
+- **web:** restore the sign-in redirect for logged-out visitors: [4667209](https://github.com/capital-shield/kaneo/commit/46672098933edc31f965d0dec814850e3a117006)
+
+### Documentation
+
+- update contributors and sponsors: [02b5ce5](https://github.com/capital-shield/kaneo/commit/02b5ce51d5eb2a830404869d352b20677fd3c06f)
+
+### Bug Fixes
+
 - **docker:** ship the fork migration chain in the images: [1a0c508](https://github.com/capital-shield/kaneo/commit/1a0c50867817f8ffb3af512864e7b1995ad60a28)
 - **ci:** stop the release commenting on pull requests: [89124a0](https://github.com/capital-shield/kaneo/commit/89124a02153877801289dcd664f6c9fa2ff4765e)
 
