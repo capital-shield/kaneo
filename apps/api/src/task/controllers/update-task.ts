@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable } from "../../database/schema";
@@ -9,7 +9,9 @@ import {
   getProjectWorkspaceId,
 } from "../../utils/assert-assignable-user";
 import { completedAtForStatus } from "../completed-at";
+import { boardDescription, descriptionDeferred } from "../description-pages";
 import { assertValidTaskStatus } from "../validate-task-fields";
+import { assertTaskPosition } from "./next-task-position";
 
 async function updateTask(
   id: string,
@@ -18,16 +20,19 @@ async function updateTask(
   startDate: Date | undefined,
   dueDate: Date | undefined,
   projectId: string,
-  description: string,
+  description: string | undefined,
   priority: string,
   position: number,
   userId?: string,
   currentUserId?: string,
 ) {
+  assertTaskPosition(position);
+
   const [existingTask] = await db
     .select({
       id: taskTable.id,
-      description: taskTable.description,
+      description:
+        description === undefined ? sql<null>`null` : taskTable.description,
       status: taskTable.status,
       projectId: taskTable.projectId,
     })
@@ -81,7 +86,11 @@ async function updateTask(
       userId: normalizedUserId ?? null,
     })
     .where(eq(taskTable.id, id))
-    .returning();
+    .returning({
+      ...getTableColumns(taskTable),
+      description: boardDescription,
+      descriptionDeferred,
+    });
 
   if (!updatedTask) {
     throw new HTTPException(500, {
@@ -115,7 +124,7 @@ async function updateTask(
     userId: currentUserId,
   });
 
-  if (existingTask.description !== description) {
+  if (description !== undefined && existingTask.description !== description) {
     deleteOrphanedAssets(existingTask.description, description, {
       taskId: id,
     }).catch(() => {});

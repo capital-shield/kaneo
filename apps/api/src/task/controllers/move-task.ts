@@ -1,4 +1,4 @@
-import { and, asc, eq, max } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import {
@@ -10,8 +10,7 @@ import {
 import { publishEvent } from "../../events";
 import { completedAtForStatus } from "../completed-at";
 import { claimTaskNumber } from "./claim-task-numbers";
-
-type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+import { nextTaskPosition } from "./next-task-position";
 
 function isSameProjectMove(
   sourceProjectId: string,
@@ -61,26 +60,6 @@ async function resolveDestinationStatus(
   return requestedColumn ?? matchingCurrentColumn ?? firstColumn;
 }
 
-async function getNextTaskPosition(
-  dbOrTx: DbOrTx,
-  projectId: string,
-  status: string,
-  columnId: string,
-) {
-  const [maxPositionResult] = await dbOrTx
-    .select({ maxPosition: max(taskTable.position) })
-    .from(taskTable)
-    .where(
-      and(
-        eq(taskTable.projectId, projectId),
-        eq(taskTable.status, status),
-        eq(taskTable.columnId, columnId),
-      ),
-    );
-
-  return (maxPositionResult?.maxPosition ?? 0) + 1;
-}
-
 async function moveTask({
   taskId,
   destinationProjectId,
@@ -108,24 +87,24 @@ async function moveTask({
     });
   }
 
-  const [sourceProject, destinationProject] = await Promise.all([
-    db.query.projectTable.findFirst({
-      where: eq(projectTable.id, existingTask.projectId),
-    }),
-    db.query.projectTable.findFirst({
-      where: eq(projectTable.id, destinationProjectId),
-    }),
-  ]);
-
-  if (!sourceProject || !destinationProject) {
+  const sourceProject = await db.query.projectTable.findFirst({
+    where: eq(projectTable.id, existingTask.projectId),
+  });
+  if (!sourceProject) {
     throw new HTTPException(404, {
       message: "Project not found",
     });
   }
 
-  if (sourceProject.workspaceId !== destinationProject.workspaceId) {
-    throw new HTTPException(400, {
-      message: "Tasks can only be moved within the same workspace",
+  const destinationProject = await db.query.projectTable.findFirst({
+    where: and(
+      eq(projectTable.id, destinationProjectId),
+      eq(projectTable.workspaceId, sourceProject.workspaceId),
+    ),
+  });
+  if (!destinationProject) {
+    throw new HTTPException(404, {
+      message: "Project not found",
     });
   }
 
@@ -136,15 +115,13 @@ async function moveTask({
   );
 
   const movedTask = await db.transaction(async (tx) => {
-    const [nextTaskNumber, nextPosition] = await Promise.all([
-      claimTaskNumber(destinationProjectId, tx),
-      getNextTaskPosition(
-        tx,
-        destinationProjectId,
-        resolvedColumn.slug,
-        resolvedColumn.id,
-      ),
-    ]);
+    const nextTaskNumber = await claimTaskNumber(destinationProjectId, tx);
+    const nextPosition = await nextTaskPosition(
+      tx,
+      destinationProjectId,
+      resolvedColumn.slug,
+      resolvedColumn.id,
+    );
 
     const [updatedTask] = await tx
       .update(taskTable)

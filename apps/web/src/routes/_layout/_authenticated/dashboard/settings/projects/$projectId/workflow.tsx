@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import PageTitle from "@/components/page-title";
 import AutoArchiveSettings from "@/components/project/auto-archive-settings";
 import ColumnEditor from "@/components/project/column-editor";
+import CustomFieldEditor from "@/components/project/custom-field-editor";
 import WorkflowEditor from "@/components/project/workflow-editor";
 
 export const Route = createFileRoute(
@@ -38,6 +39,18 @@ function RouteComponent() {
             </p>
           </div>
           <ColumnEditor projectId={projectId} />
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-md font-medium">
+              {t("settings:projectWorkflow.customFieldsTitle")}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {t("settings:projectWorkflow.customFieldsDescription")}
+            </p>
+          </div>
+          <CustomFieldEditor projectId={projectId} />
         </div>
 
         <div className="space-y-6">

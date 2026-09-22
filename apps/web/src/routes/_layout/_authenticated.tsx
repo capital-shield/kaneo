@@ -20,8 +20,9 @@ export const Route = createFileRoute("/_layout/_authenticated")({
       throw redirect({
         to: "/auth/sign-in",
         search: {
-          // `location.search` is the parsed search object (null-prototype),
-          // not a string; `href` is already pathname + searchStr + hash.
+          // location.href is pathname + search + hash without the origin.
+          // location.search is a null-prototype parsed object, so string
+          // concatenation on it throws "Cannot convert object to primitive value".
           redirect: location.href,
         },
       });
