@@ -1,3 +1,58 @@
+### Features
+
+- **tasks:** auto-archive completed tasks after a configurable delay: [aa46c64](https://github.com/capital-shield/kaneo/commit/aa46c6433f19c402faa6d2c8da6a3cb36139fc73)
+- **kanban:** color assignee avatar ring per user: [6e60440](https://github.com/capital-shield/kaneo/commit/6e6044076b9c2436379be4001f7277b5f92477d6)
+- **mcp:** add KANEO_MCP_API_KEY env var for headless auth: [822aa71](https://github.com/capital-shield/kaneo/commit/822aa712bcd90d2efb2981f3af16db9cebd15854)
+- **search:** support task ID search (e.g. CSX-18): [de1f26a](https://github.com/capital-shield/kaneo/commit/de1f26aec4b563ce177790bebe6a6b28f27c41b7)
+- add icons to navigation items in main and projects sidebar: [83de6c9](https://github.com/capital-shield/kaneo/commit/83de6c9e71a07e86ffc3a4cd3f20b755b3d4bcbc)
+- fix misplaced use of `sidebar` styles across navigation and settings UI: [06afd67](https://github.com/capital-shield/kaneo/commit/06afd678a3424e44d71530c35ca73009a23366c1)
+- **table:** add new table-based task management view in backlog and board components: [0620149](https://github.com/capital-shield/kaneo/commit/06201491eddb3db3472d140c22bca56def4b637e)
+- add label management functionality to  task card context menu: [e38a9c4](https://github.com/capital-shield/kaneo/commit/e38a9c41bd75286e33a7b0f4ec38c7ad38298777)
+- **kanban:** add border to task label styling: [5690288](https://github.com/capital-shield/kaneo/commit/5690288f18577d6cb01c27cc9dd6dd7c0f6c8582)
+- **mcp:** add mcp server: [ce85801](https://github.com/capital-shield/kaneo/commit/ce85801515c8744deccb0f806ef36192f6758c84)
+
+### Bug Fixes
+
+- **web:** restore the sign-in redirect for logged-out visitors: [4667209](https://github.com/capital-shield/kaneo/commit/46672098933edc31f965d0dec814850e3a117006)
+- **docker:** ship the fork migration chain in the images: [1a0c508](https://github.com/capital-shield/kaneo/commit/1a0c50867817f8ffb3af512864e7b1995ad60a28)
+- **ci:** stop the release commenting on pull requests: [89124a0](https://github.com/capital-shield/kaneo/commit/89124a02153877801289dcd664f6c9fa2ff4765e)
+- **ci:** fall back to GITHUB_TOKEN for the container registry: [9d22ee7](https://github.com/capital-shield/kaneo/commit/9d22ee771f6ead3085a449a1a224daa123f774a5)
+- **ci:** promote only the image this fork publishes: [8186f39](https://github.com/capital-shield/kaneo/commit/8186f3997b4242f98d3f2dccde5d9f8afb26af57)
+- **api:** drop the fork's API key rate limit default override: [d0654a2](https://github.com/capital-shield/kaneo/commit/d0654a29daa1cc000cdd82dd728edea0b42d63ac)
+- remove bg-sidebar from cards and show project icons in sidebar: [822ad1a](https://github.com/capital-shield/kaneo/commit/822ad1ae6e15815c0275c935a0ce02b1f611ad09)
+- raise default API key rate limit from 10 to 10000 req/day: [065e4ae](https://github.com/capital-shield/kaneo/commit/065e4ae42d0b66bdf6096c2e210bea63e360faad)
+- fix account settings sidebar and notification card styling: [ef72248](https://github.com/capital-shield/kaneo/commit/ef722486576614d6dd4e914f5a5ed5a952991022)
+- restore settings sidebar and workspace switcher styling: [0e15bf7](https://github.com/capital-shield/kaneo/commit/0e15bf75d0d1e450597a9b10e2972e46d1c25538)
+- cache MCP token validation and raise auth rate limits: [1c9ccba](https://github.com/capital-shield/kaneo/commit/1c9ccba084d9932c2d44ad4562b6ee08c8091912)
+- restore table view in board and backlog after upstream merge: [b8347bb](https://github.com/capital-shield/kaneo/commit/b8347bb8bc889c749df43d7e67d9b8cc20cb61b8)
+- **mcp-server:** prevent tasks with invalid status from disappearing in board/backlog: [bcffb71](https://github.com/capital-shield/kaneo/commit/bcffb71f5085ae3063973f17f38818bb32b687a2)
+- **mcp-server:** improve list_tasks tool discoverability: [a6ee62c](https://github.com/capital-shield/kaneo/commit/a6ee62cc82bc148816ada548f4d85652159b85d4)
+- **mcp-server:** align search type enum with API's plural values: [afa55d6](https://github.com/capital-shield/kaneo/commit/afa55d6a7a80aee35023a74c6c11c58f6905aa0b)
+- **workflows:** update Docker workflow to use GITHUB_TOKEN for authentication: [1e6862e](https://github.com/capital-shield/kaneo/commit/1e6862e900acb48cbfb8cb84d7f7e5184a5c7f16)
+- **mcp:** improve error handling in toResult function to support non-JSON responses: [c2bb917](https://github.com/capital-shield/kaneo/commit/c2bb91740ed17eec29afb9e9d2409f0efdfcb848)
+
+### Code Refactoring
+
+- **api:** move fork-only schema changes to their own migration chain: [9e200b3](https://github.com/capital-shield/kaneo/commit/9e200b3da25f0b665dfb63d5c159854797e8c88e)
+- centralise labelColors definitions and update import across multiple components: [5c7fac8](https://github.com/capital-shield/kaneo/commit/5c7fac86a41702a84ba448598a59c8e604f2d535)
+
+### Documentation
+
+- update contributors and sponsors: [eddefaa](https://github.com/capital-shield/kaneo/commit/eddefaa3e2bc787879e0a8db69325f04c58cbf75)
+- update contributors and sponsors: [aa89e13](https://github.com/capital-shield/kaneo/commit/aa89e130771197e30ef821fb68576c96235f7c5c)
+- update contributors and sponsors: [02b5ce5](https://github.com/capital-shield/kaneo/commit/02b5ce51d5eb2a830404869d352b20677fd3c06f)
+- update contributors and sponsors: [fabc255](https://github.com/capital-shield/kaneo/commit/fabc255230adb534fd61222edae2ccb8efc6023e)
+- update contributors and sponsors: [a141262](https://github.com/capital-shield/kaneo/commit/a141262c7b6fac54738166d448a3861b04745b0a)
+- update contributors and sponsors: [18404d0](https://github.com/capital-shield/kaneo/commit/18404d037c25dbae1237f15ba59c2b8952fc5e9b)
+- update contributors and sponsors: [71ee222](https://github.com/capital-shield/kaneo/commit/71ee22204442c36d19545ccffd474a3f94141297)
+- update contributors and sponsors: [13f26b0](https://github.com/capital-shield/kaneo/commit/13f26b0615ac6e208f576624a912e104b4c92d18)
+- update contributors and sponsors: [287ffd2](https://github.com/capital-shield/kaneo/commit/287ffd24dfb4c102379de0c927b5170d2fc454a8)
+- update contributors and sponsors: [060ef2d](https://github.com/capital-shield/kaneo/commit/060ef2d5b8ec8ebf9e46484bb7d57194fdc128a7)
+- update contributors and sponsors: [ed4d368](https://github.com/capital-shield/kaneo/commit/ed4d3682797f6ed1f2d66b3b00e924cd1cc81c60)
+- update contributors and sponsors: [336a59a](https://github.com/capital-shield/kaneo/commit/336a59a9c05129d221552a28c96541214e5364f8)
+- update contributors and sponsors: [f52a96c](https://github.com/capital-shield/kaneo/commit/f52a96c3cd02ca6a3c8010a34f9375573f270308)
+- update contributors and sponsors: [15480a5](https://github.com/capital-shield/kaneo/commit/15480a530fe090b3949b29cec5125fa6798465f9)
+
 ### Bug Fixes
 
 - **web:** restore the sign-in redirect for logged-out visitors: [4667209](https://github.com/capital-shield/kaneo/commit/46672098933edc31f965d0dec814850e3a117006)
