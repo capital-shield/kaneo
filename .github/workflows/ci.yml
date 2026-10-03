@@ -238,6 +238,9 @@ jobs:
   docker-build:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read # the upgrade baseline image is private in this fork
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -278,6 +281,13 @@ jobs:
         run: docker compose --env-file /dev/null -p kaneo-ci -f scripts/ci/compose.yml --profile realtime up -d --wait --wait-timeout 120 app second redis
       - name: Verify Redis fan-out
         run: node scripts/ci/realtime.mjs http://127.0.0.1:55173 http://127.0.0.1:55174
+      # This fork's GHCR package is private, so the baseline pull needs a login.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
       - name: Upgrade from the latest stable release
         env:
           GH_TOKEN: ${{ github.token }}
