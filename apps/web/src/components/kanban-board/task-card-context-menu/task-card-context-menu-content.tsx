@@ -16,6 +16,7 @@ import {
 import { labelColors } from "@/constants/label-colors";
 import useCreateLabel from "@/hooks/mutations/label/use-create-label";
 import useDeleteLabel from "@/hooks/mutations/label/use-delete-label";
+import { useDuplicateTask } from "@/hooks/mutations/task/use-duplicate-task";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
 import { useUpdateTaskAssignee } from "@/hooks/mutations/task/use-update-task-assignee";
 import { useUpdateTaskDescription } from "@/hooks/mutations/task/use-update-task-description";
@@ -23,6 +24,7 @@ import { useUpdateTaskDueDate } from "@/hooks/mutations/task/use-update-task-due
 import { useUpdateTaskStatus } from "@/hooks/mutations/task/use-update-task-status";
 import { useUpdateTaskPriority } from "@/hooks/mutations/task/use-update-task-status-priority";
 import { useUpdateTaskTitle } from "@/hooks/mutations/task/use-update-task-title";
+import type getProjects from "@/fetchers/project/get-projects";
 import { useGetColumns } from "@/hooks/queries/column/use-get-columns";
 import useGetLabelsByTask from "@/hooks/queries/label/use-get-labels-by-task";
 import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-workspace";
@@ -33,12 +35,14 @@ import { generateLink } from "@/lib/generate-link";
 import { getInitials } from "@/lib/get-initials";
 import { getPriorityLabel } from "@/lib/i18n/domain";
 import { getPriorityIcon } from "@/lib/priority";
+import { getTaskPath } from "@/lib/task-link";
 import { toast } from "@/lib/toast";
 import useProjectStore from "@/store/project";
 import type Task from "@/types/task";
 
 type TaskCardContext = {
   worskpaceId: string;
+  workspaceSlug?: string | null;
   projectId: string;
 };
 
@@ -81,8 +85,10 @@ export default function TaskCardContextMenuContent({
   const { mutateAsync: updateTaskTitle } = useUpdateTaskTitle();
   const { mutateAsync: updateTaskDescription } = useUpdateTaskDescription();
   const { mutateAsync: updateTaskDueDate } = useUpdateTaskDueDate();
-  const { canUpdateTasks, canDeleteTasks, canAssignTasks } =
+  const { mutate: duplicateTask } = useDuplicateTask();
+  const { canCreateTasks, canUpdateTasks, canDeleteTasks, canAssignTasks } =
     useWorkspacePermission();
+  const canCreate = canCreateTasks();
   const canEdit = canUpdateTasks();
   const canDelete = canDeleteTasks();
   const canAssign = canAssignTasks();
@@ -156,11 +162,31 @@ export default function TaskCardContextMenuContent({
   }, [workspaceUsers]);
 
   const handleCopyTaskLink = () => {
-    const path = `/dashboard/workspace/${taskCardContext.worskpaceId}/project/${taskCardContext.projectId}/task/${task.id}`;
+    const path = getTaskPath({
+      workspaceId: taskCardContext.worskpaceId,
+      workspace: {
+        id: taskCardContext.worskpaceId,
+        slug: taskCardContext.workspaceSlug,
+      },
+      projectId: taskCardContext.projectId,
+      workspaceProjects: queryClient.getQueryData<
+        Awaited<ReturnType<typeof getProjects>>
+      >(["projects", taskCardContext.worskpaceId]),
+      taskId: task.id,
+      taskNumber: task.number,
+      title: task.title,
+    });
     const taskLink = generateLink(path);
 
     navigator.clipboard.writeText(taskLink);
     toast.success(t("tasks:contextMenu.copyLinkSuccess"));
+  };
+
+  const handleDuplicateTask = () => {
+    duplicateTask({
+      taskId: task.id,
+      title: t("tasks:duplicate.titleSuffix", { title: task.title }),
+    });
   };
 
   const handleChange = async (field: keyof Task, value: string | Date) => {
@@ -391,22 +417,31 @@ export default function TaskCardContextMenuContent({
 
       {(canEdit || canDelete) && (
         <>
-          {canEdit && (
+          {(canCreate || canEdit) && (
             <>
               <ContextMenuSeparator />
 
-              <ContextMenuItem
-                onClick={() => handleChange("status", "archived")}
-              >
-                <span>{t("tasks:actions.archive")}</span>
-              </ContextMenuItem>
-
-              {task.status !== "planned" && (
-                <ContextMenuItem
-                  onClick={() => handleChange("status", "planned")}
-                >
-                  <span>{t("tasks:actions.markAsPlanned")}</span>
+              {canCreate && (
+                <ContextMenuItem onClick={handleDuplicateTask}>
+                  <span>{t("tasks:actions.duplicate")}</span>
                 </ContextMenuItem>
+              )}
+
+              {canEdit && (
+                <>
+                  <ContextMenuItem
+                    onClick={() => handleChange("status", "archived")}
+                  >
+                    <span>{t("tasks:actions.archive")}</span>
+                  </ContextMenuItem>
+                  {task.status !== "planned" && (
+                    <ContextMenuItem
+                      onClick={() => handleChange("status", "planned")}
+                    >
+                      <span>{t("tasks:actions.markAsPlanned")}</span>
+                    </ContextMenuItem>
+                  )}
+                </>
               )}
             </>
           )}

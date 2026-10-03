@@ -22,7 +22,9 @@ import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-
 import { useBoardSort } from "@/hooks/use-board-sort";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useTaskFiltersWithLabelsSupport } from "@/hooks/use-task-filters-with-labels-support";
+import { cn } from "@/lib/cn";
 import { sortTasks } from "@/lib/sort-tasks";
+import { useBackgroundStore } from "@/store/background";
 import useProjectStore from "@/store/project";
 import { useUserPreferencesStore } from "@/store/user-preferences";
 
@@ -84,7 +86,12 @@ function RouteComponent() {
   const { projectId, workspaceId } = Route.useParams();
   const { taskId } = Route.useSearch();
   const navigate = useNavigate();
-  const { data } = useGetTasks(projectId);
+  const {
+    data,
+    isError: boardError,
+    isFetching: boardFetching,
+    refetch: retryBoard,
+  } = useGetTasks(projectId);
   const { project, setProject } = useProjectStore();
   const { viewMode, setViewMode } = useUserPreferencesStore();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -94,6 +101,7 @@ function RouteComponent() {
   const [boardSearchInput, setBoardSearchInput] =
     useState<HTMLInputElement | null>(null);
   const { sort, setSort } = useBoardSort(projectId);
+  const { background } = useBackgroundStore();
 
   const { data: users } = useGetActiveWorkspaceUsers(workspaceId);
   const { data: workspaceLabels = [] } = useGetLabelsByWorkspace(workspaceId);
@@ -299,22 +307,47 @@ function RouteComponent() {
           </p>
         )}
 
-        <div className="flex h-full flex-1 overflow-hidden bg-background">
+        {boardError && (
+          <p role="alert" className="p-4 text-destructive">
+            {t("tasks:calendar.loadError")}{" "}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => void retryBoard()}
+            >
+              {t("tasks:descriptionRetry")}
+            </button>
+          </p>
+        )}
+        <div
+          className={cn("flex h-full flex-1 overflow-hidden", {
+            "bg-background": !background,
+          })}
+        >
           {sortedProject ? (
             viewMode === "board" ? (
               <KanbanBoard
                 project={sortedProject}
-                disableDragDrop={sort.field !== "position"}
+                disableCollectionActions={boardFetching || boardError}
+                disableDragDrop={
+                  boardFetching ||
+                  boardError ||
+                  (sort.field !== "position" && sort.field !== "number")
+                }
+                sortedByNumber={sort.field === "number"}
               />
             ) : viewMode === "table" ? (
               <TableView project={sortedProject} />
             ) : (
               <ListView
                 project={sortedProject}
-                disableDragDrop={sort.field !== "position"}
+                disableCollectionActions={boardFetching || boardError}
+                disableDragDrop={
+                  boardFetching || boardError || sort.field !== "position"
+                }
               />
             )
-          ) : (
+          ) : boardError ? null : (
             <BoardSkeleton />
           )}
         </div>

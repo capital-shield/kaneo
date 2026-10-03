@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { AuthService } from "../auth/auth-service.js";
 import { KaneoClient } from "./client.js";
 

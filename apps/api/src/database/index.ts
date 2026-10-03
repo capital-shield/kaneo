@@ -36,12 +36,15 @@ import {
 } from "./relations";
 import { resolveDatabaseConnectionString } from "./resolve-database-url";
 import {
+  dataMigrationTable,
+  storageCleanupTable,
   accountTable,
   activityTable,
   apikeyTable,
   assetTable,
   billingEventTable,
   billingReminderSentTable,
+  calendarFeedTable,
   columnTable,
   commentTable,
   customFieldDefinitionTable,
@@ -81,12 +84,15 @@ import {
 config();
 
 export const schema = {
+  dataMigrationTable,
+  storageCleanupTable,
   accountTable,
   assetTable,
   activityTable,
   apikeyTable,
   billingReminderSentTable,
   billingEventTable,
+  calendarFeedTable,
   workspaceBillingTable,
   columnTable,
   commentTable,

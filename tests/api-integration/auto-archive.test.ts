@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 import db, { schema } from "../../apps/api/src/database";
 import { createApp } from "../../apps/api/src/index";
 import { archiveDoneTasks } from "../../apps/api/src/scheduler/auto-archive-done-tasks";
@@ -77,6 +77,51 @@ describe("API integration: auto-archiving completed tasks", () => {
     });
 
     expect(reopenResponse.status).toBe(200);
+    expect((await getTask(task.id)).completedAt).toBeNull();
+  });
+
+  it("stamps completedAt when a card is dragged into a final column", async () => {
+    const member = await createWorkspaceMember();
+    const { project, columns } = await createProjectFixture({
+      workspaceId: member.workspace.id,
+    });
+
+    const [task] = await db
+      .insert(schema.taskTable)
+      .values({
+        projectId: project.id,
+        title: "Drag me",
+        status: "to-do",
+        columnId: columns.todo.id,
+        number: 1,
+        position: 0,
+      })
+      .returning();
+
+    mockAuthenticatedSession(member.user);
+    const { app } = createApp();
+
+    const reorder = (body: object) =>
+      app.request("/api/task/reorder", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ projectId: project.id, ...body }),
+      });
+
+    const doneResponse = await reorder({
+      tasks: [{ id: task.id, position: 0, status: "done" }],
+    });
+    expect(doneResponse.status).toBe(200);
+    const stampedAt = (await getTask(task.id)).completedAt;
+    expect(stampedAt).toBeInstanceOf(Date);
+
+    // A position-only reorder inside the final column keeps the clock.
+    await reorder({ tasks: [{ id: task.id, position: 1 }] });
+    expect((await getTask(task.id)).completedAt).toEqual(stampedAt);
+
+    await reorder({
+      tasks: [{ id: task.id, position: 0, status: "in-progress" }],
+    });
     expect((await getTask(task.id)).completedAt).toBeNull();
   });
 

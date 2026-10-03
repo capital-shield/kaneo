@@ -1,41 +1,25 @@
 import "@testing-library/jest-dom/vitest";
 
-// jsdom under this vitest version exposes no Storage implementation, so hooks
-// that persist to localStorage have nothing to write to.
-if (typeof globalThis.localStorage === "undefined") {
-  class MemoryStorage implements Storage {
-    #entries = new Map<string, string>();
-
+// Node can expose an incomplete global localStorage when it is launched with
+// --localstorage-file but no usable path. Because that property takes
+// precedence over jsdom's implementation, tests then receive an object without
+// the Storage methods. Install a small in-memory implementation only in that
+// broken environment.
+if (typeof globalThis.localStorage?.clear !== "function") {
+  const values = new Map<string, string>();
+  const localStorage: Storage = {
     get length() {
-      return this.#entries.size;
-    }
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => values.delete(key),
+    setItem: (key, value) => values.set(key, String(value)),
+  };
 
-    key(index: number) {
-      return [...this.#entries.keys()][index] ?? null;
-    }
-
-    getItem(key: string) {
-      return this.#entries.get(key) ?? null;
-    }
-
-    setItem(key: string, value: string) {
-      this.#entries.set(key, String(value));
-    }
-
-    removeItem(key: string) {
-      this.#entries.delete(key);
-    }
-
-    clear() {
-      this.#entries.clear();
-    }
-  }
-
-  for (const name of ["localStorage", "sessionStorage"] as const) {
-    Object.defineProperty(globalThis, name, {
-      value: new MemoryStorage(),
-      configurable: true,
-      writable: true,
-    });
-  }
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: localStorage,
+  });
 }
