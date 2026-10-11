@@ -122,6 +122,14 @@ export function ExternalLinksAccordion({
     const isIssue = link.resourceType === "issue";
     const isBranch = link.resourceType === "branch";
 
+    if (isIssue && link.metadata?.syncFilterPaused === true) {
+      return (
+        <span className="text-xs font-medium text-warning-foreground">
+          {t("settings:syncRules.paused")}
+        </span>
+      );
+    }
+
     if (isIssue) {
       return (
         <span className="text-xs font-medium text-muted-foreground">
@@ -191,12 +199,13 @@ export function ExternalLinksAccordion({
             <Button
               type="button"
               variant="ghost"
-              size="sm"
-              className="gap-1 h-8"
+              size="xs"
+              className="text-muted-foreground"
+              aria-label={t("settings:externalLinks.addResource")}
+              title={t("settings:externalLinks.addResource")}
               onClick={() => setIsDialogOpen(true)}
             >
-              <Plus className="size-4" />
-              {t("settings:externalLinks.addResource")}
+              <Plus className="size-3.5" />
             </Button>
           )}
         </div>

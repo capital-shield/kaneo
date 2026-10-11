@@ -25,7 +25,9 @@ import { shortcuts } from "@/constants/shortcuts";
 import useGetProject from "@/hooks/queries/project/use-get-project";
 import { useProjectWebSocket } from "@/hooks/use-project-websocket";
 import { cn } from "@/lib/cn";
+import { getProjectUnavailableReason } from "@/lib/project-unavailable-reason";
 import { useBackgroundStore } from "@/store/background";
+import ProjectUnavailable from "./project-unavailable";
 
 type ProjectLayoutProps = {
   projectId: string;
@@ -47,12 +49,16 @@ export default function ProjectLayout({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: project } = useGetProject({ id: projectId, workspaceId });
+  const { data: project, error: projectError } = useGetProject({
+    id: projectId,
+    workspaceId,
+  });
+  const unavailableReason = getProjectUnavailableReason(projectError);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] =
     useState(false);
   const { background } = useBackgroundStore();
 
-  useProjectWebSocket(projectId);
+  useProjectWebSocket(unavailableReason ? "" : projectId);
 
   const resolvedView =
     activeView ??
@@ -125,7 +131,7 @@ export default function ProjectLayout({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="flex items-center gap-2 text-[10px]">
-                    Toggle sidebar
+                    {t("navigation:settingsLayout.toggleSidebar")}
                     <KbdSequence
                       keys={[
                         shortcuts.sidebar.prefix,
@@ -151,10 +157,11 @@ export default function ProjectLayout({
               />
             </div>
 
-            <div className="md:hidden">
+            <div className="min-w-0 md:hidden">
               <MobileProjectNav
                 workspaceId={workspaceId}
                 projectId={projectId}
+                projectName={project?.name}
                 activeView={resolvedView}
                 onSelectBacklog={handleNavigateToBacklog}
                 onSelectBoard={handleNavigateToBoard}
@@ -165,7 +172,7 @@ export default function ProjectLayout({
               />
             </div>
 
-            {showViewSwitcher && (
+            {showViewSwitcher && !unavailableReason && (
               <div className="hidden h-8 items-center gap-0.5 rounded-lg border border-border/80 bg-background p-0.5 sm:inline-flex">
                 <Button
                   variant={resolvedView === "backlog" ? "secondary" : "ghost"}
@@ -177,7 +184,7 @@ export default function ProjectLayout({
                   )}
                 >
                   <SquircleDashed className="size-3.5" />
-                  Backlog
+                  {t("tasks:view.backlog")}
                 </Button>
                 <Button
                   variant={resolvedView === "board" ? "secondary" : "ghost"}
@@ -213,19 +220,28 @@ export default function ProjectLayout({
                   )}
                 >
                   <CalendarDays className="size-3.5" />
-                  Gantt
+                  {t("tasks:view.gantt")}
                 </Button>
               </div>
             )}
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            {headerActions}
+            {unavailableReason ? null : headerActions}
           </div>
         </div>
       </Layout.Header>
 
-      <Layout.Content>{children}</Layout.Content>
+      <Layout.Content>
+        {unavailableReason ? (
+          <ProjectUnavailable
+            reason={unavailableReason}
+            workspaceId={workspaceId}
+          />
+        ) : (
+          children
+        )}
+      </Layout.Content>
 
       <CreateProjectModal
         open={isCreateProjectModalOpen}

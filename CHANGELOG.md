@@ -1,5 +1,102 @@
 ### Features
 
+- start new workspaces with a starter project: #1993
+
+### Bug Fixes
+
+- **cli:** reject checksums that are not SHA-256 digests: #1996
+
+### Documentation
+
+- **cli:** add npm as an install option: #1995
+
+### Credits
+
+Huge thanks to @andrejsshell for helping!
+
+### Features
+
+- **cli:** add an agent skill for the kaneo CLI: #1974
+- **cli:** install the CLI with a one-line script: #1971
+
+### Bug Fixes
+
+- **build:** stop vp from replaying stale typechecks and builds: #1989
+- make the app usable on phones: #1983
+- **mcp:** omit session credentials from whoami: [cf44625](https://github.com/usekaneo/kaneo/commit/cf446256f39935e6067e70dbb57f429d4b7b7a5b)
+- **cli:** point the update hint at the install page: #1976
+- **cli:** say how to confirm in confirmation errors: #1975
+
+### Credits
+
+Huge thanks to @tinsever and @andrejsshell for helping!
+
+### Features
+
+- **cli:** add the official Kaneo command-line client: #1968
+- **api:** add workspace list and detail endpoints: #1960
+- allow manual AI comment scans for existing PRs: [70de375](https://github.com/usekaneo/kaneo/commit/70de375184e7908e8b54fda9abee37756ed20eb6)
+- add advisory AI comment labeler: [d1a6a39](https://github.com/usekaneo/kaneo/commit/d1a6a392ed4c8dbc6873a8ad46de804cfadfbc3f)
+
+### Bug Fixes
+
+- **auth:** allow linking social accounts with different emails: [c613565](https://github.com/usekaneo/kaneo/commit/c61356534839adfd0c40b65325114d2fd69e4b25)
+- **api:** answer rate-limited API keys with 429: #1961
+- **api:** never treat API keys as user sessions: #1969
+- **api:** return every error as JSON with a stable code: #1962
+- **ci:** explain automatic pull request draft conversions: [5c42599](https://github.com/usekaneo/kaneo/commit/5c425995019c9f624110c0b84f117854a0c707d7)
+- **api:** return 404 for missing and hidden resources: #1963
+- **calendar:** allow feeds without label filters: #1958
+- **site:** prevent theme flash during hydration: [6bd0c1a](https://github.com/usekaneo/kaneo/commit/6bd0c1ac42164ec2604a2e74538f6e084c684641)
+
+### Credits
+
+Huge thanks to @andrejsshell and @tinsever for helping!
+
+### Features
+
+- manage workspaces as an instance admin: #1953
+
+### Credits
+
+Huge thanks to @andrejsshell for helping!
+
+### Features
+
+- restrict members to selected projects: #1933
+- **site:** offer a managed instance on pricing: [c4d009f](https://github.com/usekaneo/kaneo/commit/c4d009f2e0e1a1c623233ae2d5220e01813c0188)
+- **site:** refresh open-source project management guide for search: [a181173](https://github.com/usekaneo/kaneo/commit/a18117307149a7db2f2b055c8d1a20d344f6e71d)
+
+### Bug Fixes
+
+- **ci:** browser test fixes/optimization: #1941
+- **ci:** ci errors for contribution workflow: #1939
+- **site:** balance the managed instance card on desktop: [5f07734](https://github.com/usekaneo/kaneo/commit/5f077346675e6bc63740c341b8edcce739f709b8)
+- **web:** remove the add task row under board columns: #1931
+
+### Credits
+
+Huge thanks to @andrejsshell, @tinsever, and @randoneering for helping!
+
+### Features
+
+- make cross-column dragged card sortable: #1894
+- **i18n:** add zh-TW locale: #1893
+- **integrations:** add label-based sync in advanced settings: #1908
+
+### Bug Fixes
+
+- **web:** show the task label editor on narrow screens: #1924
+- convert ineligible contributions to draft pull requests: [291da4a](https://github.com/usekaneo/kaneo/commit/291da4a413a5b3a107dae9710860e37cf1822a2e)
+- **i18n:** translate the zh-CN strings added since the last sync: #1916
+- **ci:** exclude skipped events from eligibility concurrency: #1917
+
+### Credits
+
+Huge thanks to @VictorOnwukwe, @kenny-ish, @ApplesBear-X, @tinsever, and @FunnyQ for helping!
+
+### Features
+
 - **web:** redesign settings: #1905
 - **site:** link community projects from resources: [69ba99d](https://github.com/capital-shield/kaneo/commit/69ba99da501627977d57597457d04d23966796da)
 - **site:** add a community projects page: [961c309](https://github.com/capital-shield/kaneo/commit/961c309cbf383e07c5f9026ad654b2dc77ade6f2)

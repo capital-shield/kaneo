@@ -609,7 +609,7 @@ export default function TaskPropertiesSidebar({
           </>
         )}
 
-        <div className="hidden lg:flex px-3 flex-col gap-3 p-2">
+        <div className="flex px-3 flex-col gap-3 p-2">
           <div className="flex flex-col gap-1">
             <span className="text-xs font-medium text-foreground/70 px-2">
               {t("tasks:properties.labels")}
@@ -648,6 +648,7 @@ export default function TaskPropertiesSidebar({
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={t("tasks:popover.labels.editLabels")}
                     className="h-5 w-5 p-0 rounded-full"
                   >
                     <Plus className="h-3 w-3" />

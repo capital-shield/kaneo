@@ -338,7 +338,8 @@
 				"createFailed": "워크스페이스 생성에 실패했습니다"
 			},
 			"validation": {
-				"workspaceNameRequired": "워크스페이스 이름은 필수입니다"
+				"workspaceNameRequired": "워크스페이스 이름은 필수입니다",
+				"projectNameRequired": "첫 번째 프로젝트의 이름을 입력하세요"
 			},
 			"restrictedSubtitle": "이 인스턴스에서는 관리자만 워크스페이스를 만들 수 있습니다. 초대를 요청한 뒤 이 페이지를 새로고침하세요.",
 			"restrictedCheckInvitations": "초대 확인",
@@ -375,6 +376,31 @@
 				"usageSoloDescription": "Keep track of your own work",
 				"usageTeam": "My team",
 				"usageTeamDescription": "Plan and ship work together"
+			},
+			"projectName": "첫 번째 프로젝트",
+			"projectNameDefault": "나의 첫 프로젝트",
+			"projectNameHint": "시작을 돕기 위해 몇 가지 시작 작업을 추가해 드려요.",
+			"starterTasks": {
+				"drag": {
+					"title": "이 카드를 다음 열로 드래그하기",
+					"description": "작업이 진행되면 카드가 열에서 열로 이동합니다. 이 카드를 다음 열로 드래그하거나, 열어서 상태를 바꿔 보세요."
+				},
+				"details": {
+					"title": "이 작업을 열고 하위 작업 추가하기",
+					"description": "작업에는 설명, 하위 작업, 라벨, 담당자, 마감일을 넣을 수 있습니다. 이 작업에 하위 작업을 하나 추가해 보세요."
+				},
+				"invite": {
+					"title": "팀 초대하기",
+					"description": "Kaneo는 모두가 함께할 때 가장 좋습니다. 사이드바에서 **멤버**를 열고 이메일로 사람들을 초대하세요."
+				},
+				"integrations": {
+					"title": "GitHub, GitLab 또는 Gitea 연결하기",
+					"description": "이슈를 동기화하고, 풀 리퀘스트가 열리고 병합될 때 작업을 자동으로 옮길 수 있습니다. **프로젝트 설정**에서 설정하세요."
+				},
+				"create": {
+					"title": "나만의 작업 만들기",
+					"description": "열 이름 옆의 **+**를 사용하거나 **T**를 누른 뒤 **C**를 누르세요. 준비가 되면 이 시작 작업들은 삭제하세요."
+				}
 			}
 		},
 		"profileSetup": {
@@ -422,6 +448,7 @@
 		}
 	},
 	"settings": {
+		"advancedSettings": "고급 설정",
 		"account": "계정",
 		"developer": "개발자",
 		"information": "정보",
@@ -864,7 +891,9 @@
 			"on": "켜짐",
 			"off": "꺼짐",
 			"newColumnPlaceholder": "새 컬럼 이름...",
-			"add": "추가"
+			"add": "추가",
+			"deleteAria": "{{name}} 열 삭제",
+			"renameAria": "{{name}} 열 이름 변경"
 		},
 		"githubIntegration": {
 			"validation": {
@@ -1747,7 +1776,7 @@
 			"title": "Calendar feeds",
 			"subtitle": "Subscribe to scheduled project tasks in your calendar app.",
 			"createTitle": "Create a calendar feed",
-			"filterHint": "Include tasks with a start or due date and at least one of the selected labels.",
+			"filterHint": "Include tasks with a start or due date. Select labels to include only tasks matching at least one, or leave empty to include all scheduled project tasks.",
 			"labels": "Labels",
 			"selectLabels": "Search and select labels…",
 			"noLabels": "No labels found.",
@@ -1758,6 +1787,7 @@
 			"created": "Calendar feed created.",
 			"createError": "Could not create the calendar feed.",
 			"activeFeeds": "Active feeds",
+			"allScheduledTasks": "All scheduled project tasks",
 			"subscribeHint": "Copy a link and add it as a calendar subscription. Updates appear when your calendar app refreshes the feed.",
 			"empty": "No calendar feeds yet.",
 			"feedUrl": "Calendar feed URL",
@@ -1868,6 +1898,150 @@
 			},
 			"openFailed": "Couldn't open billing for this workspace"
 		},
+		"syncRules": {
+			"addLabel": "Add label",
+			"advancedHint": "Enable Advanced settings in Preferences to edit these rules.",
+			"all": "All tasks and issues",
+			"allSummary": "All of: {{labels}}",
+			"any": "Any selected label",
+			"anySummary": "Any of: {{labels}}",
+			"apply": "Apply sync rules",
+			"closed": "Closed",
+			"every": "All selected labels",
+			"excluded": "Outside the current rule",
+			"filtered": "Only matching labels",
+			"filteredBadge": "Filtered by labels",
+			"impact": "{{matching}} of {{total}} tasks match. {{create}} tasks will be exported, {{pause}} links will pause, and {{review}} links need review to resume.",
+			"impactTitle": "What will change",
+			"incoming": "Repository → Kaneo",
+			"incomingHint": "Choose which issues can be imported or create tasks. Use exact repository label names. Existing links follow the Kaneo task rule.",
+			"loadError": "Sync rules could not be loaded.",
+			"loading": "Loading sync rules…",
+			"matchLabels": "Label matching",
+			"missingLabels": "A selected workspace label is unavailable. Sync stays paused until the rule is repaired.",
+			"removeMissingLabels": "사용할 수 없는 라벨 제거",
+			"next": "Next",
+			"noDescription": "No description",
+			"noLabels": "Create workspace labels before configuring a task filter.",
+			"open": "Open",
+			"outgoing": "Kaneo → repository",
+			"outgoingHint": "Choose which Kaneo tasks can sync. Losing a matching label pauses both directions for an existing task.",
+			"paused": "Sync paused",
+			"pausedCount_other": "{{count}} paused links",
+			"pausedHint": "Records and links are preserved. Tasks that match again need review before syncing resumes.",
+			"preserveHint": "Pausing keeps both records and their link. Resuming requires a comparison; historical comments are never replayed.",
+			"previewing": "Checking sync impact…",
+			"previous": "Previous",
+			"refreshComparison": "Refresh comparison",
+			"refreshPreview": "Refresh preview",
+			"removeLabel": "Remove {{name}}",
+			"repository": "Repository",
+			"repositoryLabel": "Repository label name",
+			"resumeError": "Could not resume. The task, issue or rule may have changed, or the provider is unavailable. Sync remains paused; refresh the comparison.",
+			"review": "Review and resume",
+			"reviewHint": "Compare the current title, description and open/closed state. Choose which side to keep for these fields. Labels and historical comments remain unchanged.",
+			"reviewRequired": "Matches the rule · review required",
+			"reviewTitle": "Review before resuming sync",
+			"saved": "Sync rules saved",
+			"saveError": "Could not apply these rules. The integration or task scope may have changed. Refresh the preview and try again.",
+			"selectLabel": "Select at least one label to preview this rule.",
+			"sharedHint": "These rules apply to everyone using this project. Hiding advanced settings does not disable them.",
+			"title": "Sync scope",
+			"unavailableLabel": "Unavailable label",
+			"useKaneo": "Keep Kaneo values",
+			"useRepository": "Keep repository values",
+			"exportPending": "Export matching tasks",
+			"inactiveHint": "This integration is paused. No tasks will be exported until it is reactivated.",
+			"loadSavedRules": "Load saved rules",
+			"rulesChanged": "The saved rules changed while you were editing. Your draft is preserved. Review the current rules above before applying it, or load the saved rules."
+		},
+		"advancedSettingsDescription": "A personal display preference for this browser across all your workspaces.",
+		"adminWorkspaces": {
+			"addMember": {
+				"adding": "Adding…",
+				"alreadyMember": "Already a member",
+				"description": "Add an existing user to {{name}}. They can access every project until you limit them.",
+				"noUsers": "No users found",
+				"role": "Role",
+				"searching": "Searching users…",
+				"submit": "Add member",
+				"title": "Add member",
+				"user": "User",
+				"userPlaceholder": "Search name or email…",
+				"usersError": "Users could not be loaded."
+			},
+			"clearSearch": "Clear search",
+			"columns": {
+				"actions": "Actions",
+				"created": "Created",
+				"members": "Members",
+				"owners": "Owners",
+				"projects": "Projects",
+				"workspace": "Workspace"
+			},
+			"confirm": {
+				"remove": {
+					"action": "Remove member",
+					"description": "{{name}} loses access to {{workspace}} and its projects. Their account stays on this instance.",
+					"title": "Remove {{name}}?"
+				},
+				"transfer": {
+					"action": "Make owner",
+					"description": "{{name}} becomes the only owner of {{workspace}}. Anyone who owns it now becomes an admin.",
+					"title": "Make {{name}} the owner?"
+				},
+				"working": "Working…"
+			},
+			"directoryTitle": "Workspace directory",
+			"emptyDescription": "Try another name or slug.",
+			"emptyTitle": "No workspaces found",
+			"instanceBadge": "Instance",
+			"loadError": "Workspaces could not be loaded.",
+			"manage": "Manage",
+			"manageLabel": "Manage {{name}}",
+			"members": {
+				"actions": "Actions for {{name}}",
+				"add": "Add member",
+				"columns": {
+					"actions": "Actions",
+					"joined": "Joined",
+					"member": "Member",
+					"projects": "Projects",
+					"role": "Role"
+				},
+				"count_other": "{{count}} members",
+				"description": "Change roles, project access, and ownership, even if you aren't a member of this workspace.",
+				"editAccess": "Change project access for {{name}} ({{access}})",
+				"empty": "This workspace has no members.",
+				"loadError": "Members could not be loaded.",
+				"makeOwner": "Make owner",
+				"remove": "Remove from workspace",
+				"roleLabel": "Role for {{name}}",
+				"title": "Members of {{name}}"
+			},
+			"next": "Next",
+			"noOwner": "No owner",
+			"pagination": "Page {{current}} of {{total}}",
+			"previous": "Previous",
+			"refreshing": "Refreshing workspaces",
+			"retry": "Retry",
+			"searchCount_other": "{{count}} matching workspaces",
+			"searchLabel": "Search workspaces",
+			"searchPlaceholder": "Search name or slug…",
+			"subtitle": "Manage every workspace on this Kaneo instance, including ones you don't belong to.",
+			"title": "Workspace management",
+			"toast": {
+				"added": "Member added",
+				"addError": "Failed to add member",
+				"ownershipTransferred": "Ownership transferred",
+				"removed": "Member removed",
+				"removeError": "Failed to remove member",
+				"roleError": "Failed to update role",
+				"roleUpdated": "Role updated",
+				"transferError": "Failed to transfer ownership"
+			},
+			"workspaceCount_other": "{{count}} workspaces"
+		},
 		"autoArchive": {
 			"loading": "불러오는 중...",
 			"label": "완료된 작업 보관",
@@ -1920,7 +2094,8 @@
 			"deleteConfirmTitle": "프로젝트를 삭제하시겠습니까?",
 			"deleteConfirmDescription": "프로젝트와 모든 데이터가 영구적으로 제거됩니다. 이 작업은 취소할 수 없습니다.",
 			"deletedToast": "프로젝트가 삭제되었습니다",
-			"deleteProject": "프로젝트 삭제"
+			"deleteProject": "프로젝트 삭제",
+			"switcherLabel": "프로젝트 또는 보기 전환"
 		},
 		"search": {
 			"inputPlaceholder": "작업, 프로젝트, 댓글 검색...",
@@ -2177,7 +2352,8 @@
 			"importedFrom": "Imported from {{source}}",
 			"importedBy": "Imported by {{name}}",
 			"commentedOnForge": "{{forge}}에 댓글을 남김"
-		}
+		},
+		"movedFromOtherProject": "moved task from another project to \"{{to}}\""
 	},
 	"tasks": {
 		"title": "작업",
@@ -2202,6 +2378,9 @@
 		"view": {
 			"board": "보드",
 			"list": "목록",
+			"backlog": "백로그",
+			"gantt": "간트",
+			"heading": "보기",
 			"table": "테이블"
 		},
 		"common": {
@@ -2432,7 +2611,8 @@
 					"terracotta": "테라코타",
 					"rose": "로즈",
 					"crimson": "크림슨"
-				}
+				},
+				"editLabels": "라벨 편집"
 			}
 		},
 		"backlog": {
@@ -2511,7 +2691,8 @@
 			"moreTasks": "+{{count}}개",
 			"loadError": "작업을 불러오지 못했습니다.",
 			"dayTasksAriaLabel": "{{date}}의 모든 작업 보기",
-			"taskAriaLabel": "{{title}}, {{range}}: 작업 열기"
+			"taskAriaLabel": "{{title}}, {{range}}: 작업 열기",
+			"noTasksThisMonth": "이번 달 예정된 항목이 없습니다"
 		},
 		"gantt": {
 			"pageTitle": "{{name}} – 간트",
@@ -2555,7 +2736,8 @@
 			"noTasks": "작업 없음"
 		},
 		"kanban": {
-			"addTask": "작업 추가"
+			"addTask": "작업 추가",
+			"automaticallySortedHint": "{{sort}} 기준으로 자동 정렬됨"
 		},
 		"pr": {
 			"merged": "병합됨",
@@ -2699,7 +2881,14 @@
 			"noDueDate": "마감일 없음",
 			"reorderHandle": "프로젝트 순서 변경",
 			"reorderError": "프로젝트 순서를 변경하지 못했습니다",
-			"emptyDescriptionReadOnly": "이 워크스페이스에 아직 프로젝트가 없습니다. 관리자에게 프로젝트 생성을 요청하세요."
+			"emptyDescriptionReadOnly": "이 워크스페이스에 아직 프로젝트가 없습니다. 관리자에게 프로젝트 생성을 요청하세요.",
+			"unavailable": {
+				"backToWorkspace": "Back to workspace",
+				"noAccessDescription": "Ask a workspace admin to give you access.",
+				"noAccessTitle": "You don't have access to this project",
+				"notFoundDescription": "This project doesn't exist or has been deleted.",
+				"notFoundTitle": "Project not found"
+			}
 		},
 		"search": {
 			"pageTitle": "검색",
@@ -2825,7 +3014,8 @@
 				"name": "이름",
 				"role": "역할",
 				"joined": "참여",
-				"actions": "작업"
+				"actions": "작업",
+				"projects": "Projects"
 			},
 			"memberRolePending": "{{role}} (대기 중)",
 			"ariaCancelInvitation": "초대 취소",
@@ -2843,6 +3033,26 @@
 			"ariaInvitationActions": "초대 작업",
 			"roleUpdateSuccess": "역할이 업데이트되었습니다",
 			"roleUpdateError": "역할 업데이트에 실패했습니다"
+		},
+		"projectAccess": {
+			"allProjects": "All projects",
+			"allProjectsDescription": "Access every project in this workspace, including new ones.",
+			"description": "Choose which projects this person can see.",
+			"dialogDescription": "Choose which projects {{name}} can access.",
+			"dialogTitle": "Project access",
+			"editAria": "Change project access for {{name}} ({{access}})",
+			"label": "Project access",
+			"noProjects": "No projects in this workspace yet.",
+			"projectCount_other": "{{count}} projects",
+			"projectsLabel": "Projects",
+			"save": "Save",
+			"selectAtLeastOne": "Choose at least one project.",
+			"selectedProjects": "Selected projects",
+			"selectedProjectsDescription": "Only access the projects you choose.",
+			"updateError": "Failed to update project access",
+			"updateSuccess": "Project access updated",
+			"archived": "Archived",
+			"allProjectsUnavailable": "Your own access is limited, so you can only give access to selected projects."
 		}
 	},
 	"publicProject": {

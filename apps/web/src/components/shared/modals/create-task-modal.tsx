@@ -86,6 +86,7 @@ import useGetLabelsByWorkspace from "@/hooks/queries/label/use-get-labels-by-wor
 import useGetProjects from "@/hooks/queries/project/use-get-projects";
 import useActiveWorkspace from "@/hooks/queries/workspace/use-active-workspace";
 import { useGetActiveWorkspaceUsers } from "@/hooks/queries/workspace-users/use-get-active-workspace-users";
+import useGetProjectMembers from "@/hooks/queries/workspace-users/use-get-project-members";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
 import { uploadDraftAsset } from "@/lib/upload-draft-asset";
@@ -94,6 +95,8 @@ import { getInitials } from "@/lib/get-initials";
 import { resolveLabelColor } from "@/lib/label-color";
 import { getPriorityIcon } from "@/lib/priority";
 import { toast } from "@/lib/toast";
+import { useAutoGrowTextarea } from "@/hooks/use-auto-grow-textarea";
+import { stripLineBreaks } from "@/lib/strip-line-breaks";
 import useProjectStore from "@/store/project";
 import type Task from "@/types/task";
 import { getInitialTaskColumn } from "./initial-task-column";
@@ -237,6 +240,7 @@ function CreateTaskModalContent({
   const canCreateLabelCapability = canCreateLabels();
 
   const [title, setTitle] = useState("");
+  const titleRef = useAutoGrowTextarea(title);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("no-priority");
   const [assigneeId, setAssigneeId] = useState("");
@@ -265,6 +269,38 @@ function CreateTaskModalContent({
     (candidate) => candidate.id === (explicitProjectId || selectedProjectId),
   );
   const resolvedProjectId = resolvedProject?.id ?? "";
+  const { data: projectMembers } = useGetProjectMembers({
+    workspaceId: workspace?.id || "",
+    projectId: resolvedProjectId,
+  });
+  const workspaceAssigneeOptions = useMemo(
+    () =>
+      (workspaceUsers?.members ?? []).map((member) => ({
+        id: member.userId,
+        name: member.user?.name ?? "",
+        image: member.user?.image ?? null,
+      })),
+    [workspaceUsers?.members],
+  );
+  const projectMembersPending =
+    Boolean(resolvedProjectId) && projectMembers === undefined;
+  const assigneeUnconfirmed = Boolean(assigneeId) && projectMembersPending;
+  const assigneeOptions = useMemo(
+    () =>
+      resolvedProjectId
+        ? (projectMembers ?? []).map((member) => ({
+            id: member.id,
+            name: member.name,
+            image: member.image,
+          }))
+        : workspaceAssigneeOptions,
+    [resolvedProjectId, projectMembers, workspaceAssigneeOptions],
+  );
+  const selectedUser =
+    assigneeOptions.find((option) => option.id === assigneeId) ??
+    (projectMembersPending
+      ? workspaceAssigneeOptions.find((option) => option.id === assigneeId)
+      : undefined);
   const {
     data: projectColumns,
     isError: columnsError,
@@ -484,6 +520,7 @@ function CreateTaskModalContent({
       awaitingColumns ||
       !title.trim() ||
       !resolvedProjectId ||
+      assigneeUnconfirmed ||
       !workspace?.id
     )
       return;
@@ -504,7 +541,7 @@ function CreateTaskModalContent({
         await createTask({
           title: title.trim(),
           description: description.trim() || "",
-          userId: assigneeId,
+          userId: selectedUser?.id ?? "",
           priority,
           projectId: resolvedProjectId,
           startDate: startDate ? startDate.toISOString() : undefined,
@@ -590,10 +627,6 @@ function CreateTaskModalContent({
   const selectedPriority = priorityOptions.find((p) => p.value === priority);
 
   const statusLabel = getStatusDisplayLabel(taskStatus, initialColumn?.name);
-  const selectedUser = workspaceUsers?.members?.find(
-    (u) => u.userId === assigneeId,
-  );
-
   useEffect(() => {
     if (labelsOpen && labelsStep === "select" && searchInputRef.current) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
@@ -740,7 +773,7 @@ function CreateTaskModalContent({
             value={value}
             onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
             required={field.required}
-            className="h-9 w-full text-sm bg-background"
+            className="h-9 w-full text-base sm:text-sm bg-background"
           />
         );
 
@@ -752,7 +785,7 @@ function CreateTaskModalContent({
             onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
             placeholder={field.defaultValue || ""}
             required={field.required}
-            className="h-9 w-full text-sm bg-background"
+            className="h-9 w-full text-base sm:text-sm bg-background"
           />
         );
 
@@ -930,7 +963,7 @@ function CreateTaskModalContent({
             onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
             placeholder={field.defaultValue || ""}
             required={field.required}
-            className="h-9 w-full text-sm bg-background"
+            className="h-9 w-full text-base sm:text-sm bg-background"
           />
         );
     }
@@ -972,13 +1005,22 @@ function CreateTaskModalContent({
           className="flex flex-col flex-1 min-h-0 space-y-6"
         >
           <div className="flex-1 min-h-0 overflow-y-auto space-y-6 px-6">
-            <Input
-              unstyled
+            <textarea
+              ref={titleRef}
+              rows={1}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => setTitle(stripLineBreaks(e.target.value))}
+              onKeyDown={(e) => {
+                // Single-line title: Enter submits like the input it replaced.
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }}
               autoFocus
               placeholder={t("common:modals.createTask.taskTitlePlaceholder")}
-              className="w-full [&_[data-slot=input]]:h-auto [&_[data-slot=input]]:px-0 [&_[data-slot=input]]:py-3 [&_[data-slot=input]]:text-2xl [&_[data-slot=input]]:leading-tight [&_[data-slot=input]]:font-semibold [&_[data-slot=input]]:tracking-tight [&_[data-slot=input]]:text-foreground [&_[data-slot=input]]:placeholder:text-muted-foreground [&_[data-slot=input]]:outline-none"
+              aria-label={t("common:modals.createTask.taskTitlePlaceholder")}
+              className="block w-full resize-none overflow-hidden border-0 bg-transparent px-0 py-3 font-semibold text-2xl text-foreground leading-tight tracking-tight outline-none placeholder:text-muted-foreground"
               required
             />
 
@@ -990,6 +1032,7 @@ function CreateTaskModalContent({
                 placeholder={t(
                   "common:modals.createTask.descriptionPlaceholder",
                 )}
+                projectId={resolvedProjectId || undefined}
                 uploadAsset={stageAsset}
               />
             </div>
@@ -1233,14 +1276,14 @@ function CreateTaskModalContent({
                       <>
                         <Avatar className="h-4 w-4">
                           <AvatarImage
-                            src={selectedUser?.user?.image ?? ""}
-                            alt={selectedUser?.user?.name || ""}
+                            src={selectedUser.image ?? ""}
+                            alt={selectedUser.name}
                           />
                           <AvatarFallback className="text-[10px] font-medium border border-border/30">
-                            {getInitials(selectedUser?.user?.name)}
+                            {getInitials(selectedUser.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <span>{selectedUser.user?.name}</span>
+                        <span>{selectedUser.name}</span>
                       </>
                     ) : (
                       <>
@@ -1270,26 +1313,26 @@ function CreateTaskModalContent({
                       <span className="text-sm">
                         {t("common:modals.createTask.assignUnassigned")}
                       </span>
-                      {!assigneeId && <Check className="ml-auto h-4 w-4" />}
+                      {!selectedUser && <Check className="ml-auto h-4 w-4" />}
                     </button>
-                    {workspaceUsers?.members?.map((member) => (
+                    {assigneeOptions.map((member) => (
                       <button
-                        key={member.userId}
+                        key={member.id}
                         type="button"
                         className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/50 text-left transition-colors h-8"
-                        onClick={() => setAssigneeId(member.userId || "")}
+                        onClick={() => setAssigneeId(member.id)}
                       >
                         <Avatar className="h-6 w-6">
                           <AvatarImage
-                            src={member?.user?.image ?? ""}
-                            alt={member?.user?.name || ""}
+                            src={member.image ?? ""}
+                            alt={member.name}
                           />
                           <AvatarFallback className="text-xs font-medium border border-border/30">
-                            {getInitials(member?.user?.name)}
+                            {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm">{member?.user?.name}</span>
-                        {assigneeId === member.userId && (
+                        <span className="text-sm">{member.name}</span>
+                        {selectedUser?.id === member.id && (
                           <Check className="ml-auto h-4 w-4" />
                         )}
                       </button>
@@ -1367,7 +1410,7 @@ function CreateTaskModalContent({
                           placeholder={t(
                             "common:modals.createTask.searchLabels",
                           )}
-                          className="w-full bg-transparent border-none text-foreground text-xs focus:outline-none placeholder:text-muted-foreground"
+                          className="w-full bg-transparent border-none text-foreground text-base focus:outline-none placeholder:text-muted-foreground sm:text-xs"
                         />
                       </div>
 
@@ -1524,6 +1567,7 @@ function CreateTaskModalContent({
               disabled={
                 !title.trim() ||
                 !resolvedProjectId ||
+                assigneeUnconfirmed ||
                 isSubmitting ||
                 awaitingColumns ||
                 isPreparingDraft
