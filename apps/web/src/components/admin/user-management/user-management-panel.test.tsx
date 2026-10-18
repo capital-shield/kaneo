@@ -63,6 +63,7 @@ function user(overrides: Partial<AdminUser> = {}): AdminUser {
     banned: false,
     banReason: null,
     banExpires: null,
+    isServiceAccount: false,
     ...overrides,
   };
 }

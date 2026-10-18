@@ -2798,6 +2798,9 @@
 								"deleted",
 								"actionError"
 							]
+						},
+						"serviceAccount": {
+							"type": "string"
 						}
 					},
 					"required": [
@@ -2822,7 +2825,8 @@
 						"actions",
 						"edit",
 						"confirm",
-						"toast"
+						"toast",
+						"serviceAccount"
 					]
 				},
 				"adminWorkspaces": {
@@ -3152,6 +3156,233 @@
 						"columns",
 						"members",
 						"addMember",
+						"confirm",
+						"toast"
+					]
+				},
+				"adminServiceAccounts": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"subtitle": {
+							"type": "string"
+						},
+						"newAccount": {
+							"type": "string"
+						},
+						"newKey": {
+							"type": "string"
+						},
+						"revokeKey": {
+							"type": "string"
+						},
+						"actions": {
+							"type": "string"
+						},
+						"deactivated": {
+							"type": "string"
+						},
+						"noKeys": {
+							"type": "string"
+						},
+						"noWorkspaces": {
+							"type": "string"
+						},
+						"addToWorkspace": {
+							"type": "string"
+						},
+						"workspaceRole": {
+							"type": "string"
+						},
+						"lastUsed": {
+							"type": "string"
+						},
+						"neverUsed": {
+							"type": "string"
+						},
+						"loadError": {
+							"type": "string"
+						},
+						"retry": {
+							"type": "string"
+						},
+						"emptyTitle": {
+							"type": "string"
+						},
+						"emptyDescription": {
+							"type": "string"
+						},
+						"note": {
+							"type": "string"
+						},
+						"create": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								},
+								"nameLabel": {
+									"type": "string"
+								},
+								"namePlaceholder": {
+									"type": "string"
+								},
+								"nameDescription": {
+									"type": "string"
+								},
+								"nameRequired": {
+									"type": "string"
+								},
+								"nameTooLong": {
+									"type": "string"
+								},
+								"submit": {
+									"type": "string"
+								},
+								"creating": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"title",
+								"description",
+								"nameLabel",
+								"namePlaceholder",
+								"nameDescription",
+								"nameRequired",
+								"nameTooLong",
+								"submit",
+								"creating"
+							]
+						},
+						"key": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"title": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								},
+								"namePlaceholder": {
+									"type": "string"
+								},
+								"nameTooLong": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"title",
+								"description",
+								"namePlaceholder",
+								"nameTooLong"
+							]
+						},
+						"confirm": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"working": {
+									"type": "string"
+								},
+								"revoke": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"description": {
+											"type": "string"
+										}
+									},
+									"required": ["title", "description"]
+								},
+								"delete": {
+									"type": "object",
+									"additionalProperties": false,
+									"properties": {
+										"title": {
+											"type": "string"
+										},
+										"description": {
+											"type": "string"
+										},
+										"action": {
+											"type": "string"
+										}
+									},
+									"required": ["title", "description", "action"]
+								}
+							},
+							"required": ["working", "revoke", "delete"]
+						},
+						"toast": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"created": {
+									"type": "string"
+								},
+								"createError": {
+									"type": "string"
+								},
+								"keyCreateError": {
+									"type": "string"
+								},
+								"keyRevoked": {
+									"type": "string"
+								},
+								"keyRevokeError": {
+									"type": "string"
+								},
+								"deleted": {
+									"type": "string"
+								},
+								"deleteError": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"created",
+								"createError",
+								"keyCreateError",
+								"keyRevoked",
+								"keyRevokeError",
+								"deleted",
+								"deleteError"
+							]
+						}
+					},
+					"required": [
+						"title",
+						"subtitle",
+						"newAccount",
+						"newKey",
+						"revokeKey",
+						"actions",
+						"deactivated",
+						"noKeys",
+						"noWorkspaces",
+						"addToWorkspace",
+						"workspaceRole",
+						"lastUsed",
+						"neverUsed",
+						"loadError",
+						"retry",
+						"emptyTitle",
+						"emptyDescription",
+						"note",
+						"create",
+						"key",
 						"confirm",
 						"toast"
 					]
@@ -9688,6 +9919,7 @@
 				"apiKeys",
 				"adminUsers",
 				"adminWorkspaces",
+				"adminServiceAccounts",
 				"informationPage",
 				"notificationsPage",
 				"preferencesPage",

@@ -5,4 +5,5 @@
 
 ALTER TABLE "project" ADD COLUMN IF NOT EXISTS "auto_archive_done_after_days" integer;--> statement-breakpoint
 ALTER TABLE "task" ADD COLUMN IF NOT EXISTS "completed_at" timestamp;--> statement-breakpoint
+ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "is_service_account" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "task_completedAt_idx" ON "task" USING btree ("completed_at");

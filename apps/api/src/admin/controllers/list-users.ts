@@ -30,6 +30,7 @@ export async function listUsers({ search, page, limit }: ListUsersInput) {
         banned: userTable.banned,
         banReason: userTable.banReason,
         banExpires: userTable.banExpires,
+        isServiceAccount: userTable.isServiceAccount,
       })
       .from(userTable)
       .where(where)

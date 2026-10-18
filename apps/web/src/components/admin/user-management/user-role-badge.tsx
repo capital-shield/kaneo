@@ -3,10 +3,22 @@ import { Badge } from "@/components/ui/badge";
 
 type UserRoleBadgeProps = {
   isAdmin: boolean;
+  isServiceAccount?: boolean;
 };
 
-export function UserRoleBadge({ isAdmin }: UserRoleBadgeProps) {
+export function UserRoleBadge({
+  isAdmin,
+  isServiceAccount = false,
+}: UserRoleBadgeProps) {
   const { t } = useTranslation();
+
+  if (isServiceAccount) {
+    return (
+      <Badge variant="outline" className="px-1.5 text-muted-foreground">
+        {t("settings:adminUsers.serviceAccount")}
+      </Badge>
+    );
+  }
 
   return isAdmin ? (
     <Badge variant="outline" className="px-1.5">

@@ -50,6 +50,9 @@ export const userTable = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires", { mode: "date" }),
+  // Fork: a non-human user that authenticates only with API keys. It is
+  // created by instance admins and can never hold a session.
+  isServiceAccount: boolean("is_service_account").default(false).notNull(),
 });
 
 export const sessionTable = pgTable(

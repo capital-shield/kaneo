@@ -30,6 +30,7 @@ const result = {
       banned: false,
       banReason: null,
       banExpires: null,
+      isServiceAccount: false,
     },
   ],
   total: 41,

@@ -711,7 +711,8 @@
 				"reactivated": "User reactivated",
 				"deleted": "User deleted",
 				"actionError": "Failed to update user status"
-			}
+			},
+			"serviceAccount": "Service account"
 		},
 		"adminWorkspaces": {
 			"title": "Workspaces",
@@ -790,6 +791,64 @@
 				"removeError": "Failed to remove member",
 				"ownershipTransferred": "Ownership transferred",
 				"transferError": "Failed to transfer ownership"
+			}
+		},
+		"adminServiceAccounts": {
+			"title": "Service accounts",
+			"subtitle": "Non-human accounts for integrations such as sync tools. They act only through API keys and can never sign in.",
+			"newAccount": "New service account",
+			"newKey": "New API key",
+			"revokeKey": "Revoke key",
+			"actions": "Actions for {{name}}",
+			"deactivated": "Deactivated",
+			"noKeys": "No API keys yet. Create one to connect an integration.",
+			"noWorkspaces": "Not in any workspace yet.",
+			"addToWorkspace": "Add it to a workspace",
+			"workspaceRole": "{{workspace}} ({{role}})",
+			"lastUsed": "Last used {{date}}",
+			"neverUsed": "Never used",
+			"loadError": "Service accounts could not be loaded.",
+			"retry": "Retry",
+			"emptyTitle": "No service accounts",
+			"emptyDescription": "Create one for each integration so its changes are attributed to it, not to a person.",
+			"note": "A key acts with its account's workspace roles. Add the account to a workspace from Workspaces, using the narrowest role that works.",
+			"create": {
+				"title": "New service account",
+				"description": "The account starts in no workspace and has no keys.",
+				"nameLabel": "Name",
+				"namePlaceholder": "Sync tool",
+				"nameDescription": "Shown on tasks, comments and activity the integration creates.",
+				"nameRequired": "Enter a name",
+				"nameTooLong": "Use 100 characters or fewer",
+				"submit": "Create account",
+				"creating": "Creating…"
+			},
+			"key": {
+				"title": "New API key for {{name}}",
+				"description": "The key is shown once. Store it in the integration's secret configuration.",
+				"namePlaceholder": "Production",
+				"nameTooLong": "Use 32 characters or fewer"
+			},
+			"confirm": {
+				"working": "Working…",
+				"revoke": {
+					"title": "Revoke {{name}}?",
+					"description": "Requests from {{name}} using this key will fail immediately. This cannot be undone."
+				},
+				"delete": {
+					"title": "Delete {{name}}?",
+					"description": "This deletes the account, its API keys and its workspace memberships. Integrations using it stop working immediately. This cannot be undone.",
+					"action": "Delete account"
+				}
+			},
+			"toast": {
+				"created": "Service account created",
+				"createError": "Failed to create service account",
+				"keyCreateError": "Failed to create API key",
+				"keyRevoked": "API key revoked",
+				"keyRevokeError": "Failed to revoke API key",
+				"deleted": "Service account deleted",
+				"deleteError": "Failed to delete service account"
 			}
 		},
 		"informationPage": {

@@ -1,5 +1,6 @@
 import {
   Bell,
+  Bot,
   Building2,
   Code,
   CreditCard,
@@ -164,6 +165,12 @@ export function buildSettingsNav({
               label: t("settings:adminWorkspaces.title"),
               to: "/dashboard/settings/admin/workspaces",
               icon: Building2,
+            },
+            {
+              id: "admin-service-accounts",
+              label: t("settings:adminServiceAccounts.title"),
+              to: "/dashboard/settings/admin/service-accounts",
+              icon: Bot,
             },
           ],
         }

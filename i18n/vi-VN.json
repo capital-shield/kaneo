@@ -1646,7 +1646,8 @@
 				"updated": "User updated",
 				"updateError": "Failed to update user"
 			},
-			"you": "Bạn"
+			"you": "Bạn",
+			"serviceAccount": "Service account"
 		},
 		"security": "Security",
 		"securityPage": {
@@ -2326,6 +2327,64 @@
 		},
 		"shared": {
 			"autosave": "Thay đổi được lưu tự động"
+		},
+		"adminServiceAccounts": {
+			"actions": "Actions for {{name}}",
+			"addToWorkspace": "Add it to a workspace",
+			"confirm": {
+				"delete": {
+					"action": "Delete account",
+					"description": "This deletes the account, its API keys and its workspace memberships. Integrations using it stop working immediately. This cannot be undone.",
+					"title": "Delete {{name}}?"
+				},
+				"revoke": {
+					"description": "Requests from {{name}} using this key will fail immediately. This cannot be undone.",
+					"title": "Revoke {{name}}?"
+				},
+				"working": "Working…"
+			},
+			"create": {
+				"creating": "Creating…",
+				"description": "The account starts in no workspace and has no keys.",
+				"nameDescription": "Shown on tasks, comments and activity the integration creates.",
+				"nameLabel": "Name",
+				"namePlaceholder": "Sync tool",
+				"nameRequired": "Enter a name",
+				"nameTooLong": "Use 100 characters or fewer",
+				"submit": "Create account",
+				"title": "New service account"
+			},
+			"deactivated": "Deactivated",
+			"emptyDescription": "Create one for each integration so its changes are attributed to it, not to a person.",
+			"emptyTitle": "No service accounts",
+			"key": {
+				"description": "The key is shown once. Store it in the integration's secret configuration.",
+				"namePlaceholder": "Production",
+				"nameTooLong": "Use 32 characters or fewer",
+				"title": "New API key for {{name}}"
+			},
+			"lastUsed": "Last used {{date}}",
+			"loadError": "Service accounts could not be loaded.",
+			"neverUsed": "Never used",
+			"newAccount": "New service account",
+			"newKey": "New API key",
+			"noKeys": "No API keys yet. Create one to connect an integration.",
+			"note": "A key acts with its account's workspace roles. Add the account to a workspace from Workspaces, using the narrowest role that works.",
+			"noWorkspaces": "Not in any workspace yet.",
+			"retry": "Retry",
+			"revokeKey": "Revoke key",
+			"subtitle": "Non-human accounts for integrations such as sync tools. They act only through API keys and can never sign in.",
+			"title": "Service accounts",
+			"toast": {
+				"created": "Service account created",
+				"createError": "Failed to create service account",
+				"deleted": "Service account deleted",
+				"deleteError": "Failed to delete service account",
+				"keyCreateError": "Failed to create API key",
+				"keyRevoked": "API key revoked",
+				"keyRevokeError": "Failed to revoke API key"
+			},
+			"workspaceRole": "{{workspace}} ({{role}})"
 		}
 	},
 	"navigation": {

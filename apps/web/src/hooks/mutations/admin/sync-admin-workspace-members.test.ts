@@ -31,6 +31,7 @@ describe("syncAdminWorkspaceMembers", () => {
     expect(invalidate.mock.calls.map(([filters]) => filters?.queryKey)).toEqual(
       [
         ["admin", "workspaces"],
+        ["admin", "service-accounts"],
         ["workspace-users", "acme"],
         ["workspace", "full", "acme"],
       ],

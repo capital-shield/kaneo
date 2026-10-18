@@ -38,6 +38,16 @@ const board = await response.json();
 
 Return to **API Keys** to remove a credential you no longer use. To rotate one, create a replacement, update the service that uses it, check a request succeeds, then revoke the old key.
 
+### Service accounts
+
+A key from your own account acts as you: everything the integration changes is attributed to you, and it stops working when your account is removed. For a long-running integration such as a sync tool, an instance administrator can create a service account instead. It is a non-human user that acts only through API keys. It never signs in, so it needs no password or identity provider account, and works when sign-in is limited to SSO.
+
+1. Open **Settings → Administration → Service accounts** and create an account named after the integration.
+2. In **Workspaces**, add the account to each workspace it needs, with the narrowest role that works. Its keys act with those roles.
+3. Back in **Service accounts**, create an API key for it and copy the key when it is shown.
+
+Revoke a single key from the same page, or delete the account to revoke all of its keys and memberships at once. Deactivating the account from **Users** also stops its keys until it is reactivated. Service account keys follow the same rate limits as other keys.
+
 ## Rate limits
 
 Each API key can make 100 requests per 60 seconds by default. Requests made with a browser session or a device access token do not count against it.

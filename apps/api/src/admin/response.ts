@@ -15,6 +15,10 @@ export const adminUserSchema = z
     banned: z.boolean(),
     banReason: z.string().nullable(),
     banExpires: isoTimestamp.nullable(),
+    isServiceAccount: z.boolean().openapi({
+      description:
+        "A non-human account that authenticates only with API keys. Manage it under service accounts.",
+    }),
   })
   .openapi("AdminUser");
 

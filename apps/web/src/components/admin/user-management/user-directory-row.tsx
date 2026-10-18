@@ -88,13 +88,19 @@ export function UserDirectoryRow({
             {user.email}
           </span>
           <div className="mt-1.5 flex items-center gap-2 sm:hidden">
-            <UserRoleBadge isAdmin={isAdmin} />
+            <UserRoleBadge
+              isAdmin={isAdmin}
+              isServiceAccount={user.isServiceAccount}
+            />
             <UserStatus isDeactivated={isDeactivated} />
           </div>
         </div>
       </div>
       <div role="cell" className={cn(CELL_CLASS, USER_DIRECTORY_COLUMNS.role)}>
-        <UserRoleBadge isAdmin={isAdmin} />
+        <UserRoleBadge
+          isAdmin={isAdmin}
+          isServiceAccount={user.isServiceAccount}
+        />
       </div>
       <div
         role="cell"

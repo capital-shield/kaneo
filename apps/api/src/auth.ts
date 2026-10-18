@@ -49,6 +49,7 @@ import { resolveInvitationProjectAccess } from "./project-access/resolve-invitat
 import { clearMemberProjectAccess } from "./project-access/clear-member-project-access";
 import { isOwnerRole } from "./project-access/is-owner-role";
 import { publishMemberProjects } from "./project-access/publish-member-projects";
+import { isServiceAccount } from "./service-account/is-service-account";
 import { handleMemberAdded } from "./workspace-members/handle-member-added";
 import { handleMemberRemoved } from "./workspace-members/handle-member-removed";
 import { handleOwnerPromoted } from "./workspace-members/handle-owner-promoted";
@@ -723,6 +724,22 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
+    session: {
+      create: {
+        // Covers every way a session can be issued — sign-in, OAuth linking,
+        // admin impersonation — so a service account stays key-only even if
+        // someone later gives it a password or a real email address.
+        before: async (session) => {
+          if (await isServiceAccount(session.userId)) {
+            throw new APIError("FORBIDDEN", {
+              code: "SERVICE_ACCOUNT_SIGN_IN",
+              message:
+                "Service accounts cannot sign in. Use one of the account's API keys instead.",
+            });
+          }
+        },
+      },
+    },
     user: {
       delete: {
         after: async (user, ctx) => {

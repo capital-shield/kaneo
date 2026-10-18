@@ -4,6 +4,7 @@ import {
   errorResponse,
   jsonResponse,
 } from "../openapi";
+import serviceAccounts from "../service-account";
 import { requireInstanceAdmin } from "../utils/require-instance-admin";
 import { requireUserSession } from "../utils/require-user-session";
 import addWorkspaceMember from "./controllers/add-workspace-member";
@@ -255,6 +256,7 @@ const admin = apiRouter()
       }),
       200,
     ),
-  );
+  )
+  .route("/service-accounts", serviceAccounts);
 
 export default admin;
