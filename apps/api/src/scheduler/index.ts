@@ -1,6 +1,7 @@
 import { retryStorageCleanup } from "../storage/cleanup-queue";
 import { cleanupDraftUploads } from "./draft-upload-cleanup";
 import { replayDeferredIssueEdits } from "../plugins/github/services/deferred-issue-edits";
+import { replayDeferredLabelFields } from "../plugins/sync/replay-deferred-label-fields";
 import * as Sentry from "@sentry/node";
 import { Cron } from "croner";
 import { archiveDoneTasks } from "./auto-archive-done-tasks";
@@ -53,6 +54,13 @@ export function initializeScheduler(): void {
     new Cron(
       "* * * * *",
       withCheckIn("deferred-issue-edits", replayDeferredIssueEdits),
+    ),
+  );
+  jobs.push(
+    new Cron(
+      "* * * * *",
+      { protect: true },
+      withCheckIn("deferred-label-fields", replayDeferredLabelFields),
     ),
   );
   jobs.push(

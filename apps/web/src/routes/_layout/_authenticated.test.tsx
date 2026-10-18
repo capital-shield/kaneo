@@ -17,6 +17,11 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }));
 
+// No session in the client-side store, so every test exercises getSession().
+vi.mock("@/lib/cached-session", () => ({
+  getCachedSession: () => null,
+}));
+
 type BeforeLoad = (ctx: {
   location: {
     href: string;

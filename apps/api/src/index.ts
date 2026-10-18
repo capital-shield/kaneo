@@ -51,6 +51,8 @@ import githubIntegration, {
 import gitlabIntegration, {
   handleGitlabWebhookRoute,
 } from "./gitlab-integration";
+import importRoutes from "./import";
+import { stopActiveImports } from "./import/runs/stop-active-imports";
 import getInstanceStatus from "./instance/controllers/get-instance-status";
 import invitation from "./invitation";
 import label from "./label";
@@ -871,6 +873,7 @@ export function createApp() {
   const invitationApi = api.route("/invitation", invitation);
   const workspaceApi = api.route("/workspace", workspace);
   const customFieldApi = api.route("/custom-field", customField);
+  const importApi = api.route("/import", importRoutes);
   const userApi = api.route("/user", user);
   const adminApi = api.route("/admin", admin);
 
@@ -1002,6 +1005,7 @@ export function createApp() {
     workflowRuleApi,
     workspaceApi,
     customFieldApi,
+    importApi,
     oauthApi,
   };
 }
@@ -1088,6 +1092,7 @@ export async function startServer(
     const [, signInEmailsDrained] = await Promise.all([
       drainPasswordResetDeliveries(),
       drainSignInEmails(),
+      stopActiveImports(),
     ]);
     if (!signInEmailsDrained) {
       console.warn("Timed out waiting for pending sign-in emails");
@@ -1140,6 +1145,7 @@ const {
   workflowRuleApi,
   workspaceApi,
   customFieldApi,
+  importApi,
   oauthApi,
 } = createdApp;
 
@@ -1182,6 +1188,7 @@ export type AppType =
   | typeof invitationApi
   | typeof workspaceApi
   | typeof customFieldApi
+  | typeof importApi
   | typeof userApi
   | typeof adminApi
   | typeof publicProjectApi

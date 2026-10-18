@@ -8,6 +8,10 @@ export function isWeekStartDay(value: number): value is WeekStartDay {
   return WEEK_START_DAYS.some((day) => day === value);
 }
 
+export type BoardViewMode = "board" | "list" | "table";
+
+export type TaskLayout = BoardViewMode | "calendar" | "gantt";
+
 type UserPreferencesStore = {
   theme: "light" | "dark" | "system";
   setTheme: (
@@ -15,11 +19,14 @@ type UserPreferencesStore = {
     coordinates?: { x: number; y: number },
   ) => void;
 
-  viewMode: "board" | "list" | "table";
-  setViewMode: (mode: "board" | "list" | "table") => void;
+  viewMode: BoardViewMode;
+  setViewMode: (mode: BoardViewMode) => void;
 
   backlogViewMode: "list" | "table";
   setBacklogViewMode: (mode: "list" | "table") => void;
+
+  taskLayout: TaskLayout;
+  setTaskLayout: (layout: TaskLayout) => void;
 
   compactMode: boolean;
   setCompactMode: (compact: boolean) => void;
@@ -47,6 +54,8 @@ type UserPreferencesStore = {
   showTaskItemCounts: boolean;
   setShowTaskItemCounts: (show: boolean) => void;
   toggleTaskItemCounts: () => void;
+  hiddenCardFieldIds: string[];
+  toggleCardFieldHidden: (fieldId: string) => void;
   resetDisplayPreferences: () => void;
 
   sidebarDefaultOpen: boolean;
@@ -93,6 +102,9 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       backlogViewMode: "list",
       setBacklogViewMode: (mode) => set({ backlogViewMode: mode }),
 
+      taskLayout: "board",
+      setTaskLayout: (layout) => set({ taskLayout: layout }),
+
       compactMode: false,
       setCompactMode: (compact) => set({ compactMode: compact }),
 
@@ -125,8 +137,16 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       setShowTaskItemCounts: (show) => set({ showTaskItemCounts: show }),
       toggleTaskItemCounts: () =>
         set((state) => ({ showTaskItemCounts: !state.showTaskItemCounts })),
+      hiddenCardFieldIds: [],
+      toggleCardFieldHidden: (fieldId) =>
+        set((state) => ({
+          hiddenCardFieldIds: state.hiddenCardFieldIds.includes(fieldId)
+            ? state.hiddenCardFieldIds.filter((id) => id !== fieldId)
+            : [...state.hiddenCardFieldIds, fieldId],
+        })),
       resetDisplayPreferences: () =>
         set({
+          hiddenCardFieldIds: [],
           showAssignees: true,
           showDueDates: true,
           showLabels: true,
