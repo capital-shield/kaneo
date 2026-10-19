@@ -1,3 +1,80 @@
+### Features
+
+- **admin:** add service accounts for API-key integrations: [a8f3720](https://github.com/capital-shield/kaneo/commit/a8f37204b2fd9c8ea3af9b793c6dd2f5b39e39a4)
+- **api:** make the database pool size configurable: #2042
+- **mobile:** add Expo app for Android and iOS: #2029
+- **web:** redesign task cards and the date picker: [8cceae1](https://github.com/capital-shield/kaneo/commit/8cceae17aacb8611f9fc94836c1158b0ff084605)
+- **web:** animate sidebar and keep inset padding: [1b53391](https://github.com/capital-shield/kaneo/commit/1b53391ea2ca2a4a9e905ee210ae8f1530aed605)
+- **web:** redesign task details: [d9cb555](https://github.com/capital-shield/kaneo/commit/d9cb5558893c32c2202505afc5ca37f1c35ccd08)
+- **web:** add keyboard shortcuts across the app: [16648d4](https://github.com/capital-shield/kaneo/commit/16648d43c18ccdca5730f9323de421c0a6fac4f9)
+- **api:** add notification unread and delete: [425a8af](https://github.com/capital-shield/kaneo/commit/425a8af085fe193204a0539878d6ff892b8c3d87)
+- **web:** redesign the bulk selection bar: [51af01d](https://github.com/capital-shield/kaneo/commit/51af01d77f07186b63bae8a290c4681e3e88c63d)
+- **web:** edit links inline and make them legible: [9431c14](https://github.com/capital-shield/kaneo/commit/9431c14469bbc071642f83904e8f9a89d3bbaf5e)
+- **web:** rework project views and custom fields: [93f328d](https://github.com/capital-shield/kaneo/commit/93f328d7382e6a54cfe615d7b94cf76a033b414f)
+- **web:** rebuild settings pages: [3f15710](https://github.com/capital-shield/kaneo/commit/3f15710726b51f976aa2040ff3d5683dbb97f003)
+- **api:** edit custom fields and search repos: [793a50c](https://github.com/capital-shield/kaneo/commit/793a50ca66e8c0d0016c074b17b2d56fb0a7bc4b)
+- **web:** redesign onboarding with a live preview: [4bc1a9b](https://github.com/capital-shield/kaneo/commit/4bc1a9b4cb801fc6dd0faefbc7503231173186ad)
+- **web:** redesign auth and access pages: [5565833](https://github.com/capital-shield/kaneo/commit/5565833474175ad42ac365ec2c1b992920277d78)
+- **auth:** require email codes for cloud sign-up: [f974b05](https://github.com/capital-shield/kaneo/commit/f974b0529d36bc60caac510d169417633459f381)
+- **import:** add Jira as an import source: #2010
+- import projects from other tools in the UI: #2007
+- **email:** redesign emails with Kaneo components: [ed0ea78](https://github.com/capital-shield/kaneo/commit/ed0ea78838ba703e924c9446c4db344ad6e4d831)
+
+### Bug Fixes
+
+- **web:** keep board columns scrollable with project backgrounds: [41074e9](https://github.com/capital-shield/kaneo/commit/41074e947458db74d5cbea26910d9854d512432a)
+- **docker:** support OpenShift runtime storage: #1980
+- **notifications:** skip self-assignment notifications: #2036
+- **planka-import:** respect ratelimiting: #1944
+- **api:** keep linked issues closed when a completed task is archived: #2032
+- **api:** stop label webhook echoes from flipping task status: #2031
+- **web:** let touch start drags on board cards: #2035
+- **web:** keep list and backlog collapse state per project: #2034
+- **mcp:** read and set task custom fields: #2033
+- update slug with column name: #1930
+- **api:** compute scheduled job lease expiry in UTC: #2030
+- **e2e:** wait for the create task dialog to close: [e9c2c46](https://github.com/capital-shield/kaneo/commit/e9c2c46ea59cfd9fc3fe200dbec00bffb6735b0c)
+- **import:** resolve renamed workflow column names: #2027
+- **api:** import assignee email: #2028
+- **i18n:** complete German translations: [d064445](https://github.com/capital-shield/kaneo/commit/d0644451639dc0bbbca137e5ff2bace6e0217746)
+- **e2e:** follow the redesigned signup and onboarding flow: #2024
+- **web:** preserve blank paragraphs in task descriptions: #2025
+- **mcp:** accept opaque OAuth state within URL bounds: #2026
+- **i18n:** translate the zh-CN strings added since #1916: #2020
+- **web:** show the priority mark in the bulk toast: [4c89504](https://github.com/capital-shield/kaneo/commit/4c89504dc4daa633bdfd7dbdc1f13c4338f51d2b)
+- **web:** explain dates outside the allowed range: [b5fb8da](https://github.com/capital-shield/kaneo/commit/b5fb8da93ac80958950366fa45372806342ce7a9)
+- **web:** only press cards from the card itself: [ba0dab7](https://github.com/capital-shield/kaneo/commit/ba0dab7c17e07ee4291b98e6c0fa9b157df636fc)
+- **web:** stop chip taps opening the card menu: [62a19ad](https://github.com/capital-shield/kaneo/commit/62a19adfaf423d9e35b41ee8cc786ac667507357)
+- **web:** space tooltip labels from key hints: [85d2a84](https://github.com/capital-shield/kaneo/commit/85d2a8494b136da66b490288fb678fc67ac25ad8)
+- **api:** retry upload checks only on 403: [8f5f735](https://github.com/capital-shield/kaneo/commit/8f5f73513dc5f5b255e9f387e5a95cbf904761c1)
+- **api:** retry upload checks on 403 and 404: [b799520](https://github.com/capital-shield/kaneo/commit/b799520a19d2907783c5965e45a12e2ec7ea845c)
+- **web:** keep key hints out of accessible names: [23b07b4](https://github.com/capital-shield/kaneo/commit/23b07b4931548a3bcfe29f81b7f5e333733d000a)
+- **api:** log why upload verification fails: [6160046](https://github.com/capital-shield/kaneo/commit/6160046c234f3f31a4df473ca96f16ca14a31fba)
+- **site:** restore the gantt search placeholder: [3d79a67](https://github.com/capital-shield/kaneo/commit/3d79a670264da92ed8ad7f556d7deed5ac6c295d)
+- **web:** keep task-key matches in global search: #2011
+- **web:** read the turnstile key at runtime: [a0d8cbb](https://github.com/capital-shield/kaneo/commit/a0d8cbb080c7289109332fd7aee1785132ad5c6a)
+- **web:** drop deleted tasks from cached subtask lists: #2009
+- **email:** fix gmail mobile layout and icons: [2a41318](https://github.com/capital-shield/kaneo/commit/2a41318ab9e093441471396890e40384120668af)
+- **workflow-rule:** only accept event types the integrations fire: #1982
+- **notifications:** encode non-ASCII ntfy titles: #1981
+- **search:** return each workspace once in global search: #1979
+
+### Performance Improvements
+
+- **web:** open tasks without network waits: [42f1682](https://github.com/capital-shield/kaneo/commit/42f16821d74f15aaab56f3a5e67d92c52072a634)
+
+### Documentation
+
+- update sponsors: [302e358](https://github.com/capital-shield/kaneo/commit/302e358cb1f4c5b736b049a8795f478a3c70ecaf)
+- describe project views and custom fields: [593cad3](https://github.com/capital-shield/kaneo/commit/593cad31af833b335d8689166fbe84b692b2e9af)
+- **site:** surface in-app importers and retarget asana page: [0dd17d9](https://github.com/capital-shield/kaneo/commit/0dd17d92d17db0845747167c186a4d46ec02eb08)
+- describe the new settings pages: [b7e8190](https://github.com/capital-shield/kaneo/commit/b7e8190dd8f89718fc5800803cdca1397c829b8a)
+- **site:** list Amazon SES as email subprocessor: [e71a17b](https://github.com/capital-shield/kaneo/commit/e71a17b34bdf8bf3c812773bd4f0a65b554303e9)
+
+### Credits
+
+Huge thanks to @tiran133, @tinsever, @SuperVK, @MonsPropre, @ApplesBear-X, @KyleJFischer, @andrejsshell, @irfanfaraaz, and @thejdubb02 for helping!
+
 ### Bug Fixes
 
 - **web:** space tooltip labels from key hints: [85d2a84](https://github.com/usekaneo/kaneo/commit/85d2a8494b136da66b490288fb678fc67ac25ad8)
