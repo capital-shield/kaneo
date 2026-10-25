@@ -45,4 +45,23 @@ describe("mapCustomOAuthProfileToUser", () => {
   it("returns an empty mapping when no usable display value exists", () => {
     expect(mapCustomOAuthProfileToUser({ email: "" })).toEqual({});
   });
+
+  it("leaves email verification to the provider by default", () => {
+    expect(
+      mapCustomOAuthProfileToUser({
+        name: "Jane Doe",
+        email: "jane@example.com",
+        email_verified: false,
+      }),
+    ).not.toHaveProperty("emailVerified");
+  });
+
+  it("marks the email verified when the provider is trusted", () => {
+    expect(
+      mapCustomOAuthProfileToUser(
+        { name: "Jane Doe", email: "jane@example.com" },
+        { trustEmail: true },
+      ),
+    ).toEqual({ name: "Jane Doe", emailVerified: true });
+  });
 });

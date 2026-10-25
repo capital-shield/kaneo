@@ -188,6 +188,7 @@ Name | Description |
 | `CUSTOM_AUTH_PKCE` | (Optional) Enable/disable PKCE. Default: `true`.
 | `CUSTOM_OAUTH_NAME` | (Optional) Provider name on the sign-in button, for example `Authentik`. Default: `SSO`.
 | `CUSTOM_OAUTH_LOGOUT_URL` | (Optional) Logout endpoint URL for your identity provider.
+| `CUSTOM_OAUTH_TRUST_EMAIL` | (Optional) Treat emails from the custom provider as verified, for providers such as Microsoft Entra ID that omit `email_verified`. Enable only when users cannot set an arbitrary email at the provider. Default: `false`.
 
 ### Redis
 

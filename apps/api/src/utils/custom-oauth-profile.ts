@@ -2,7 +2,10 @@ function stringOrEmpty(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-export function mapCustomOAuthProfileToUser(profile: Record<string, unknown>) {
+export function mapCustomOAuthProfileToUser(
+  profile: Record<string, unknown>,
+  options: { trustEmail?: boolean } = {},
+) {
   const email = stringOrEmpty(profile.email);
   const nameFromParts = [
     stringOrEmpty(profile.given_name),
@@ -18,5 +21,10 @@ export function mapCustomOAuthProfileToUser(profile: Record<string, unknown>) {
     email ? email.split("@")[0] : "",
   ].find(Boolean);
 
-  return fallbackName ? { name: fallbackName } : {};
+  return {
+    ...(fallbackName ? { name: fallbackName } : {}),
+    // Some providers, such as Microsoft Entra ID, never send `email_verified`.
+    // Operators who control their provider can opt in to vouch for its email.
+    ...(options.trustEmail ? { emailVerified: true } : {}),
+  };
 }

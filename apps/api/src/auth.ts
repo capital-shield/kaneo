@@ -678,7 +678,10 @@ export const auth = betterAuth({
           responseType: process.env.CUSTOM_OAUTH_RESPONSE_TYPE || "code",
           discoveryUrl: process.env.CUSTOM_OAUTH_DISCOVERY_URL || "",
           pkce: process.env.CUSTOM_AUTH_PKCE !== "false",
-          mapProfileToUser: mapCustomOAuthProfileToUser,
+          mapProfileToUser: (profile) =>
+            mapCustomOAuthProfileToUser(profile, {
+              trustEmail: process.env.CUSTOM_OAUTH_TRUST_EMAIL === "true",
+            }),
         },
       ],
     }),

@@ -36,6 +36,7 @@ If you use a discovery URL, the provider can supply the authorization, token, an
 | `CUSTOM_OAUTH_NAME` | Provider name on the sign-in button, for example `Authentik` | `SSO` |
 | `CUSTOM_OAUTH_LOGOUT_URL` | Provider logout endpoint, if needed | Unset |
 | `CUSTOM_OAUTH_AUTO_LOGIN` | Auto-redirect to the custom OAuth provider, bypassing the login page | `false` |
+| `CUSTOM_OAUTH_TRUST_EMAIL` | Treat every email the provider returns as verified, for providers that omit `email_verified`. See account linking below | `false` |
 
 ## Setup Steps
 
@@ -183,6 +184,8 @@ This will automatically discover the authorization, token, and userinfo endpoint
 ## Account linking
 
 When a user signs in with this provider using an email that already belongs to a Kaneo account, Kaneo can link the OIDC identity to that account. The provider must return a verified email claim; being configured does not make an unverified email trusted. Configure your identity provider to return `email_verified: true` only after establishing ownership of the email address. An unverified claim cannot satisfy email-based invitation matching either.
+
+Some providers, such as Microsoft Entra ID, never return an `email_verified` claim, so their users cannot link to existing accounts or match email invitations. If you control the provider and it only issues emails your organization owns, set `CUSTOM_OAUTH_TRUST_EMAIL=true` to treat its emails as verified. Only enable this for a provider where users cannot choose an arbitrary email address. The existing local account must still have a verified email before Kaneo links to it.
 
 For safety, Kaneo only links to an existing local account if that account's email has already been verified. This prevents someone from pre-registering another person's email with a password account and retaining access after the real owner signs in through OIDC. If your instance allows password registration alongside OIDC, consider setting `DISABLE_PASSWORD_REGISTRATION=true` (which also blocks new OTP, magic-link and guest accounts) or requiring email verification for password users to avoid account-linking surprises.
 
