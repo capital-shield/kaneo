@@ -1,5 +1,13 @@
 ### Features
 
+- **auth:** let operators trust custom OAuth provider emails: [eda91d4](https://github.com/capital-shield/kaneo/commit/eda91d485f1cbaef5598322cf89b0f72ff7d0081)
+
+### Bug Fixes
+
+- **docker:** accept nginx 1.30 patch releases: [3bc9e7f](https://github.com/capital-shield/kaneo/commit/3bc9e7f78f3dc6cc44b0e3d11c0cb6d5f316ff57)
+
+### Features
+
 - **admin:** add service accounts for API-key integrations: [a8f3720](https://github.com/capital-shield/kaneo/commit/a8f37204b2fd9c8ea3af9b793c6dd2f5b39e39a4)
 - **api:** make the database pool size configurable: #2042
 - **mobile:** add Expo app for Android and iOS: #2029
